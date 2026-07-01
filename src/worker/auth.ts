@@ -12,10 +12,6 @@ interface SessionPayload {
   nonce: string;
 }
 
-interface SubtleCryptoWithTimingSafeEqual extends SubtleCrypto {
-  timingSafeEqual?: (a: ArrayBuffer | ArrayBufferView, b: ArrayBuffer | ArrayBufferView) => boolean;
-}
-
 const encoder = new TextEncoder();
 
 export function getSecret(env: SecretEnv, name: "ADMIN_PASSWORD_HASH" | "SESSION_SECRET"): string {
@@ -27,29 +23,33 @@ export function getSecret(env: SecretEnv, name: "ADMIN_PASSWORD_HASH" | "SESSION
 }
 
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  const [scheme, iterationsText, saltBase64, hashBase64] = storedHash.split("$");
-  if (scheme !== "pbkdf2_sha256" || !iterationsText || !saltBase64 || !hashBase64) {
+  try {
+    const [scheme, iterationsText, saltBase64, hashBase64] = storedHash.split("$");
+    if (scheme !== "pbkdf2_sha256" || !iterationsText || !saltBase64 || !hashBase64) {
+      return false;
+    }
+
+    const iterations = Number(iterationsText);
+    if (!Number.isInteger(iterations) || iterations < 100_000) return false;
+
+    const expectedHash = base64ToBytes(hashBase64);
+    const salt = base64ToBytes(saltBase64);
+    const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+    const derivedBits = await crypto.subtle.deriveBits(
+      {
+        name: "PBKDF2",
+        hash: "SHA-256",
+        salt: toArrayBuffer(salt),
+        iterations,
+      },
+      keyMaterial,
+      expectedHash.byteLength * 8,
+    );
+
+    return timingSafeEqualBytes(new Uint8Array(derivedBits), expectedHash);
+  } catch {
     return false;
   }
-
-  const iterations = Number(iterationsText);
-  if (!Number.isInteger(iterations) || iterations < 100_000) return false;
-
-  const expectedHash = base64ToBytes(hashBase64);
-  const salt = base64ToBytes(saltBase64);
-  const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      hash: "SHA-256",
-      salt: toArrayBuffer(salt),
-      iterations,
-    },
-    keyMaterial,
-    expectedHash.byteLength * 8,
-  );
-
-  return timingSafeEqualBytes(new Uint8Array(derivedBits), expectedHash);
 }
 
 export async function createSessionToken(secret: string, now = Date.now()): Promise<string> {
@@ -102,11 +102,6 @@ export async function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): Promis
     crypto.subtle.digest("SHA-256", toArrayBuffer(a)),
     crypto.subtle.digest("SHA-256", toArrayBuffer(b)),
   ]);
-  const subtle = crypto.subtle as SubtleCryptoWithTimingSafeEqual;
-  if (subtle.timingSafeEqual) {
-    return subtle.timingSafeEqual(aHash, bHash);
-  }
-
   const left = new Uint8Array(aHash);
   const right = new Uint8Array(bHash);
   let diff = left.length ^ right.length;

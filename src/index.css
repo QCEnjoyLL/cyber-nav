@@ -19,6 +19,8 @@
   --green: #9dff00;
   --danger: #ff526d;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.36);
+  --tile: rgba(10, 16, 27, 0.72);
+  --tile-hover: rgba(19, 29, 47, 0.94);
 }
 
 :root[data-theme="light"] {
@@ -31,6 +33,8 @@
   --muted: #4b5563;
   --line: rgba(45, 55, 72, 0.18);
   --shadow: 0 18px 44px rgba(31, 41, 55, 0.16);
+  --tile: rgba(255, 255, 255, 0.76);
+  --tile-hover: rgba(255, 255, 255, 0.96);
 }
 
 * {
@@ -75,7 +79,7 @@ a {
 .app-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 248px 1fr;
   background-image: url("/cyber-grid.png");
   background-position: center;
   background-size: cover;
@@ -103,7 +107,7 @@ a {
 .sidebar,
 .admin-nav {
   min-height: 100vh;
-  padding: 22px;
+  padding: 18px;
   background: linear-gradient(180deg, var(--panel-strong), rgba(12, 15, 25, 0.72));
   border-right: 1px solid var(--line);
   backdrop-filter: blur(18px);
@@ -122,7 +126,7 @@ a {
   align-items: center;
   gap: 12px;
   min-height: 54px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .brand-mark strong,
@@ -158,6 +162,12 @@ a {
   gap: 10px;
 }
 
+.sidebar .category-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .category-button,
 .ghost-link,
 .tool-button,
@@ -171,7 +181,8 @@ a {
   transition:
     border-color 140ms ease,
     background 140ms ease,
-    transform 140ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease;
 }
 
 :root[data-theme="light"] .category-button,
@@ -200,11 +211,57 @@ a {
   font-size: 0.76rem;
 }
 
+.sidebar .category-button {
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  gap: 8px;
+  padding: 12px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 58%),
+    var(--tile);
+  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 13px 100%, 0 calc(100% - 13px));
+}
+
+.sidebar .category-button svg {
+  grid-column: 1;
+}
+
+.sidebar .category-button span {
+  grid-column: 1 / -1;
+  align-self: end;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.sidebar .category-button em {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 26px;
+  min-height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.14);
+}
+
 .category-button.active,
 .tool-button.active,
 .tag.active {
   border-color: var(--cyan);
   background: linear-gradient(90deg, rgba(0, 245, 255, 0.16), rgba(252, 238, 10, 0.08));
+}
+
+.category-button:hover,
+.tool-button:hover,
+.icon-button:hover,
+.link-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 245, 255, 0.58);
+  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.16), 0 18px 36px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-footer {
@@ -215,21 +272,21 @@ a {
 .admin-main {
   position: relative;
   z-index: 1;
-  padding: 22px;
+  padding: 22px clamp(18px, 3vw, 38px) 32px;
 }
 
 .topbar,
 .admin-topbar {
   min-height: 64px;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  justify-content: space-between;
   gap: 14px;
   align-items: center;
   margin-bottom: 20px;
 }
 
 .admin-topbar {
-  grid-template-columns: auto 1fr;
+  display: flex;
 }
 
 .admin-topbar h1 {
@@ -250,6 +307,12 @@ a {
   border-radius: 8px;
   background: var(--panel);
   backdrop-filter: blur(14px);
+}
+
+.search-box {
+  width: min(620px, 100%);
+  flex: 0 1 620px;
+  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.08), 0 16px 40px rgba(0, 0, 0, 0.16);
 }
 
 .search-box input,
@@ -298,22 +361,23 @@ a {
 }
 
 .hero-band {
-  min-height: 210px;
+  min-height: 190px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 20px;
-  padding: 26px;
+  padding: clamp(20px, 3vw, 34px);
   margin-bottom: 18px;
   border: 1px solid var(--line);
-  border-radius: 8px;
   background:
+    linear-gradient(90deg, rgba(8, 10, 17, 0.2), transparent 56%),
     linear-gradient(135deg, rgba(252, 238, 10, 0.16), transparent 32%),
     linear-gradient(315deg, rgba(0, 245, 255, 0.18), transparent 38%),
     var(--panel);
   box-shadow: var(--shadow);
   overflow: hidden;
   position: relative;
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px));
 }
 
 .hero-band::after {
@@ -323,6 +387,21 @@ a {
   width: 180px;
   height: 4px;
   background: linear-gradient(90deg, var(--yellow), var(--cyan), var(--magenta));
+}
+
+.hero-band::before {
+  content: "";
+  position: absolute;
+  inset: 18px 18px auto auto;
+  width: 34%;
+  max-width: 420px;
+  min-width: 180px;
+  height: 86px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 245, 255, 0.18) 0 2px, transparent 2px 15px),
+    linear-gradient(90deg, transparent, rgba(252, 238, 10, 0.12));
+  opacity: 0.85;
+  pointer-events: none;
 }
 
 .kicker {
@@ -335,8 +414,9 @@ a {
 
 .hero-band h1 {
   margin: 0;
-  font-size: 2.8rem;
+  font-size: clamp(2.1rem, 4vw, 4.2rem);
   line-height: 1.02;
+  max-width: 11ch;
 }
 
 .hero-band p {
@@ -347,7 +427,7 @@ a {
 }
 
 .system-metrics {
-  width: 138px;
+  width: 126px;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -368,7 +448,8 @@ a {
 
 .tool-row {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto auto;
+  grid-template-columns: minmax(240px, 420px) auto auto;
+  justify-content: start;
   gap: 12px;
   margin-bottom: 12px;
 }
@@ -393,13 +474,13 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .tag,
 .card-tags span {
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 4px;
   min-height: 30px;
   padding: 5px 10px;
   color: var(--muted);
@@ -408,25 +489,32 @@ a {
 
 .link-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-auto-flow: dense;
+  gap: 16px;
 }
 
 .link-card {
-  min-height: 238px;
-  padding: 18px;
+  min-height: 218px;
+  padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.08), transparent 46%),
+    var(--tile);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
 }
 
 .link-card.pinned {
   border-color: rgba(252, 238, 10, 0.64);
+  background:
+    linear-gradient(135deg, rgba(252, 238, 10, 0.15), transparent 42%),
+    linear-gradient(315deg, rgba(0, 245, 255, 0.11), transparent 46%),
+    var(--tile);
 }
 
 .link-card::before {
@@ -477,11 +565,11 @@ a {
 
 .link-card h2 {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: 1.02rem;
 }
 
 .link-card p {
-  min-height: 52px;
+  min-height: 46px;
   margin: 10px 0;
   color: var(--muted);
   line-height: 1.55;
@@ -506,6 +594,10 @@ a {
   gap: 8px;
   color: var(--cyan);
   text-decoration: none;
+}
+
+.open-link:hover {
+  color: var(--yellow);
 }
 
 .empty-state,
@@ -539,7 +631,7 @@ a {
 
 .command-panel,
 .login-panel {
-  width: min(620px, calc(100vw - 32px));
+  width: min(560px, calc(100vw - 32px));
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel-strong);
@@ -579,6 +671,8 @@ a {
 .login-panel {
   display: grid;
   gap: 12px;
+  width: min(430px, calc(100vw - 32px));
+  padding: 22px;
 }
 
 .login-panel h1 {
@@ -588,7 +682,7 @@ a {
 .admin-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 260px 1fr;
   background:
     linear-gradient(120deg, rgba(255, 59, 141, 0.08), transparent 34%),
     var(--bg);
@@ -708,13 +802,22 @@ a {
   }
 
   .topbar {
-    grid-template-columns: auto 1fr auto;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
   .hero-band,
   .tool-row,
   .admin-form {
     grid-template-columns: 1fr;
+  }
+
+  .tool-row {
+    justify-content: stretch;
+  }
+
+  .sidebar .category-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .system-metrics {
@@ -734,6 +837,9 @@ a {
 
   .search-box {
     grid-template-columns: auto 1fr;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
   }
 
   .search-box select {
@@ -743,9 +849,26 @@ a {
 
   .top-actions {
     gap: 6px;
+    justify-self: end;
+  }
+
+  .tool-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .inline-filter {
+    grid-column: 1 / -1;
   }
 
   .hero-band {
     padding: 18px;
+  }
+
+  .link-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar .category-button {
+    min-height: 84px;
   }
 }

@@ -1,0 +1,44 @@
+{
+  "name": "cyber-nav",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:worker": "wrangler dev --persist-to ./.wrangler/state --port 8787",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:ui": "playwright test",
+    "preview": "vite preview --host 127.0.0.1",
+    "cf:types": "wrangler types src/worker/env.d.ts",
+    "db:migrate:local": "wrangler d1 migrations apply cyber-nav-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply cyber-nav-db --remote",
+    "deploy:dry-run": "wrangler deploy --dry-run",
+    "secret:hash": "node scripts/hash-password.mjs"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.8.0",
+    "clsx": "^2.1.1",
+    "hono": "^4.12.27",
+    "lucide-react": "^1.23.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260701.1",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "jsdom": "^29.1.1",
+    "oxlint": "^1.71.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1",
+    "vitest": "^4.1.9",
+    "wrangler": "^4.106.0"
+  }
+}

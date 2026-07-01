@@ -1,2 +1,2 @@
-ADMIN_PASSWORD_HASH="pbkdf2_sha256$310000$replace-salt$replace-hash"
+ADMIN_PASSWORD_HASH="pbkdf2_sha256$100000$replace-salt$replace-hash"
 SESSION_SECRET="replace-with-output-from-npm-run-secret-hash"

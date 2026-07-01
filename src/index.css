@@ -21,20 +21,24 @@
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.36);
   --tile: rgba(10, 16, 27, 0.72);
   --tile-hover: rgba(19, 29, 47, 0.94);
+  --grid-bg: url("/cyber-grid-dark.png");
+  --field-bg: rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #eef3f6;
-  --bg-soft: #dfe8ec;
-  --panel: rgba(255, 255, 255, 0.88);
+  --bg: #eef6f8;
+  --bg-soft: #dcebee;
+  --panel: rgba(255, 255, 255, 0.78);
   --panel-strong: rgba(250, 253, 255, 0.96);
   --text: #111827;
   --muted: #4b5563;
-  --line: rgba(45, 55, 72, 0.18);
-  --shadow: 0 18px 44px rgba(31, 41, 55, 0.16);
-  --tile: rgba(255, 255, 255, 0.76);
+  --line: rgba(38, 70, 83, 0.18);
+  --shadow: 0 18px 44px rgba(31, 56, 64, 0.12);
+  --tile: rgba(255, 255, 255, 0.68);
   --tile-hover: rgba(255, 255, 255, 0.96);
+  --grid-bg: url("/cyber-grid-light.png");
+  --field-bg: rgba(255, 255, 255, 0.7);
 }
 
 * {
@@ -80,7 +84,8 @@ a {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 248px 1fr;
-  background-image: url("/cyber-grid.png");
+  background-color: var(--bg);
+  background-image: var(--grid-bg);
   background-position: center;
   background-size: cover;
   position: relative;
@@ -100,8 +105,12 @@ a {
 }
 
 :root[data-theme="light"] .noise-layer {
-  mix-blend-mode: multiply;
-  opacity: 0.34;
+  background:
+    repeating-linear-gradient(0deg, rgba(8, 47, 73, 0.04) 0, rgba(8, 47, 73, 0.04) 1px, transparent 1px, transparent 7px),
+    radial-gradient(circle at 18% 18%, rgba(0, 150, 180, 0.1), transparent 30%),
+    radial-gradient(circle at 84% 30%, rgba(252, 238, 10, 0.08), transparent 24%);
+  mix-blend-mode: normal;
+  opacity: 0.5;
 }
 
 .sidebar,
@@ -664,7 +673,8 @@ a {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background-image: url("/cyber-grid.png");
+  background-color: var(--bg);
+  background-image: var(--grid-bg);
   background-size: cover;
 }
 
@@ -685,32 +695,64 @@ a {
   grid-template-columns: 260px 1fr;
   background:
     linear-gradient(120deg, rgba(255, 59, 141, 0.08), transparent 34%),
+    var(--grid-bg),
     var(--bg);
+  background-size: auto, cover, auto;
+  background-position: center;
 }
 
 .admin-section {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
-  padding: 18px;
-  box-shadow: var(--shadow);
+  background: transparent;
+  padding: 0;
 }
 
 .admin-section h2 {
+  width: fit-content;
   margin: 0 0 16px;
+  padding: 7px 12px;
+  border-left: 3px solid var(--cyan);
+  color: var(--text);
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.16), transparent);
+  font-size: 1.05rem;
+  letter-spacing: 0;
 }
 
 .admin-form {
   display: grid;
-  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, rgba(0, 245, 255, 0.08), transparent 46%),
+    linear-gradient(315deg, rgba(252, 238, 10, 0.06), transparent 42%),
+    var(--panel);
+  box-shadow: var(--shadow);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
 }
 
 .admin-form textarea {
   grid-column: 1 / -1;
   padding: 12px;
   min-height: 320px;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  border: 1px solid transparent;
+  border-left: 2px solid rgba(0, 245, 255, 0.54);
+  border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field-bg);
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+  border-color: rgba(0, 245, 255, 0.7);
+  box-shadow: inset 0 -2px 0 rgba(0, 245, 255, 0.38);
 }
 
 .checkbox-grid,
@@ -722,32 +764,99 @@ a {
 
 .checkbox-grid {
   flex-wrap: wrap;
+  align-content: start;
 }
 
 .check-row {
+  position: relative;
   min-height: 42px;
+  justify-content: flex-start;
+  padding: 0 14px 0 54px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-weight: 700;
+  user-select: none;
+}
+
+.check-row input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.check-row::before,
+.check-row::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    left 140ms ease;
+}
+
+.check-row::before {
+  left: 14px;
+  width: 30px;
+  height: 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.check-row::after {
+  left: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.check-row:has(input:checked) {
+  color: var(--text);
+  border-color: rgba(0, 245, 255, 0.48);
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.14), rgba(252, 238, 10, 0.06));
+}
+
+.check-row:has(input:checked)::before {
+  border-color: var(--cyan);
+  background: linear-gradient(90deg, var(--cyan), var(--yellow));
+}
+
+.check-row:has(input:checked)::after {
+  left: 30px;
+  background: #111827;
 }
 
 .admin-list {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
 }
 
 .admin-list-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
+  position: relative;
+  min-height: 116px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.08), transparent 48%),
+    var(--tile);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
 }
 
 .admin-list-row > button:first-child {
-  min-height: 54px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  min-height: 116px;
+  width: 100%;
+  border: 0;
+  background: transparent;
   color: var(--text);
   text-align: left;
-  padding: 8px 12px;
+  padding: 14px 54px 14px 14px;
 }
 
 .admin-list-row strong,
@@ -758,14 +867,20 @@ a {
 .admin-list-row span {
   color: var(--muted);
   overflow-wrap: anywhere;
+  margin-top: 8px;
+  font-size: 0.86rem;
 }
 
 .danger-button {
-  width: 42px;
-  height: 42px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   color: var(--danger);
+  background: rgba(255, 82, 109, 0.08);
 }
 
 .form-message {

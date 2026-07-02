@@ -515,13 +515,7 @@ function PublicApp() {
               }}
               placeholder={t.searchPlaceholder}
             />
-            <select value={engineId} onChange={(event) => setEngineId(event.target.value)} aria-label="search engine">
-              {activeEngines.map((engine) => (
-                <option key={engine.id} value={engine.id}>
-                  {engine.name}
-                </option>
-              ))}
-            </select>
+            <EngineSelect engines={activeEngines} selectedEngine={selectedEngine} onChange={setEngineId} />
           </div>
           <div className="top-actions">
             <button className={clsx("icon-button", favoriteOnly && "active")} onClick={() => setFavoriteOnly((value) => !value)} aria-label={t.favoriteOnly}>
@@ -1234,6 +1228,67 @@ function AdminList<T extends { id: string }>({
           </button>
         </div>
       ))}
+    </div>
+  );
+}
+
+function EngineSelect({
+  engines,
+  selectedEngine,
+  onChange,
+}: {
+  engines: SearchEngine[];
+  selectedEngine: SearchEngine;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const options = engines.length > 0 ? engines : [selectedEngine];
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="engine-select" ref={wrapperRef}>
+      <button className="engine-trigger" type="button" onClick={() => setOpen((value) => !value)} aria-label="search engine" aria-haspopup="menu" aria-expanded={open}>
+        <span>{selectedEngine.name}</span>
+        <ChevronDown size={16} />
+      </button>
+      {open && (
+        <div className="engine-menu" role="menu">
+          {options.map((engine) => (
+            <button
+              className={clsx("engine-option", engine.id === selectedEngine.id && "active")}
+              key={engine.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={engine.id === selectedEngine.id}
+              onClick={() => {
+                onChange(engine.id);
+                setOpen(false);
+              }}
+            >
+              <span>{engine.name}</span>
+              {engine.id === selectedEngine.id && <Check size={15} />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

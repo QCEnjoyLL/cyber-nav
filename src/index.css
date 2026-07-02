@@ -450,8 +450,60 @@ a {
 .search-box {
   grid-column: 2;
   width: 100%;
-  min-height: 38px;
-  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.08), 0 16px 40px rgba(0, 0, 0, 0.16);
+  min-height: 48px;
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  padding: 5px 6px 5px 16px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 34%, var(--line));
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 11%, transparent), transparent 34%),
+    linear-gradient(315deg, color-mix(in srgb, var(--yellow) 9%, transparent), transparent 42%),
+    color-mix(in srgb, var(--panel-strong) 84%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 22px color-mix(in srgb, var(--cyan) 9%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 14%, transparent),
+    0 18px 48px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(18px) saturate(1.35);
+}
+
+.search-box::before,
+.search-box::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.search-box::before {
+  inset: 3px;
+  border-radius: 13px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 18px, color-mix(in srgb, var(--cyan) 12%, transparent) 18px 19px),
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--cyan) 16%, transparent), transparent);
+  opacity: 0.44;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.search-box::after {
+  inset: -1px;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, transparent 0 14px, var(--cyan) 14px 68px, transparent 68px calc(100% - 82px), var(--yellow) calc(100% - 82px) calc(100% - 22px), transparent calc(100% - 22px)),
+    linear-gradient(180deg, color-mix(in srgb, var(--cyan) 52%, transparent), transparent 40%);
+  opacity: 0.42;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+}
+
+.search-box > svg,
+.search-box input,
+.search-box .engine-select {
+  position: relative;
+  z-index: 1;
 }
 
 .topbar .top-actions {
@@ -488,10 +540,154 @@ a {
   padding: 0;
 }
 
+.search-box > svg {
+  color: color-mix(in srgb, var(--cyan) 72%, var(--text));
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--cyan) 48%, transparent));
+}
+
+.search-box input {
+  min-height: 36px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.search-box input::placeholder {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+}
+
 .search-box select,
 .admin-form select {
   color: var(--text);
   background: var(--bg-soft);
+}
+
+.engine-select {
+  position: relative;
+  min-width: 136px;
+}
+
+.engine-trigger {
+  width: 100%;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 0 14px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 30%, var(--line));
+  border-radius: 14px;
+  color: var(--text);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 44%),
+    color-mix(in srgb, var(--panel-strong) 78%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 8%, transparent);
+  backdrop-filter: blur(16px) saturate(1.35);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.engine-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  text-align: left;
+}
+
+.engine-trigger svg {
+  color: color-mix(in srgb, var(--cyan) 78%, var(--text));
+  transition: transform 150ms ease;
+}
+
+.engine-trigger:hover,
+.engine-trigger[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--cyan) 70%, var(--line));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 18%, transparent), transparent 42%),
+    color-mix(in srgb, var(--panel-strong) 88%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 22%, transparent),
+    0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.engine-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.engine-menu {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  z-index: 30;
+  width: max(158px, 100%);
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 28%, var(--line));
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 38%),
+    color-mix(in srgb, var(--panel-strong) 84%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 22px 54px rgba(0, 0, 0, 0.34),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 10%, transparent);
+  backdrop-filter: blur(22px) saturate(1.45);
+}
+
+.engine-option {
+  width: 100%;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+  font-weight: 800;
+}
+
+.engine-option:hover,
+.engine-option.active {
+  border-color: color-mix(in srgb, var(--cyan) 34%, transparent);
+  background: color-mix(in srgb, var(--cyan) 12%, transparent);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--yellow) 82%, var(--cyan));
+}
+
+.engine-option svg {
+  color: var(--yellow);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--yellow) 42%, transparent));
+}
+
+:root[data-theme="light"] .search-box {
+  border-color: color-mix(in srgb, var(--cyan) 28%, var(--line));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 34%),
+    linear-gradient(315deg, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 42%),
+    rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 0 22px color-mix(in srgb, var(--cyan) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 10%, transparent),
+    0 16px 36px rgba(31, 56, 64, 0.12);
+}
+
+:root[data-theme="light"] .engine-trigger,
+:root[data-theme="light"] .engine-menu {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 44%),
+    rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 8%, transparent),
+    0 14px 36px rgba(31, 56, 64, 0.12);
 }
 
 .top-actions,
@@ -1455,8 +1651,12 @@ a {
     width: 100%;
   }
 
-  .search-box select {
+  .engine-select {
     grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .engine-trigger {
     min-height: 38px;
   }
 

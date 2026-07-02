@@ -590,7 +590,15 @@ function PublicApp() {
 
   function scrollToSection(sectionId: string) {
     requestAnimationFrame(() => {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const container = directoryContentRef.current;
+      const target = document.getElementById(sectionId);
+      if (!container || !target) return;
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      container.scrollTo({
+        top: container.scrollTop + targetRect.top - containerRect.top,
+        behavior: "smooth",
+      });
     });
   }
 

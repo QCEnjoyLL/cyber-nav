@@ -23,6 +23,10 @@ test("mobile drawer opens", async ({ page }) => {
 
   await page.getByLabel("menu").click();
   await expect(page.locator(".sidebar")).toHaveClass(/sidebar-open/);
+  await page.locator(".sidebar .category-button").filter({ hasText: "开发" }).click();
+  await expect(page.locator(".sidebar")).not.toHaveClass(/sidebar-open/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.getByLabel("收藏")).toBeVisible();
 });
 
 test("admin login screen renders", async ({ page }) => {

@@ -229,3 +229,61 @@ test("admin create update and delete show explicit feedback", async ({ page }) =
   expect(confirmed).toBe(true);
   expect(deleted).toBe(true);
 });
+
+test("admin mobile layout scrolls and keeps the form usable", async ({ page }) => {
+  const links = Array.from({ length: 12 }, (_, index) => ({
+    id: `mobile-link-${index + 1}`,
+    categoryId: "tools",
+    title: `Mobile Site ${index + 1}`,
+    descriptionZh: "",
+    descriptionEn: "",
+    url: `https://example.com/mobile-${index + 1}`,
+    iconUrl: "",
+    tags: ["mobile"],
+    isPinned: false,
+    isFavorite: false,
+    isActive: true,
+    sortOrder: index + 1,
+  }));
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route("**/api/admin/session", (route) => route.fulfill({ json: { ok: true } }));
+  await page.route("**/api/admin/bootstrap", (route) =>
+    route.fulfill({
+      json: {
+        settings: {
+          titleZh: "Orange Nav",
+          titleEn: "Orange Nav",
+          subtitleZh: "Navigation",
+          subtitleEn: "Navigation",
+          defaultLocale: "zh",
+          defaultTheme: "system",
+          backgroundStyle: "soft-circuit",
+        },
+        categories: [{ id: "tools", nameZh: "Tools", nameEn: "Tools", icon: "Wrench", color: "#00f5ff", sortOrder: 20, isActive: true }],
+        links,
+        searchEngines: [
+          {
+            id: "bing",
+            name: "Bing",
+            shortcut: "b",
+            urlTemplate: "https://www.bing.com/search?q={query}",
+            isDefault: true,
+            isActive: true,
+            sortOrder: 10,
+          },
+        ],
+      },
+    }),
+  );
+
+  await page.goto("/admin");
+  await page.waitForSelector(".admin-list-row");
+  await expect.poll(() => page.locator(".admin-shell").evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+  await page.locator(".admin-shell").evaluate((element) => {
+    element.scrollTop = 520;
+  });
+  await expect.poll(() => page.locator(".admin-shell").evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await page.locator('input[placeholder="偏爱一丛花"]').fill("Mobile Editable Site");
+  await expect(page.locator('input[placeholder="偏爱一丛花"]')).toHaveValue("Mobile Editable Site");
+});

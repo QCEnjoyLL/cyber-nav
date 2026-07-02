@@ -32,7 +32,7 @@ import { useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
 import type { BootstrapData, Category, Locale, NavLink, SearchEngine, SiteSettings, ThemeMode } from "./types";
-import { buildSearchUrl, collectTags, filterLinks, normalizeUrl } from "./utils/navigation";
+import { buildSearchUrl, filterLinks, normalizeUrl } from "./utils/navigation";
 
 const iconMap: Record<string, LucideIcon> = {
   Bot,
@@ -170,7 +170,6 @@ function PublicApp() {
   const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", defaultBootstrap.settings.defaultTheme);
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState("all");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [favorites, setFavorites] = useStoredSet("cyber-nav-favorites");
   const [engineId, setEngineId] = useState("baidu");
@@ -213,7 +212,6 @@ function PublicApp() {
   const activeCategories = data.categories.filter((category) => category.isActive);
   const activeEngines = data.searchEngines.filter((engine) => engine.isActive);
   const selectedEngine = activeEngines.find((engine) => engine.id === engineId) ?? activeEngines[0] ?? defaultBootstrap.searchEngines[0];
-  const tags = useMemo(() => collectTags(data.links.filter((link) => link.isActive)), [data.links]);
   const visibleLinks = useMemo(
     () =>
       filterLinks(
@@ -221,16 +219,29 @@ function PublicApp() {
         {
           categoryId,
           query,
-          tags: selectedTags,
+          tags: [],
           favorites,
           favoriteOnly,
         },
         locale,
       ),
-    [categoryId, data.links, favoriteOnly, favorites, locale, query, selectedTags],
+    [categoryId, data.links, favoriteOnly, favorites, locale, query],
   );
   const siteTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
-  const siteSubtitle = locale === "zh" ? data.settings.subtitleZh : data.settings.subtitleEn;
+  const commonLinks = useMemo(
+    () => visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)),
+    [favorites, visibleLinks],
+  );
+  const commonLinkIds = useMemo(() => new Set(commonLinks.map((link) => link.id)), [commonLinks]);
+  const groupedSections = useMemo(() => {
+    const categories = categoryId === "all" ? activeCategories : activeCategories.filter((category) => category.id === categoryId);
+    return categories
+      .map((category) => ({
+        category,
+        links: visibleLinks.filter((link) => link.categoryId === category.id && (categoryId !== "all" || !commonLinkIds.has(link.id))),
+      }))
+      .filter((section) => section.links.length > 0);
+  }, [activeCategories, categoryId, commonLinkIds, visibleLinks]);
 
   function runSearch() {
     const trimmed = query.trim();
@@ -244,10 +255,6 @@ function PublicApp() {
     crypto.getRandomValues(bytes);
     const link = visibleLinks[bytes[0] % visibleLinks.length];
     window.open(link.url, "_blank", "noopener,noreferrer");
-  }
-
-  function toggleTag(tag: string) {
-    setSelectedTags((current) => (current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]));
   }
 
   function toggleFavorite(id: string) {
@@ -270,6 +277,7 @@ function PublicApp() {
             <span>{locale === "zh" ? "个人导航系统" : "Personal nav system"}</span>
           </div>
         </div>
+        <div className="sidebar-label">{t.categories}</div>
         <nav className="category-list" aria-label={t.categories}>
           <button className={clsx("category-button", categoryId === "all" && "active")} onClick={() => setCategoryId("all")}>
             <LayoutDashboard size={18} />
@@ -326,6 +334,12 @@ function PublicApp() {
             </select>
           </div>
           <div className="top-actions">
+            <button className={clsx("icon-button", favoriteOnly && "active")} onClick={() => setFavoriteOnly((value) => !value)} aria-label={t.favoriteOnly}>
+              <Star size={18} />
+            </button>
+            <button className="icon-button" onClick={openRandom} aria-label={t.openRandom}>
+              <Shuffle size={18} />
+            </button>
             <button className="icon-button" onClick={() => setCommandOpen(true)} aria-label={t.command}>
               <Command size={18} />
             </button>
@@ -336,73 +350,36 @@ function PublicApp() {
           </div>
         </header>
 
-        <section className="hero-band">
-          <div>
-            <span className="kicker">CYBER NAV // 2077</span>
-            <h1>{siteTitle}</h1>
-            <p>{siteSubtitle}</p>
-          </div>
-          <div className="system-metrics" aria-label="metrics">
-            <span>{visibleLinks.length.toString().padStart(2, "0")}</span>
-            <small>{t.links}</small>
-          </div>
-        </section>
-
-        <section className="tool-row" aria-label="filters">
-          <div className="inline-filter">
-            <Search size={16} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.filterPlaceholder} />
-          </div>
-          <button className={clsx("tool-button", favoriteOnly && "active")} onClick={() => setFavoriteOnly((value) => !value)}>
-            <Star size={16} />
-            {t.favoriteOnly}
-          </button>
-          <button className="tool-button" onClick={openRandom}>
-            <Shuffle size={16} />
-            {t.openRandom}
-          </button>
-        </section>
-
-        <section className="tag-rail" aria-label={t.tags}>
-          {tags.map((tag) => (
-            <button className={clsx("tag", selectedTags.includes(tag) && "active")} key={tag} onClick={() => toggleTag(tag)}>
-              {tag}
-            </button>
-          ))}
-        </section>
-
-        <section className="link-grid" aria-label={t.links}>
-          {visibleLinks.map((link) => {
-            const category = activeCategories.find((item) => item.id === link.categoryId);
-            const Icon = iconMap[category?.icon ?? "Globe2"] ?? Globe2;
-            const isFavorite = favorites.has(link.id) || link.isFavorite;
+        <div className="directory-content">
+          <h1 className="sr-only">{siteTitle}</h1>
+          {categoryId === "all" && commonLinks.length > 0 && (
+            <DirectorySection
+              title={locale === "zh" ? "我的常用" : "Favorites"}
+              icon={<Sparkles size={24} />}
+              links={commonLinks}
+              categories={activeCategories}
+              locale={locale}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+            />
+          )}
+          {groupedSections.map(({ category, links }) => {
+            const Icon = iconMap[category.icon] ?? Folder;
             return (
-              <article className={clsx("link-card", link.isPinned && "pinned")} key={link.id}>
-                <div className="link-card-top">
-                  <span className="link-icon" style={{ color: category?.color ?? "#00f5ff" }}>
-                    {link.iconUrl ? <img src={link.iconUrl} alt="" /> : <Icon size={22} />}
-                  </span>
-                  <button className={clsx("star-button", isFavorite && "active")} onClick={() => toggleFavorite(link.id)} aria-label="favorite">
-                    <Star size={17} />
-                  </button>
-                </div>
-                <h2>{link.title}</h2>
-                <p>{locale === "zh" ? link.descriptionZh : link.descriptionEn || link.descriptionZh}</p>
-                <div className="card-tags">
-                  {link.isPinned && <span>{t.pinned}</span>}
-                  {link.tags.slice(0, 3).map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-                <a href={link.url} target="_blank" rel="noreferrer" className="open-link">
-                  <ExternalLink size={16} />
-                  {new URL(link.url).hostname.replace(/^www\./, "")}
-                </a>
-              </article>
+              <DirectorySection
+                key={category.id}
+                title={locale === "zh" ? category.nameZh : category.nameEn}
+                icon={<Icon size={24} style={{ color: category.color }} />}
+                links={links}
+                categories={activeCategories}
+                locale={locale}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+              />
             );
           })}
           {visibleLinks.length === 0 && <div className="empty-state">{t.noResult}</div>}
-        </section>
+        </div>
       </main>
 
       {sidebarOpen && <button className="scrim" aria-label="close" onClick={() => setSidebarOpen(false)} />}
@@ -418,6 +395,58 @@ function PublicApp() {
         />
       )}
     </div>
+  );
+}
+
+function DirectorySection({
+  title,
+  icon,
+  links,
+  categories,
+  locale,
+  favorites,
+  onToggleFavorite,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  links: NavLink[];
+  categories: Category[];
+  locale: Locale;
+  favorites: Set<string>;
+  onToggleFavorite: (id: string) => void;
+}) {
+  return (
+    <section className="directory-section">
+      <h2>
+        {icon}
+        <span>{title}</span>
+      </h2>
+      <div className="directory-grid">
+        {links.map((link) => {
+          const category = categories.find((item) => item.id === link.categoryId);
+          const Icon = iconMap[category?.icon ?? "Globe2"] ?? Globe2;
+          const description = locale === "zh" ? link.descriptionZh : link.descriptionEn || link.descriptionZh;
+          const isFavorite = favorites.has(link.id) || link.isFavorite;
+          return (
+            <article className="directory-card" key={`${title}-${link.id}`}>
+              <a href={link.url} target="_blank" rel="noreferrer" className="directory-card-main">
+                <span className="directory-icon" style={{ color: category?.color ?? "#00f5ff" }}>
+                  {link.iconUrl ? <img src={link.iconUrl} alt="" /> : <Icon size={24} />}
+                </span>
+                <span className="directory-copy">
+                  <h3>{link.title}</h3>
+                  <small>{description}</small>
+                </span>
+                <ExternalLink className="directory-open" size={15} />
+              </a>
+              <button className={clsx("star-button", isFavorite && "active")} onClick={() => onToggleFavorite(link.id)} aria-label="favorite">
+                <Star size={15} />
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

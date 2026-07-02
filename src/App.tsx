@@ -995,7 +995,7 @@ function AdminApp() {
 
   async function logout() {
     await apiJson("/api/auth/logout", "POST", {});
-    setSession("anonymous");
+    window.location.assign("/");
   }
 
   async function createCategory() {

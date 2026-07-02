@@ -230,6 +230,63 @@ test("admin create update and delete show explicit feedback", async ({ page }) =
   expect(deleted).toBe(true);
 });
 
+test("admin logout returns to the home page", async ({ page }) => {
+  const bootstrap = {
+    settings: {
+      titleZh: "橙子导航",
+      titleEn: "Orange Nav",
+      subtitleZh: "Navigation",
+      subtitleEn: "Navigation",
+      defaultLocale: "zh",
+      defaultTheme: "system",
+      backgroundStyle: "soft-circuit",
+    },
+    categories: [{ id: "tools", nameZh: "Tools", nameEn: "Tools", icon: "Wrench", color: "#00f5ff", sortOrder: 20, isActive: true }],
+    links: [
+      {
+        id: "link-1",
+        categoryId: "tools",
+        title: "Site 1",
+        descriptionZh: "",
+        descriptionEn: "",
+        url: "https://example.com/1",
+        iconUrl: "",
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        isActive: true,
+        sortOrder: 1,
+      },
+    ],
+    searchEngines: [
+      {
+        id: "bing",
+        name: "Bing",
+        shortcut: "b",
+        urlTemplate: "https://www.bing.com/search?q={query}",
+        isDefault: true,
+        isActive: true,
+        sortOrder: 10,
+      },
+    ],
+  };
+  let loggedOut = false;
+
+  await page.route("**/api/admin/session", (route) => route.fulfill({ json: { ok: true } }));
+  await page.route("**/api/admin/bootstrap", (route) => route.fulfill({ json: bootstrap }));
+  await page.route("**/api/public/bootstrap", (route) => route.fulfill({ json: bootstrap }));
+  await page.route("**/api/auth/logout", (route) => {
+    loggedOut = route.request().method() === "POST";
+    return route.fulfill({ json: { ok: true } });
+  });
+
+  await page.goto("/admin");
+  await page.getByRole("button", { name: "退出登录" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "橙子导航" })).toBeVisible();
+  expect(loggedOut).toBe(true);
+});
+
 test("admin mobile layout scrolls and keeps the form usable", async ({ page }) => {
   const links = Array.from({ length: 12 }, (_, index) => ({
     id: `mobile-link-${index + 1}`,

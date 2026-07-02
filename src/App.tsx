@@ -1,4 +1,5 @@
 import {
+  Bell,
   Bot,
   Check,
   ChevronDown,
@@ -16,6 +17,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  Navigation,
   Network,
   Plus,
   Rocket,
@@ -32,7 +34,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
 import type { BootstrapData, Category, Locale, NavLink, SearchEngine, SiteSettings, ThemeMode } from "./types";
@@ -213,6 +215,10 @@ function parseSelectionKey(key: string): NavSelection {
   return { type: "all" };
 }
 
+function getNextTheme(theme: ThemeMode): ThemeMode {
+  return theme === "system" ? "dark" : theme === "dark" ? "light" : "system";
+}
+
 function getLinkSubcategory(link: NavLink, category: Category): string | null {
   const [scope, subcategory] = link.tags;
   if (!subcategory) return null;
@@ -298,6 +304,8 @@ function PublicApp() {
   const [engineId, setEngineId] = useState("baidu");
   const [commandOpen, setCommandOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const directoryContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void fetch("/api/public/bootstrap")
@@ -397,6 +405,15 @@ function PublicApp() {
     });
   }
 
+  function scrollDirectoryTop() {
+    directoryContentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function focusSearch() {
+    searchInputRef.current?.focus();
+    searchInputRef.current?.select();
+  }
+
   return (
     <div className="app-shell">
       <div className="noise-layer" />
@@ -472,6 +489,7 @@ function PublicApp() {
           <div className="search-box">
             <Search size={19} />
             <input
+              ref={searchInputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
@@ -504,7 +522,7 @@ function PublicApp() {
           </div>
         </header>
 
-        <div className="directory-content">
+        <div className="directory-content" ref={directoryContentRef}>
           <h1 className="sr-only">{siteTitle}</h1>
           {selectedNav.type === "all" && commonLinks.length > 0 && (
             <DirectorySection
@@ -530,6 +548,20 @@ function PublicApp() {
             />
           ))}
           {visibleLinks.length === 0 && <div className="empty-state">{t.noResult}</div>}
+        </div>
+        <div className="floating-actions" aria-label="quick actions">
+          <button className="floating-action-button" onClick={scrollDirectoryTop} title="回到顶部" aria-label="回到顶部">
+            <Navigation size={22} />
+          </button>
+          <button className="floating-action-button" onClick={focusSearch} title="搜索" aria-label="搜索">
+            <Search size={22} />
+          </button>
+          <button className="floating-action-button" onClick={() => setCommandOpen(true)} title={t.command} aria-label={t.command}>
+            <Bell size={22} />
+          </button>
+          <button className="floating-action-button" onClick={() => setTheme(getNextTheme(theme))} title="切换主题" aria-label="切换主题">
+            <Moon size={22} />
+          </button>
         </div>
       </main>
 

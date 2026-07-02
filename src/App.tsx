@@ -1,4 +1,6 @@
 import {
+  ArrowDown,
+  ArrowUp,
   Bell,
   Archive,
   BookOpen,
@@ -1076,6 +1078,17 @@ function AdminApp() {
     notify("重排成功");
   }
 
+  async function reorderLinkTags(categoryId: string | null, tags: string[]) {
+    const next = await apiJson<BootstrapData>("/api/admin/links/reorder", "POST", { categoryId, tags });
+    cacheBootstrap(next);
+    setData(next);
+    setLinkForm((current) => {
+      const updatedLink = next.links.find((link) => link.id === current.id);
+      return updatedLink ?? current;
+    });
+    notify("标签顺序已保存");
+  }
+
   if (session === "checking" || (session === "authenticated" && !data)) {
     return (
       <div className="center-screen cute-loading-screen">
@@ -1189,6 +1202,7 @@ function AdminApp() {
             <AdminLinkGroups
               links={adminData.links}
               categories={adminData.categories}
+              onReorderTags={(categoryId, tags) => void reorderLinkTags(categoryId, tags)}
               onEdit={(link) => {
                 setEditingLink(link.id);
                 setLinkForm(link);
@@ -2034,42 +2048,94 @@ function SettingsForm({
   );
 }
 
+function buildAdminLinkTagGroups(groupLinks: NavLink[], category?: Category) {
+  const tagMap = new Map<string, NavLink[]>();
+  for (const link of groupLinks) {
+    const tag = getAdminLinkTagGroup(link, category);
+    tagMap.set(tag, [...(tagMap.get(tag) ?? []), link]);
+  }
+  return Array.from(tagMap, ([tag, tagLinks]) => ({ tag, links: tagLinks })).sort((a, b) => {
+    if (a.tag === "其他") return 1;
+    if (b.tag === "其他") return -1;
+    const sortDelta = Math.min(...a.links.map((link) => link.sortOrder)) - Math.min(...b.links.map((link) => link.sortOrder));
+    return sortDelta || a.tag.localeCompare(b.tag, "zh-Hans-CN");
+  });
+}
+
+function AdminTagOrder({
+  categoryId,
+  color,
+  tagGroups,
+  onReorderTags,
+}: {
+  categoryId: string | null;
+  color: string;
+  tagGroups: Array<{ tag: string; links: NavLink[] }>;
+  onReorderTags: (categoryId: string | null, tags: string[]) => void;
+}) {
+  const tags = tagGroups.map((group) => group.tag);
+  if (tags.length < 2) return null;
+
+  const moveTag = (index: number, direction: -1 | 1) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= tags.length) return;
+    const nextTags = [...tags];
+    [nextTags[index], nextTags[nextIndex]] = [nextTags[nextIndex], nextTags[index]];
+    onReorderTags(categoryId, nextTags);
+  };
+
+  return (
+    <div className="admin-tag-order" style={{ "--group-color": color } as React.CSSProperties}>
+      <div className="admin-tag-order-title">
+        <strong>标签顺序</strong>
+        <span>点击上移/下移调整当前分类下的标签展示顺序</span>
+      </div>
+      <div className="admin-tag-order-list">
+        {tagGroups.map((group, index) => (
+          <div className="admin-tag-order-item" key={group.tag}>
+            <span className="admin-tag-order-rank">{index + 1}#</span>
+            <strong>{group.tag}</strong>
+            <em>{group.links.length}</em>
+            <div className="admin-tag-order-actions">
+              <button className="icon-button" type="button" onClick={() => moveTag(index, -1)} disabled={index === 0} aria-label={`${group.tag} 上移`} title="上移">
+                <ArrowUp size={15} />
+              </button>
+              <button className="icon-button" type="button" onClick={() => moveTag(index, 1)} disabled={index === tags.length - 1} aria-label={`${group.tag} 下移`} title="下移">
+                <ArrowDown size={15} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AdminLinkGroups({
   links,
   categories,
+  onReorderTags,
   onEdit,
   onDelete,
 }: {
   links: NavLink[];
   categories: Category[];
+  onReorderTags: (categoryId: string | null, tags: string[]) => void;
   onEdit: (link: NavLink) => void;
   onDelete: (link: NavLink) => void;
 }) {
   const sortedLinks = [...links].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
-  const createTagGroups = (groupLinks: NavLink[], category?: Category) => {
-    const tagMap = new Map<string, NavLink[]>();
-    for (const link of groupLinks) {
-      const tag = getAdminLinkTagGroup(link, category);
-      tagMap.set(tag, [...(tagMap.get(tag) ?? []), link]);
-    }
-    return Array.from(tagMap, ([tag, tagLinks]) => ({ tag, links: tagLinks })).sort((a, b) => {
-      if (a.tag === "其他") return 1;
-      if (b.tag === "其他") return -1;
-      const sortDelta = Math.min(...a.links.map((link) => link.sortOrder)) - Math.min(...b.links.map((link) => link.sortOrder));
-      return sortDelta || a.tag.localeCompare(b.tag, "zh-Hans-CN");
-    });
-  };
   const groups = [
     {
-      id: "",
+      id: null,
       title: "未分类",
       detail: "未设置所属分类",
       color: "var(--cyan)",
       icon: "Folder",
       sortOrder: -1,
       links: sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId)),
-      tagGroups: createTagGroups(sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId))),
+      tagGroups: buildAdminLinkTagGroups(sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId))),
     },
     ...[...categories]
       .sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh))
@@ -2083,7 +2149,7 @@ function AdminLinkGroups({
           icon: category.icon,
           sortOrder: category.sortOrder,
           links: categoryLinks,
-          tagGroups: createTagGroups(categoryLinks, category),
+          tagGroups: buildAdminLinkTagGroups(categoryLinks, category),
         };
       }),
   ].filter((group) => group.links.length > 0);
@@ -2105,6 +2171,7 @@ function AdminLinkGroups({
                 </span>
               </div>
             </header>
+            <AdminTagOrder categoryId={group.id} color={group.color} tagGroups={group.tagGroups} onReorderTags={onReorderTags} />
             {group.tagGroups.map((tagGroup) => (
               <section className="admin-tag-group" key={`${group.id || "uncategorized"}:${tagGroup.tag}`}>
                 <header className="admin-tag-group-header">

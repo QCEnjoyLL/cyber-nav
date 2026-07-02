@@ -1,7 +1,7 @@
 import { defaultSettings } from "../data/defaults";
 import { normalizeBackgroundStyle } from "../theme/backgrounds";
 import type { BootstrapData, Category, NavLink, SearchEngine, SiteSettings } from "../types";
-import type { CategoryInput, ImportInput, LinkInput, SearchEngineInput, SettingsInput } from "./validation";
+import type { CategoryInput, ImportInput, LinkInput, ReorderLinksInput, SearchEngineInput, SettingsInput } from "./validation";
 
 type CategoryRow = {
   id: string;
@@ -185,19 +185,27 @@ export async function deleteLink(db: D1Database, id: string): Promise<void> {
   await db.prepare("DELETE FROM links WHERE id = ?").bind(id).run();
 }
 
-export async function reorderLinksByGroups(db: D1Database): Promise<BootstrapData> {
+export async function reorderLinksByGroups(db: D1Database, input: ReorderLinksInput = {}): Promise<BootstrapData> {
   const [categories, links] = await Promise.all([listCategories(db, true), listLinks(db, true)]);
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
   const sortedLinks = [...links].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
+  const targetCategoryId = Object.prototype.hasOwnProperty.call(input, "categoryId") ? (input.categoryId ?? null) : undefined;
   const categoryGroups = [
-    sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId)),
-    ...[...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh)).map((category) => sortedLinks.filter((link) => link.categoryId === category.id)),
-  ].filter((groupLinks) => groupLinks.length > 0);
+    {
+      categoryId: null,
+      category: undefined,
+      links: sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId)),
+    },
+    ...[...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh)).map((category) => ({
+      categoryId: category.id,
+      category,
+      links: sortedLinks.filter((link) => link.categoryId === category.id),
+    })),
+  ].filter((group) => group.links.length > 0 && (targetCategoryId === undefined || group.categoryId === targetCategoryId));
   const updates: D1PreparedStatement[] = [];
 
-  for (const categoryLinks of categoryGroups) {
-    const category = categoryMap.get(categoryLinks[0]?.categoryId ?? "");
-    const tagGroups = buildLinkTagGroups(categoryLinks, category);
+  for (const group of categoryGroups) {
+    const tagGroups = buildLinkTagGroups(group.links, group.category, input.tags);
     tagGroups.forEach((tagGroup, groupIndex) => {
       tagGroup.links.forEach((link, linkIndex) => {
         const nextSortOrder = (groupIndex + 1) * 1000 + linkIndex + 1;
@@ -345,13 +353,19 @@ function parseTags(value: string): string[] {
   }
 }
 
-function buildLinkTagGroups(links: NavLink[], category?: Category): Array<{ tag: string; links: NavLink[] }> {
+function buildLinkTagGroups(links: NavLink[], category?: Category, tagOrder: string[] = []): Array<{ tag: string; links: NavLink[] }> {
   const tagMap = new Map<string, NavLink[]>();
   for (const link of links) {
     const tag = getLinkTagGroup(link, category);
     tagMap.set(tag, [...(tagMap.get(tag) ?? []), link]);
   }
+  const orderedTags = new Map(tagOrder.map((tag, index) => [tag, index]));
   return Array.from(tagMap, ([tag, tagLinks]) => ({ tag, links: tagLinks })).sort((a, b) => {
+    const aOrder = orderedTags.get(a.tag);
+    const bOrder = orderedTags.get(b.tag);
+    if (aOrder !== undefined || bOrder !== undefined) {
+      return (aOrder ?? Number.MAX_SAFE_INTEGER) - (bOrder ?? Number.MAX_SAFE_INTEGER);
+    }
     if (a.tag === "其他") return 1;
     if (b.tag === "其他") return -1;
     const sortDelta = Math.min(...a.links.map((link) => link.sortOrder)) - Math.min(...b.links.map((link) => link.sortOrder));

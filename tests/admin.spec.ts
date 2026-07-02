@@ -9,46 +9,57 @@ test("admin list scrolls independently and category icon can be picked", async (
     descriptionEn: "Scroll check",
     url: `https://example.com/${index + 1}`,
     iconUrl: "",
-    tags: ["test"],
+    tags: [index % 4 < 2 ? "test" : "notes"],
     isPinned: false,
     isFavorite: false,
     isActive: true,
     sortOrder: index + 1,
   }));
+  const adminPayload = {
+    settings: {
+      titleZh: "Orange Nav",
+      titleEn: "Orange Nav",
+      subtitleZh: "Navigation",
+      subtitleEn: "Navigation",
+      defaultLocale: "zh",
+      defaultTheme: "system",
+      backgroundStyle: "soft-circuit",
+    },
+    categories: [
+      { id: "media", nameZh: "Media", nameEn: "Media", icon: "Film", color: "#fcee0a", sortOrder: 10, isActive: true },
+      { id: "tools", nameZh: "Tools", nameEn: "Tools", icon: "Wrench", color: "#00f5ff", sortOrder: 20, isActive: true },
+    ],
+    links,
+    searchEngines: [
+      {
+        id: "bing",
+        name: "Bing",
+        shortcut: "b",
+        urlTemplate: "https://www.bing.com/search?q={query}",
+        isDefault: true,
+        isActive: true,
+        sortOrder: 10,
+      },
+    ],
+  };
+  let tagReorderBody: { categoryId: string | null; tags: string[] } | null = null;
 
   await page.setViewportSize({ width: 1440, height: 920 });
   await page.route("**/api/admin/session", (route) => route.fulfill({ json: { ok: true } }));
-  await page.route("**/api/admin/bootstrap", (route) =>
-    route.fulfill({
+  await page.route("**/api/admin/bootstrap", (route) => route.fulfill({ json: adminPayload }));
+  await page.route("**/api/admin/links/reorder", async (route) => {
+    tagReorderBody = await route.request().postDataJSON();
+    await route.fulfill({
       json: {
-        settings: {
-          titleZh: "Orange Nav",
-          titleEn: "Orange Nav",
-          subtitleZh: "Navigation",
-          subtitleEn: "Navigation",
-          defaultLocale: "zh",
-          defaultTheme: "system",
-          backgroundStyle: "soft-circuit",
-        },
-        categories: [
-          { id: "media", nameZh: "Media", nameEn: "Media", icon: "Film", color: "#fcee0a", sortOrder: 10, isActive: true },
-          { id: "tools", nameZh: "Tools", nameEn: "Tools", icon: "Wrench", color: "#00f5ff", sortOrder: 20, isActive: true },
-        ],
-        links,
-        searchEngines: [
-          {
-            id: "bing",
-            name: "Bing",
-            shortcut: "b",
-            urlTemplate: "https://www.bing.com/search?q={query}",
-            isDefault: true,
-            isActive: true,
-            sortOrder: 10,
-          },
-        ],
+        ...adminPayload,
+        links: links.map((link) => {
+          if (link.categoryId !== tagReorderBody?.categoryId) return link;
+          const tagIndex = tagReorderBody.tags.indexOf(link.tags[0]);
+          return { ...link, sortOrder: (tagIndex + 1) * 1000 + link.sortOrder };
+        }),
       },
-    }),
-  );
+    });
+  });
 
   await page.goto("/admin");
   await page.waitForSelector(".admin-list-row");
@@ -61,6 +72,9 @@ test("admin list scrolls independently and category icon can be picked", async (
   await expect(page.locator(".admin-link-group-header").filter({ hasText: "Media" })).toBeVisible();
   await expect(page.locator(".admin-link-group-header").filter({ hasText: "Tools" })).toBeVisible();
   await expect(page.locator(".admin-tag-group-header").filter({ hasText: "test" }).first()).toBeVisible();
+  await page.getByLabel("notes 上移").first().click();
+  await expect(page.locator(".form-message")).toContainText("标签顺序已保存");
+  expect(tagReorderBody).toEqual({ categoryId: "media", tags: ["notes", "test"] });
   const categorySelect = page.locator(".admin-field").filter({ hasText: "所属分类" }).locator(".admin-select-trigger");
   await categorySelect.click();
   await expect(page.locator(".admin-select-menu")).toBeVisible();

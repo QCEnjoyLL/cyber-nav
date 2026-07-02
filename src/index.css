@@ -2248,6 +2248,100 @@ a {
   margin-bottom: 18px;
 }
 
+.admin-tag-order {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--group-color, var(--cyan)) 28%, var(--line));
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--group-color, var(--cyan)) 12%, transparent), transparent 58%),
+    color-mix(in srgb, var(--panel-strong) 66%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.admin-tag-order-title {
+  display: grid;
+  gap: 3px;
+  min-width: 132px;
+}
+
+.admin-tag-order-title strong {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.admin-tag-order-title span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.admin-tag-order-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-tag-order-item {
+  min-height: 38px;
+  display: inline-grid;
+  grid-template-columns: auto auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 5px 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--group-color, var(--cyan)) 24%, var(--line));
+  border-radius: 999px;
+  color: var(--text);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--group-color, var(--cyan)) 12%, transparent), transparent),
+    color-mix(in srgb, var(--field-bg) 72%, transparent);
+}
+
+.admin-tag-order-rank {
+  color: var(--group-color, var(--cyan));
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.admin-tag-order-item strong {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+}
+
+.admin-tag-order-item em {
+  min-width: 22px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+}
+
+.admin-tag-order-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.admin-tag-order-actions .icon-button {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+}
+
+.admin-tag-order-actions .icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.36;
+  box-shadow: none;
+}
+
 .admin-tag-group:last-child {
   margin-bottom: 0;
 }
@@ -2370,6 +2464,10 @@ a {
 }
 
 @media (max-width: 720px) {
+  .admin-tag-order {
+    grid-template-columns: 1fr;
+  }
+
   .admin-link-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

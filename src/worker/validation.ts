@@ -67,8 +67,14 @@ export const importSchema = z.object({
   searchEngines: z.array(searchEngineSchema.required({ id: true })).optional(),
 });
 
+export const reorderLinksSchema = z.object({
+  categoryId: z.string().trim().max(96).nullable().optional(),
+  tags: z.array(z.string().trim().min(1).max(32)).max(64).optional(),
+});
+
 export type CategoryInput = z.infer<typeof categorySchema>;
 export type LinkInput = z.infer<typeof linkSchema>;
 export type SearchEngineInput = z.infer<typeof searchEngineSchema>;
 export type SettingsInput = z.infer<typeof settingsSchema>;
 export type ImportInput = z.infer<typeof importSchema>;
+export type ReorderLinksInput = z.infer<typeof reorderLinksSchema>;

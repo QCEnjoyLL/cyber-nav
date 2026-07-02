@@ -1,6 +1,7 @@
 import {
   Bot,
   Check,
+  ChevronDown,
   Cloud,
   Command,
   Database,
@@ -165,6 +166,122 @@ const emptyEngine: SearchEngine = {
   sortOrder: 100,
 };
 
+type CategoryNode = {
+  category: Category;
+  links: NavLink[];
+  subcategories: SubcategoryNode[];
+};
+
+type SubcategoryNode = {
+  id: string;
+  title: string;
+  links: NavLink[];
+};
+
+type DirectorySectionData = {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  links: NavLink[];
+};
+
+type NavSelection =
+  | { type: "all" }
+  | { type: "category"; categoryId: string }
+  | { type: "subcategory"; categoryId: string; subcategory: string };
+
+function categorySelectionKey(categoryId: string): string {
+  return `category:${categoryId}`;
+}
+
+function subcategorySelectionPrefix(categoryId: string): string {
+  return `subcategory:${categoryId}`;
+}
+
+function subcategorySelectionKey(categoryId: string, subcategory: string): string {
+  return `${subcategorySelectionPrefix(categoryId)}:${encodeURIComponent(subcategory)}`;
+}
+
+function parseSelectionKey(key: string): NavSelection {
+  if (key.startsWith("category:")) {
+    return { type: "category", categoryId: key.slice("category:".length) };
+  }
+  if (key.startsWith("subcategory:")) {
+    const [, categoryId = "", encodedSubcategory = ""] = key.split(":");
+    return { type: "subcategory", categoryId, subcategory: decodeURIComponent(encodedSubcategory) };
+  }
+  return { type: "all" };
+}
+
+function getLinkSubcategory(link: NavLink, category: Category): string | null {
+  const [scope, subcategory] = link.tags;
+  if (!subcategory) return null;
+  if (scope === category.nameZh || scope === category.nameEn || scope === category.id) return subcategory;
+  return null;
+}
+
+function buildCategoryNodes(categories: Category[], links: NavLink[]): CategoryNode[] {
+  return categories.map((category) => {
+    const categoryLinks = links.filter((link) => link.categoryId === category.id);
+    const subcategoryMap = new Map<string, NavLink[]>();
+    for (const link of categoryLinks) {
+      const subcategory = getLinkSubcategory(link, category);
+      if (!subcategory) continue;
+      subcategoryMap.set(subcategory, [...(subcategoryMap.get(subcategory) ?? []), link]);
+    }
+    return {
+      category,
+      links: categoryLinks,
+      subcategories: Array.from(subcategoryMap, ([title, subcategoryLinks]) => ({
+        id: title,
+        title,
+        links: subcategoryLinks,
+      })),
+    };
+  });
+}
+
+function filterLinksBySelection(links: NavLink[], categories: Category[], selection: NavSelection): NavLink[] {
+  if (selection.type === "all") return links;
+  if (selection.type === "category") return links.filter((link) => link.categoryId === selection.categoryId);
+  const category = categories.find((item) => item.id === selection.categoryId);
+  if (!category) return [];
+  return links.filter((link) => link.categoryId === selection.categoryId && getLinkSubcategory(link, category) === selection.subcategory);
+}
+
+function buildDirectorySections(categories: Category[], links: NavLink[], selection: NavSelection, locale: Locale): DirectorySectionData[] {
+  const nodes = buildCategoryNodes(categories, links);
+  const sections: DirectorySectionData[] = [];
+  for (const node of nodes) {
+    if (selection.type === "category" && node.category.id !== selection.categoryId) continue;
+    if (selection.type === "subcategory" && node.category.id !== selection.categoryId) continue;
+
+    const Icon = iconMap[node.category.icon] ?? Folder;
+    if (node.subcategories.length > 0) {
+      for (const subcategory of node.subcategories) {
+        if (selection.type === "subcategory" && subcategory.id !== selection.subcategory) continue;
+        if (subcategory.links.length === 0) continue;
+        sections.push({
+          id: `${node.category.id}:${subcategory.id}`,
+          title: subcategory.title,
+          icon: <Icon size={24} style={{ color: node.category.color }} />,
+          links: subcategory.links,
+        });
+      }
+      continue;
+    }
+
+    if (node.links.length === 0) continue;
+    sections.push({
+      id: node.category.id,
+      title: locale === "zh" ? node.category.nameZh : node.category.nameEn,
+      icon: <Icon size={24} style={{ color: node.category.color }} />,
+      links: node.links,
+    });
+  }
+  return sections;
+}
+
 export default function App() {
   const isAdmin = window.location.pathname.startsWith("/admin");
   return isAdmin ? <AdminApp /> : <PublicApp />;
@@ -175,7 +292,7 @@ function PublicApp() {
   const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", defaultBootstrap.settings.defaultLocale);
   const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", defaultBootstrap.settings.defaultTheme);
   const [query, setQuery] = useState("");
-  const [categoryId, setCategoryId] = useState("all");
+  const [selectionKey, setSelectionKey] = useState("all");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [favorites, setFavorites] = useStoredSet("cyber-nav-favorites");
   const [engineId, setEngineId] = useState("baidu");
@@ -218,12 +335,13 @@ function PublicApp() {
   const activeCategories = data.categories.filter((category) => category.isActive);
   const activeEngines = data.searchEngines.filter((engine) => engine.isActive);
   const selectedEngine = activeEngines.find((engine) => engine.id === engineId) ?? activeEngines[0] ?? defaultBootstrap.searchEngines[0];
-  const visibleLinks = useMemo(
+  const selectedNav = useMemo(() => parseSelectionKey(selectionKey), [selectionKey]);
+  const queryMatchedLinks = useMemo(
     () =>
       filterLinks(
         data.links,
         {
-          categoryId,
+          categoryId: "all",
           query,
           tags: [],
           favorites,
@@ -231,23 +349,26 @@ function PublicApp() {
         },
         locale,
       ),
-    [categoryId, data.links, favoriteOnly, favorites, locale, query],
+    [data.links, favoriteOnly, favorites, locale, query],
+  );
+  const sidebarNodes = useMemo(
+    () => buildCategoryNodes(activeCategories, data.links.filter((link) => link.isActive)),
+    [activeCategories, data.links],
+  );
+  const visibleLinks = useMemo(
+    () => filterLinksBySelection(queryMatchedLinks, activeCategories, selectedNav),
+    [activeCategories, queryMatchedLinks, selectedNav],
   );
   const siteTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
   const commonLinks = useMemo(
-    () => visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)),
-    [favorites, visibleLinks],
+    () => (selectedNav.type === "all" ? visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)) : []),
+    [favorites, selectedNav.type, visibleLinks],
   );
   const commonLinkIds = useMemo(() => new Set(commonLinks.map((link) => link.id)), [commonLinks]);
   const groupedSections = useMemo(() => {
-    const categories = categoryId === "all" ? activeCategories : activeCategories.filter((category) => category.id === categoryId);
-    return categories
-      .map((category) => ({
-        category,
-        links: visibleLinks.filter((link) => link.categoryId === category.id && (categoryId !== "all" || !commonLinkIds.has(link.id))),
-      }))
-      .filter((section) => section.links.length > 0);
-  }, [activeCategories, categoryId, commonLinkIds, visibleLinks]);
+    const sectionLinks = visibleLinks.filter((link) => selectedNav.type !== "all" || !commonLinkIds.has(link.id));
+    return buildDirectorySections(activeCategories, sectionLinks, selectedNav, locale);
+  }, [activeCategories, commonLinkIds, locale, selectedNav, visibleLinks]);
 
   function runSearch() {
     const trimmed = query.trim();
@@ -285,26 +406,49 @@ function PublicApp() {
         </div>
         <div className="sidebar-label">{t.categories}</div>
         <nav className="category-list" aria-label={t.categories}>
-          <button className={clsx("category-button", categoryId === "all" && "active")} onClick={() => setCategoryId("all")}>
+          <button className={clsx("category-button", selectionKey === "all" && "active")} onClick={() => setSelectionKey("all")}>
             <LayoutDashboard size={18} />
             <span>{t.all}</span>
             <em>{data.links.filter((link) => link.isActive).length}</em>
           </button>
-          {activeCategories.map((category) => {
+          {sidebarNodes.map(({ category, links, subcategories }) => {
             const Icon = iconMap[category.icon] ?? Folder;
+            const categoryKey = categorySelectionKey(category.id);
+            const expanded = subcategories.length > 0 && (selectionKey === categoryKey || selectionKey.startsWith(`${subcategorySelectionPrefix(category.id)}:`) || selectionKey === "all");
             return (
-              <button
-                className={clsx("category-button", categoryId === category.id && "active")}
-                key={category.id}
-                onClick={() => {
-                  setCategoryId(category.id);
-                  setSidebarOpen(false);
-                }}
-              >
-                <Icon size={18} style={{ color: category.color }} />
-                <span>{locale === "zh" ? category.nameZh : category.nameEn}</span>
-                <em>{data.links.filter((link) => link.isActive && link.categoryId === category.id).length}</em>
-              </button>
+              <div className={clsx("category-group", subcategories.length > 0 && "has-children")} key={category.id}>
+                <button
+                  className={clsx("category-button", selectionKey === categoryKey && "active")}
+                  onClick={() => {
+                    setSelectionKey(categoryKey);
+                    setSidebarOpen(false);
+                  }}
+                >
+                  <Icon size={18} style={{ color: category.color }} />
+                  <span>{locale === "zh" ? category.nameZh : category.nameEn}</span>
+                  {subcategories.length > 0 ? <ChevronDown className="category-chevron" size={15} /> : <em>{links.length}</em>}
+                </button>
+                {expanded && (
+                  <div className="subcategory-list">
+                    {subcategories.map((subcategory) => {
+                      const key = subcategorySelectionKey(category.id, subcategory.id);
+                      return (
+                        <button
+                          className={clsx("subcategory-button", selectionKey === key && "active")}
+                          key={key}
+                          onClick={() => {
+                            setSelectionKey(key);
+                            setSidebarOpen(false);
+                          }}
+                        >
+                          <span>{subcategory.title}</span>
+                          <em>{subcategory.links.length}</em>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
@@ -358,7 +502,7 @@ function PublicApp() {
 
         <div className="directory-content">
           <h1 className="sr-only">{siteTitle}</h1>
-          {categoryId === "all" && commonLinks.length > 0 && (
+          {selectedNav.type === "all" && commonLinks.length > 0 && (
             <DirectorySection
               title={locale === "zh" ? "我的常用" : "Favorites"}
               icon={<Sparkles size={24} />}
@@ -369,21 +513,18 @@ function PublicApp() {
               onToggleFavorite={toggleFavorite}
             />
           )}
-          {groupedSections.map(({ category, links }) => {
-            const Icon = iconMap[category.icon] ?? Folder;
-            return (
-              <DirectorySection
-                key={category.id}
-                title={locale === "zh" ? category.nameZh : category.nameEn}
-                icon={<Icon size={24} style={{ color: category.color }} />}
-                links={links}
-                categories={activeCategories}
-                locale={locale}
-                favorites={favorites}
-                onToggleFavorite={toggleFavorite}
-              />
-            );
-          })}
+          {groupedSections.map((section) => (
+            <DirectorySection
+              key={section.id}
+              title={section.title}
+              icon={section.icon}
+              links={section.links}
+              categories={activeCategories}
+              locale={locale}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
           {visibleLinks.length === 0 && <div className="empty-state">{t.noResult}</div>}
         </div>
       </main>

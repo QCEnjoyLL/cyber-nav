@@ -265,6 +265,9 @@ a {
 
 .sidebar .category-button svg {
   grid-column: auto;
+  display: block;
+  justify-self: center;
+  align-self: center;
 }
 
 .sidebar .category-button span {
@@ -1214,10 +1217,18 @@ a {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.link-icon svg,
+.directory-icon svg,
+.admin-link-group-icon svg {
+  display: block;
+  margin: auto;
+}
+
 .link-icon img {
   width: 24px;
   height: 24px;
   object-fit: contain;
+  display: block;
 }
 
 .star-button {
@@ -1351,6 +1362,7 @@ a {
   height: 48px;
   display: grid;
   place-items: center;
+  line-height: 0;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
 }
@@ -1363,6 +1375,7 @@ a {
   width: 30px;
   height: 30px;
   object-fit: contain;
+  display: block;
 }
 
 .directory-copy {
@@ -2430,8 +2443,9 @@ a {
   bottom: 10px;
   min-width: 34px;
   height: 24px;
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0 8px;
   border: 1px solid color-mix(in srgb, var(--cyan) 34%, var(--line));
   border-radius: 999px;
@@ -2442,6 +2456,8 @@ a {
   font-size: 0.78rem;
   font-weight: 900;
   line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--cyan) 8%, transparent);
 }
 

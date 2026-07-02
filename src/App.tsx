@@ -135,6 +135,8 @@ const text = {
   },
 } satisfies Record<Locale, Record<string, string>>;
 
+const BOOTSTRAP_CACHE_KEY = "cyber-nav-bootstrap";
+
 const emptyCategory: Category = {
   id: "",
   nameZh: "",
@@ -287,10 +289,69 @@ export default function App() {
   return isAdmin ? <AdminApp /> : <PublicApp />;
 }
 
+function BootstrapLoadingShell({
+  locale,
+  theme,
+  setTheme,
+  themePalette,
+  setThemePalette,
+}: {
+  locale: Locale;
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+  themePalette: ThemePalette;
+  setThemePalette: (palette: ThemePalette) => void;
+}) {
+  const title = locale === "zh" ? "橙子导航" : "Orange Nav";
+  return (
+    <div className="app-shell bootstrap-loading">
+      <div className="noise-layer" />
+      <aside className="sidebar">
+        <div className="brand-mark">
+          <span className="brand-chip">
+            <img src="/logo-mark.svg" alt="" />
+          </span>
+          <div>
+            <strong>{title}</strong>
+            <span>{locale === "zh" ? "个人导航系统" : "Personal nav system"}</span>
+          </div>
+        </div>
+        <div className="sidebar-label">{locale === "zh" ? "分类" : "Categories"}</div>
+        <div className="loading-nav-stack" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      </aside>
+      <main className="workspace">
+        <header className="topbar">
+          <div className="search-box loading-search" aria-hidden="true">
+            <Search size={19} />
+            <span />
+            <em />
+          </div>
+          <div className="top-actions">
+            <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
+          </div>
+        </header>
+        <div className="directory-content">
+          <div className="bootstrap-loading-panel" role="status">
+            <span className="loading-pulse" />
+            <strong>{locale === "zh" ? "正在加载导航数据" : "Loading navigation data"}</strong>
+            <p>{locale === "zh" ? "稍等片刻，页面会在数据就绪后显示。" : "The page will appear when the data is ready."}</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function PublicApp() {
-  const [data, setData] = useState<BootstrapData>(defaultBootstrap);
-  const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", defaultBootstrap.settings.defaultLocale);
-  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", defaultBootstrap.settings.defaultTheme);
+  const [data, setData] = useState<BootstrapData | null>(() => readCachedBootstrap());
+  const bootstrap = data ?? defaultBootstrap;
+  const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", bootstrap.settings.defaultLocale);
+  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", bootstrap.settings.defaultTheme);
   const [themePalette, setThemePalette] = useStoredThemePalette();
   const [query, setQuery] = useState("");
   const [selectionKey, setSelectionKey] = useState("all");
@@ -309,20 +370,21 @@ function PublicApp() {
         return response.json() as Promise<BootstrapData>;
       })
       .then((bootstrap) => {
+        cacheBootstrap(bootstrap);
         setData(bootstrap);
         setEngineId(bootstrap.searchEngines.find((engine) => engine.isDefault)?.id ?? bootstrap.searchEngines[0]?.id ?? "baidu");
       })
-      .catch(() => setData(defaultBootstrap));
+      .catch(() => setData((current) => current ?? defaultBootstrap));
   }, []);
 
   useEffect(() => {
-    applyTheme(theme, themePalette, data.settings.backgroundStyle);
+    applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle);
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette, data.settings.backgroundStyle);
+    const onChange = () => applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [data.settings.backgroundStyle, theme, themePalette]);
+  }, [bootstrap.settings.backgroundStyle, theme, themePalette]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -340,13 +402,13 @@ function PublicApp() {
   }, []);
 
   const t = text[locale];
-  const activeCategories = data.categories.filter((category) => category.isActive);
-  const activeEngines = data.searchEngines.filter((engine) => engine.isActive);
+  const activeCategories = bootstrap.categories.filter((category) => category.isActive);
+  const activeEngines = bootstrap.searchEngines.filter((engine) => engine.isActive);
   const selectedEngine = activeEngines.find((engine) => engine.id === engineId) ?? activeEngines[0] ?? defaultBootstrap.searchEngines[0];
   const queryMatchedLinks = useMemo(
     () =>
       filterLinks(
-        data.links,
+        bootstrap.links,
         {
           categoryId: "all",
           query,
@@ -356,17 +418,17 @@ function PublicApp() {
         },
         locale,
       ),
-    [data.links, favoriteOnly, favorites, locale, query],
+    [bootstrap.links, favoriteOnly, favorites, locale, query],
   );
   const sidebarNodes = useMemo(
-    () => buildCategoryNodes(activeCategories, data.links.filter((link) => link.isActive)),
-    [activeCategories, data.links],
+    () => buildCategoryNodes(activeCategories, bootstrap.links.filter((link) => link.isActive)),
+    [activeCategories, bootstrap.links],
   );
   const visibleLinks = queryMatchedLinks;
-  const siteTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
+  const siteTitle = locale === "zh" ? bootstrap.settings.titleZh : bootstrap.settings.titleEn;
   useEffect(() => {
-    document.title = siteTitle;
-  }, [siteTitle]);
+    if (data) document.title = siteTitle;
+  }, [data, siteTitle]);
 
   const commonLinks = useMemo(
     () => visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)),
@@ -430,6 +492,10 @@ function PublicApp() {
     const sectionId = getTargetSectionId(key);
     if (sectionId) scrollToSection(sectionId);
     else scrollDirectoryTop();
+  }
+
+  if (!data) {
+    return <BootstrapLoadingShell locale={locale} theme={theme} setTheme={setTheme} themePalette={themePalette} setThemePalette={setThemePalette} />;
   }
 
   return (
@@ -718,7 +784,7 @@ function AdminApp() {
   const [session, setSession] = useState<"checking" | "anonymous" | "authenticated">("checking");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [data, setData] = useState<BootstrapData>(defaultBootstrap);
+  const [data, setData] = useState<BootstrapData | null>(null);
   const [tab, setTab] = useState<"links" | "categories" | "engines" | "settings" | "import">("links");
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingLink, setEditingLink] = useState<string | null>(null);
@@ -729,16 +795,16 @@ function AdminApp() {
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(defaultBootstrap.settings);
   const [jsonBuffer, setJsonBuffer] = useState("");
   const t = text[locale];
-  const adminTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
+  const adminTitle = data ? (locale === "zh" ? data.settings.titleZh : data.settings.titleEn) : "橙子导航";
 
   useEffect(() => {
-    applyTheme(theme, themePalette, data.settings.backgroundStyle);
+    applyTheme(theme, themePalette, data?.settings.backgroundStyle ?? defaultBootstrap.settings.backgroundStyle);
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette, data.settings.backgroundStyle);
+    const onChange = () => applyTheme(theme, themePalette, data?.settings.backgroundStyle ?? defaultBootstrap.settings.backgroundStyle);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [data.settings.backgroundStyle, theme, themePalette]);
+  }, [data?.settings.backgroundStyle, theme, themePalette]);
 
   useEffect(() => {
     document.title = adminTitle;
@@ -746,15 +812,16 @@ function AdminApp() {
 
   useEffect(() => {
     void apiGet("/api/admin/session")
-      .then(() => {
+      .then(async () => {
+        await loadAdmin();
         setSession("authenticated");
-        return loadAdmin();
       })
       .catch(() => setSession("anonymous"));
   }, []);
 
   async function loadAdmin() {
     const bootstrap = await apiGet<BootstrapData>("/api/admin/bootstrap");
+    cacheBootstrap(bootstrap);
     setData(bootstrap);
     setSettingsForm(bootstrap.settings);
     setLinkForm({ ...emptyLink, categoryId: bootstrap.categories[0]?.id ?? null });
@@ -763,9 +830,9 @@ function AdminApp() {
   async function login() {
     setMessage("");
     await apiJson("/api/auth/login", "POST", { password });
-    setSession("authenticated");
     setPassword("");
     await loadAdmin();
+    setSession("authenticated");
   }
 
   async function logout() {
@@ -775,7 +842,7 @@ function AdminApp() {
 
   async function saveCategory() {
     const saved = await apiJson<Category>(editingCategory ? `/api/admin/categories/${editingCategory}` : "/api/admin/categories", editingCategory ? "PUT" : "POST", categoryForm);
-    setData((current) => ({ ...current, categories: upsertArray(current.categories, saved) }));
+    setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
     setCategoryForm(emptyCategory);
     setEditingCategory(null);
   }
@@ -783,8 +850,8 @@ function AdminApp() {
   async function saveLink() {
     const payload = { ...linkForm, url: normalizeUrl(linkForm.url) };
     const saved = await apiJson<NavLink>(editingLink ? `/api/admin/links/${editingLink}` : "/api/admin/links", editingLink ? "PUT" : "POST", payload);
-    setData((current) => ({ ...current, links: upsertArray(current.links, saved) }));
-    setLinkForm({ ...emptyLink, categoryId: data.categories[0]?.id ?? null });
+    setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
+    setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
     setEditingLink(null);
   }
 
@@ -794,14 +861,14 @@ function AdminApp() {
       editingEngine ? "PUT" : "POST",
       engineForm,
     );
-    setData((current) => ({ ...current, searchEngines: upsertArray(current.searchEngines, saved) }));
+    setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
     setEngineForm(emptyEngine);
     setEditingEngine(null);
   }
 
   async function saveSettings() {
     const saved = await apiJson<SiteSettings>("/api/admin/settings", "PUT", settingsForm);
-    setData((current) => ({ ...current, settings: saved }));
+    setData((current) => (current ? { ...current, settings: saved } : current));
     setMessage("已保存");
   }
 
@@ -810,7 +877,7 @@ function AdminApp() {
     await loadAdmin();
   }
 
-  if (session === "checking") {
+  if (session === "checking" || (session === "authenticated" && !data)) {
     return <div className="center-screen">Loading</div>;
   }
 
@@ -838,6 +905,12 @@ function AdminApp() {
     );
   }
 
+  if (!data) {
+    return <div className="center-screen">Loading</div>;
+  }
+
+  const adminData = data;
+
   return (
     <div className="admin-shell">
       <aside className="admin-nav">
@@ -847,7 +920,7 @@ function AdminApp() {
           </span>
           <div>
             <strong>{t.dashboard}</strong>
-            <span>{data.settings.titleZh}</span>
+            <span>{adminData.settings.titleZh}</span>
           </div>
         </div>
         {[
@@ -880,9 +953,9 @@ function AdminApp() {
 
         {tab === "links" && (
           <AdminSection title={t.links}>
-            <LinkForm form={linkForm} setForm={setLinkForm} categories={data.categories} onSubmit={() => void saveLink()} t={t} />
+            <LinkForm form={linkForm} setForm={setLinkForm} categories={adminData.categories} onSubmit={() => void saveLink()} t={t} />
             <AdminList
-              items={data.links}
+              items={adminData.links}
               title={(link) => link.title}
               detail={(link) => link.url}
               onEdit={(link) => {
@@ -898,7 +971,7 @@ function AdminApp() {
           <AdminSection title={t.categories}>
             <CategoryForm form={categoryForm} setForm={setCategoryForm} onSubmit={() => void saveCategory()} t={t} />
             <AdminList
-              items={data.categories}
+              items={adminData.categories}
               title={(category) => category.nameZh}
               detail={(category) => category.id}
               onEdit={(category) => {
@@ -914,7 +987,7 @@ function AdminApp() {
           <AdminSection title={t.engines}>
             <EngineForm form={engineForm} setForm={setEngineForm} onSubmit={() => void saveEngine()} t={t} />
             <AdminList
-              items={data.searchEngines}
+              items={adminData.searchEngines}
               title={(engine) => engine.name}
               detail={(engine) => engine.urlTemplate}
               onEdit={(engine) => {
@@ -939,7 +1012,7 @@ function AdminApp() {
                 <textarea value={jsonBuffer} onChange={(event) => setJsonBuffer(event.target.value)} rows={18} />
               </AdminField>
               <div className="form-actions">
-                <button className="tool-button" onClick={() => setJsonBuffer(JSON.stringify(data, null, 2))}>
+                <button className="tool-button" onClick={() => setJsonBuffer(JSON.stringify(adminData, null, 2))}>
                   {t.export}
                 </button>
                 <button
@@ -1491,6 +1564,31 @@ function splitTags(value: string): string[] {
 function upsertArray<T extends { id: string }>(items: T[], item: T): T[] {
   const exists = items.some((current) => current.id === item.id);
   return exists ? items.map((current) => (current.id === item.id ? item : current)) : [...items, item];
+}
+
+function readCachedBootstrap(): BootstrapData | null {
+  try {
+    const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    return isBootstrapData(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheBootstrap(data: BootstrapData): void {
+  try {
+    localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // Storage can be unavailable in private browsing or strict browser settings.
+  }
+}
+
+function isBootstrapData(value: unknown): value is BootstrapData {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Partial<BootstrapData>;
+  return Boolean(data.settings) && Array.isArray(data.categories) && Array.isArray(data.links) && Array.isArray(data.searchEngines);
 }
 
 async function apiGet<T>(url: string): Promise<T> {

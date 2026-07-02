@@ -1792,6 +1792,71 @@ a {
     color-mix(in srgb, var(--field-bg) 68%, transparent);
 }
 
+.admin-tag-field {
+  position: relative;
+  z-index: 3;
+}
+
+.admin-tag-select {
+  position: relative;
+}
+
+.admin-tag-menu {
+  max-height: 260px;
+}
+
+.admin-tag-editor {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-left: 2px solid rgba(0, 245, 255, 0.54);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--field-bg) 76%, transparent);
+}
+
+.admin-tag-chips {
+  min-height: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-tag-chip {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--field-bg) 78%, transparent);
+  font-weight: 800;
+}
+
+.admin-tag-chip.primary {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--cyan) 46%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 18%, transparent), color-mix(in srgb, var(--yellow) 8%, transparent));
+}
+
+.admin-tag-chip svg {
+  color: currentColor;
+  opacity: 0.78;
+}
+
+.admin-tag-editor input {
+  min-height: 34px;
+}
+
+.admin-tag-empty {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
 .checkbox-grid,
 .check-row {
   display: flex;
@@ -2028,6 +2093,46 @@ a {
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.admin-tag-group {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.admin-tag-group:last-child {
+  margin-bottom: 0;
+}
+
+.admin-tag-group-header {
+  width: fit-content;
+  min-width: 132px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--group-color, var(--cyan)) 28%, var(--line));
+  border-radius: 9px;
+  color: var(--text);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--group-color, var(--cyan)) 14%, transparent), transparent),
+    color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.admin-tag-group-header span {
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.admin-tag-group-header em {
+  min-width: 24px;
+  color: var(--muted);
+  font-style: normal;
+  text-align: right;
+  font-weight: 900;
 }
 
 .admin-link-grid {

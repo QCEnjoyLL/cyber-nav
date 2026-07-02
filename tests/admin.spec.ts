@@ -54,10 +54,16 @@ test("admin list scrolls independently and category icon can be picked", async (
   await page.waitForSelector(".admin-list-row");
   await expect(page.locator(".admin-link-group-header").filter({ hasText: "Media" })).toBeVisible();
   await expect(page.locator(".admin-link-group-header").filter({ hasText: "Tools" })).toBeVisible();
-  await page.locator(".admin-select-trigger").click();
+  await expect(page.locator(".admin-tag-group-header").filter({ hasText: "test" }).first()).toBeVisible();
+  const categorySelect = page.locator(".admin-field").filter({ hasText: "所属分类" }).locator(".admin-select-trigger");
+  await categorySelect.click();
   await expect(page.locator(".admin-select-menu")).toBeVisible();
   await page.locator(".admin-select-option").filter({ hasText: "Tools" }).click();
-  await expect(page.locator(".admin-select-trigger")).toContainText("Tools");
+  await expect(categorySelect).toContainText("Tools");
+  await page.locator(".admin-tag-select .admin-select-trigger").click();
+  await expect(page.locator(".admin-tag-menu")).toBeVisible();
+  await page.locator(".admin-tag-menu .admin-select-option").filter({ hasText: "test" }).click();
+  await expect(page.locator(".admin-tag-select .admin-select-trigger")).toContainText("test");
 
   const before = await page.locator(".admin-form").boundingBox();
   await page.locator(".admin-list").evaluate((element) => {

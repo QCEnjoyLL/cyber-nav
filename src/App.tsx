@@ -319,6 +319,16 @@ function getLinkSubcategory(link: NavLink, category: Category): string | null {
   return null;
 }
 
+function getAdminLinkTagGroup(link: NavLink, category?: Category): string {
+  if (category) {
+    const subcategory = getLinkSubcategory(link, category);
+    if (subcategory) return subcategory;
+    const fallback = link.tags.find((tag) => tag && tag !== category.nameZh && tag !== category.nameEn && tag !== category.id);
+    return fallback ?? "其他";
+  }
+  return link.tags[0] || "其他";
+}
+
 function buildCategoryNodes(categories: Category[], links: NavLink[]): CategoryNode[] {
   return categories.map((category) => {
     const categoryLinks = links.filter((link) => link.categoryId === category.id);
@@ -1115,6 +1125,7 @@ function AdminApp() {
               form={linkForm}
               setForm={setLinkForm}
               categories={adminData.categories}
+              links={adminData.links}
               isEditing={Boolean(editingLink)}
               editingLabel={editingLink ? linkForm.title : ""}
               onCreate={() => void createLink()}
@@ -1452,6 +1463,7 @@ function LinkForm({
   form,
   setForm,
   categories,
+  links,
   isEditing,
   editingLabel,
   onCreate,
@@ -1462,6 +1474,7 @@ function LinkForm({
   form: NavLink;
   setForm: (form: NavLink) => void;
   categories: Category[];
+  links: NavLink[];
   isEditing: boolean;
   editingLabel: string;
   onCreate: () => void;
@@ -1469,6 +1482,9 @@ function LinkForm({
   onCancelEdit: () => void;
   t: Record<string, string>;
 }) {
+  const selectedCategory = categories.find((category) => category.id === form.categoryId);
+  const tagOptions = buildAdminTagOptions(links, categories, form.categoryId);
+
   return (
     <div className="admin-form">
       <AdminField label="导航 ID" hint="留空会自动生成；导入旧数据时可保留原 ID。">
@@ -1496,9 +1512,7 @@ function LinkForm({
       <AdminField label="英文描述" span="span-6">
         <input value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} placeholder="My website and blog" />
       </AdminField>
-      <AdminField label="标签" span="span-8" hint="多个标签用英文逗号分隔，例如：博客,工具,AI。">
-        <input value={form.tags.join(",")} onChange={(event) => setForm({ ...form, tags: splitTags(event.target.value) })} placeholder="我的网站,博客" />
-      </AdminField>
+      <AdminTagSelect category={selectedCategory} tags={form.tags} options={tagOptions} onChange={(tags) => setForm({ ...form, tags })} />
       <div className="admin-toggle-group span-4">
         <span className="admin-field-label">展示选项</span>
         <label className="check-row">
@@ -1515,6 +1529,169 @@ function LinkForm({
         </label>
       </div>
       <AdminFormActions isEditing={isEditing} editingLabel={editingLabel} onCreate={onCreate} onUpdate={onUpdate} onCancelEdit={onCancelEdit} />
+    </div>
+  );
+}
+
+function buildAdminTagOptions(links: NavLink[], categories: Category[], categoryId: string | null): string[] {
+  const category = categories.find((item) => item.id === categoryId);
+  const scopedLinks = categoryId ? links.filter((link) => link.categoryId === categoryId) : links;
+  const options = new Set<string>();
+
+  for (const link of scopedLinks) {
+    const group = getAdminLinkTagGroup(link, category);
+    if (group && group !== "其他") options.add(group);
+    for (const tag of link.tags) {
+      if (!tag) continue;
+      if (category && (tag === category.id || tag === category.nameZh || tag === category.nameEn)) continue;
+      options.add(tag);
+    }
+  }
+
+  return Array.from(options).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
+}
+
+function getTagGroupValue(tags: string[], category?: Category): string {
+  if (!category) return tags[0] ?? "";
+  const [scope, subcategory] = tags;
+  if (subcategory && (scope === category.id || scope === category.nameZh || scope === category.nameEn)) return subcategory;
+  return tags.find((tag) => tag && tag !== category.id && tag !== category.nameZh && tag !== category.nameEn) ?? "";
+}
+
+function getExtraTags(tags: string[], category: Category | undefined, groupTag: string): string[] {
+  return tags.filter((tag, index) => {
+    if (!tag || tag === groupTag) return false;
+    if (category && index === 0 && (tag === category.id || tag === category.nameZh || tag === category.nameEn)) return false;
+    return true;
+  });
+}
+
+function normalizeTagList(tags: string[]): string[] {
+  return Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)));
+}
+
+function AdminTagSelect({
+  category,
+  tags,
+  options,
+  onChange,
+}: {
+  category?: Category;
+  tags: string[];
+  options: string[];
+  onChange: (tags: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const groupTag = getTagGroupValue(tags, category);
+  const displayTags = category ? tags.filter((tag) => tag !== category.id && tag !== category.nameZh && tag !== category.nameEn) : tags;
+  const visibleOptions = normalizeTagList([...options, groupTag]).filter(Boolean);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const selectGroupTag = (nextTag: string) => {
+    const extraTags = getExtraTags(tags, category, nextTag);
+    onChange(category ? normalizeTagList([category.nameZh, nextTag, ...extraTags]) : normalizeTagList([nextTag, ...extraTags]));
+    setOpen(false);
+  };
+
+  const addDraftTag = () => {
+    const nextTag = draft.trim();
+    if (!nextTag) return;
+    if (!groupTag) {
+      selectGroupTag(nextTag);
+    } else {
+      onChange(normalizeTagList([...tags, nextTag]));
+    }
+    setDraft("");
+  };
+
+  const removeTag = (tag: string) => {
+    if (category && tag === groupTag) {
+      onChange(getExtraTags(tags, category, tag));
+      return;
+    }
+    onChange(tags.filter((item) => item !== tag));
+  };
+
+  return (
+    <div className="admin-field span-8 admin-tag-field" ref={wrapperRef}>
+      <span className="admin-field-label">标签</span>
+      <div className="admin-tag-select">
+        <button className="admin-select-trigger" type="button" onClick={() => setOpen((state) => !state)} aria-haspopup="listbox" aria-expanded={open}>
+          <span className="admin-select-icon">
+            <Bookmark size={17} />
+          </span>
+          <span>{groupTag || "选择标签"}</span>
+          <ChevronDown size={17} />
+        </button>
+        {open && (
+          <div className="admin-select-menu admin-tag-menu" role="listbox">
+            {visibleOptions.length > 0 ? (
+              visibleOptions.map((option) => (
+                <button
+                  className={clsx("admin-select-option", groupTag === option && "active")}
+                  key={option}
+                  type="button"
+                  onClick={() => selectGroupTag(option)}
+                  role="option"
+                  aria-selected={groupTag === option}
+                >
+                  <span className="admin-select-icon">
+                    <Bookmark size={17} />
+                  </span>
+                  <span>{option}</span>
+                </button>
+              ))
+            ) : (
+              <span className="admin-tag-empty">暂无可选标签，输入后回车添加</span>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="admin-tag-editor">
+        <div className="admin-tag-chips">
+          {displayTags.length > 0 ? (
+            displayTags.map((tag) => (
+              <button className={clsx("admin-tag-chip", tag === groupTag && "primary")} key={tag} type="button" onClick={() => removeTag(tag)}>
+                <span>{tag}</span>
+                <X size={13} />
+              </button>
+            ))
+          ) : (
+            <span className="admin-tag-empty">未设置标签</span>
+          )}
+        </div>
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              addDraftTag();
+            }
+          }}
+          placeholder="输入新标签后回车"
+        />
+      </div>
+      <small>下拉选择主标签；点击标签可移除，也可以输入新标签后回车。</small>
     </div>
   );
 }
@@ -1728,6 +1905,18 @@ function AdminLinkGroups({
 }) {
   const sortedLinks = [...links].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
+  const createTagGroups = (groupLinks: NavLink[], category?: Category) => {
+    const tagMap = new Map<string, NavLink[]>();
+    for (const link of groupLinks) {
+      const tag = getAdminLinkTagGroup(link, category);
+      tagMap.set(tag, [...(tagMap.get(tag) ?? []), link]);
+    }
+    return Array.from(tagMap, ([tag, tagLinks]) => ({ tag, links: tagLinks })).sort((a, b) => {
+      if (a.tag === "其他") return 1;
+      if (b.tag === "其他") return -1;
+      return a.tag.localeCompare(b.tag, "zh-Hans-CN");
+    });
+  };
   const groups = [
     {
       id: "",
@@ -1737,18 +1926,23 @@ function AdminLinkGroups({
       icon: "Folder",
       sortOrder: -1,
       links: sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId)),
+      tagGroups: createTagGroups(sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId))),
     },
     ...[...categories]
       .sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh))
-      .map((category) => ({
-        id: category.id,
-        title: category.nameZh,
-        detail: category.id,
-        color: category.color,
-        icon: category.icon,
-        sortOrder: category.sortOrder,
-        links: sortedLinks.filter((link) => link.categoryId === category.id),
-      })),
+      .map((category) => {
+        const categoryLinks = sortedLinks.filter((link) => link.categoryId === category.id);
+        return {
+          id: category.id,
+          title: category.nameZh,
+          detail: category.id,
+          color: category.color,
+          icon: category.icon,
+          sortOrder: category.sortOrder,
+          links: categoryLinks,
+          tagGroups: createTagGroups(categoryLinks, category),
+        };
+      }),
   ].filter((group) => group.links.length > 0);
 
   return (
@@ -1768,19 +1962,27 @@ function AdminLinkGroups({
                 </span>
               </div>
             </header>
-            <div className="admin-link-grid">
-              {group.links.map((link) => (
-                <div className="admin-list-row" key={link.id}>
-                  <button onClick={() => onEdit(link)}>
-                    <strong>{link.title}</strong>
-                    <span>{link.url}</span>
-                  </button>
-                  <button className="danger-button" onClick={() => onDelete(link)} aria-label="delete">
-                    <Trash2 size={16} />
-                  </button>
+            {group.tagGroups.map((tagGroup) => (
+              <section className="admin-tag-group" key={`${group.id || "uncategorized"}:${tagGroup.tag}`}>
+                <header className="admin-tag-group-header">
+                  <span>{tagGroup.tag}</span>
+                  <em>{tagGroup.links.length}</em>
+                </header>
+                <div className="admin-link-grid">
+                  {tagGroup.links.map((link) => (
+                    <div className="admin-list-row" key={link.id}>
+                      <button onClick={() => onEdit(link)}>
+                        <strong>{link.title}</strong>
+                        <span>{link.url}</span>
+                      </button>
+                      <button className="danger-button" onClick={() => onDelete(link)} aria-label="delete">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </section>
+            ))}
           </section>
         );
       })}
@@ -1969,13 +2171,6 @@ function hexToRgba(value: string, alpha: string): string {
   const green = (numeric >> 8) & 255;
   const blue = numeric & 255;
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
-}
-
-function splitTags(value: string): string[] {
-  return value
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
 }
 
 function upsertArray<T extends { id: string }>(items: T[], item: T): T[] {

@@ -73,3 +73,115 @@ test("admin list scrolls independently and category icon can be picked", async (
   await page.locator('.icon-picker-button[aria-label="Server"]').click();
   await expect(page.locator('input[placeholder="Folder"]')).toHaveValue("Server");
 });
+
+test("admin create update and delete show explicit feedback", async ({ page }) => {
+  const baseData = {
+    settings: {
+      titleZh: "Orange Nav",
+      titleEn: "Orange Nav",
+      subtitleZh: "Navigation",
+      subtitleEn: "Navigation",
+      defaultLocale: "zh",
+      defaultTheme: "system",
+      backgroundStyle: "soft-circuit",
+    },
+    categories: [{ id: "tools", nameZh: "Tools", nameEn: "Tools", icon: "Wrench", color: "#00f5ff", sortOrder: 20, isActive: true }],
+    links: [
+      {
+        id: "link-1",
+        categoryId: "tools",
+        title: "Site 1",
+        descriptionZh: "",
+        descriptionEn: "",
+        url: "https://example.com/1",
+        iconUrl: "",
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        id: "link-2",
+        categoryId: "tools",
+        title: "Site 2",
+        descriptionZh: "",
+        descriptionEn: "",
+        url: "https://example.com/2",
+        iconUrl: "",
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+    searchEngines: [
+      {
+        id: "bing",
+        name: "Bing",
+        shortcut: "b",
+        urlTemplate: "https://www.bing.com/search?q={query}",
+        isDefault: true,
+        isActive: true,
+        sortOrder: 10,
+      },
+    ],
+  };
+
+  let created = false;
+  let updated = false;
+  let deleted = false;
+  let confirmed = false;
+
+  await page.setViewportSize({ width: 1440, height: 920 });
+  await page.route("**/api/admin/session", (route) => route.fulfill({ json: { ok: true } }));
+  await page.route("**/api/admin/bootstrap", (route) => route.fulfill({ json: baseData }));
+  await page.route("**/api/admin/links", async (route) => {
+    const body = await route.request().postDataJSON();
+    created = route.request().method() === "POST" && body.title === "Created Site";
+    await route.fulfill({ json: { ...body, id: body.id || "created-site", url: body.url } });
+  });
+  await page.route("**/api/admin/links/*", async (route) => {
+    const method = route.request().method();
+    if (method === "PUT") {
+      const body = await route.request().postDataJSON();
+      updated = body.title === "Updated Site";
+      await route.fulfill({ json: { ...body, id: "link-1" } });
+      return;
+    }
+    if (method === "DELETE") {
+      deleted = true;
+      await route.fulfill({ json: { ok: true } });
+      return;
+    }
+    await route.fallback();
+  });
+  page.on("dialog", async (dialog) => {
+    confirmed = dialog.message().includes("确认删除");
+    await dialog.accept();
+  });
+
+  await page.goto("/admin");
+  await page.waitForSelector(".admin-list-row");
+  await expect(page.getByRole("button", { name: "保存修改" })).toBeDisabled();
+
+  await page.locator('input[placeholder="偏爱一丛花"]').fill("Created Site");
+  await page.locator('input[placeholder="https://www.example.com"]').fill("https://created.example.com");
+  await page.getByRole("button", { name: "新增" }).click();
+  await expect(page.locator(".form-message")).toContainText("保存成功");
+  expect(created).toBe(true);
+
+  await page.locator(".admin-list-row").filter({ hasText: "Site 1" }).locator("button").first().click();
+  await expect(page.locator(".admin-edit-state")).toContainText("正在编辑");
+  await expect(page.getByRole("button", { name: "保存修改" })).toBeEnabled();
+  await page.locator('input[placeholder="偏爱一丛花"]').fill("Updated Site");
+  await page.getByRole("button", { name: "保存修改" }).click();
+  await expect(page.locator(".form-message")).toContainText("保存成功");
+  expect(updated).toBe(true);
+
+  await page.locator(".admin-list-row").filter({ hasText: "Site 2" }).locator(".danger-button").click();
+  await expect(page.locator(".form-message")).toContainText("删除成功");
+  expect(confirmed).toBe(true);
+  expect(deleted).toBe(true);
+});

@@ -883,6 +883,7 @@ function AdminApp() {
   const [engineForm, setEngineForm] = useState<SearchEngine>(emptyEngine);
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(defaultBootstrap.settings);
   const [jsonBuffer, setJsonBuffer] = useState("");
+  const messageTimer = useRef<number | null>(null);
   const t = text[locale];
   const adminTitle = data ? (locale === "zh" ? data.settings.titleZh : data.settings.titleEn) : "橙子导航";
 
@@ -898,6 +899,12 @@ function AdminApp() {
   useEffect(() => {
     document.title = adminTitle;
   }, [adminTitle]);
+
+  useEffect(() => {
+    return () => {
+      if (messageTimer.current) window.clearTimeout(messageTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     void apiGet("/api/admin/session")
@@ -916,6 +923,17 @@ function AdminApp() {
     setLinkForm({ ...emptyLink, categoryId: bootstrap.categories[0]?.id ?? null });
   }
 
+  function notify(nextMessage: string) {
+    if (messageTimer.current) window.clearTimeout(messageTimer.current);
+    setMessage(nextMessage);
+    messageTimer.current = window.setTimeout(() => setMessage(""), 2400);
+  }
+
+  function createId(value: string, editingId: string | null): string | undefined {
+    const trimmed = value.trim();
+    return trimmed && trimmed !== editingId ? trimmed : undefined;
+  }
+
   async function login() {
     setMessage("");
     await apiJson("/api/auth/login", "POST", { password });
@@ -929,41 +947,84 @@ function AdminApp() {
     setSession("anonymous");
   }
 
-  async function saveCategory() {
-    const saved = await apiJson<Category>(editingCategory ? `/api/admin/categories/${editingCategory}` : "/api/admin/categories", editingCategory ? "PUT" : "POST", categoryForm);
+  async function createCategory() {
+    const payload = { ...categoryForm, id: createId(categoryForm.id, editingCategory) };
+    const saved = await apiJson<Category>("/api/admin/categories", "POST", payload);
     setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
     setCategoryForm(emptyCategory);
     setEditingCategory(null);
+    notify("保存成功");
   }
 
-  async function saveLink() {
-    const payload = { ...linkForm, url: normalizeUrl(linkForm.url) };
-    const saved = await apiJson<NavLink>(editingLink ? `/api/admin/links/${editingLink}` : "/api/admin/links", editingLink ? "PUT" : "POST", payload);
+  async function updateCategory() {
+    if (!editingCategory) return;
+    const saved = await apiJson<Category>(`/api/admin/categories/${editingCategory}`, "PUT", categoryForm);
+    setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
+    setCategoryForm(emptyCategory);
+    setEditingCategory(null);
+    notify("保存成功");
+  }
+
+  async function createLink() {
+    const payload = { ...linkForm, id: createId(linkForm.id, editingLink), url: normalizeUrl(linkForm.url) };
+    const saved = await apiJson<NavLink>("/api/admin/links", "POST", payload);
     setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
     setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
     setEditingLink(null);
+    notify("保存成功");
   }
 
-  async function saveEngine() {
-    const saved = await apiJson<SearchEngine>(
-      editingEngine ? `/api/admin/search-engines/${editingEngine}` : "/api/admin/search-engines",
-      editingEngine ? "PUT" : "POST",
-      engineForm,
-    );
+  async function updateLink() {
+    if (!editingLink) return;
+    const payload = { ...linkForm, url: normalizeUrl(linkForm.url) };
+    const saved = await apiJson<NavLink>(`/api/admin/links/${editingLink}`, "PUT", payload);
+    setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
+    setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
+    setEditingLink(null);
+    notify("保存成功");
+  }
+
+  async function createEngine() {
+    const payload = { ...engineForm, id: createId(engineForm.id, editingEngine) };
+    const saved = await apiJson<SearchEngine>("/api/admin/search-engines", "POST", payload);
     setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
     setEngineForm(emptyEngine);
     setEditingEngine(null);
+    notify("保存成功");
+  }
+
+  async function updateEngine() {
+    if (!editingEngine) return;
+    const saved = await apiJson<SearchEngine>(`/api/admin/search-engines/${editingEngine}`, "PUT", engineForm);
+    setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
+    setEngineForm(emptyEngine);
+    setEditingEngine(null);
+    notify("保存成功");
   }
 
   async function saveSettings() {
     const saved = await apiJson<SiteSettings>("/api/admin/settings", "PUT", settingsForm);
     setData((current) => (current ? { ...current, settings: saved } : current));
-    setMessage("已保存");
+    notify("保存成功");
   }
 
-  async function remove(kind: "categories" | "links" | "search-engines", id: string) {
+  async function remove(kind: "categories" | "links" | "search-engines", id: string, title: string) {
+    if (!window.confirm(`确认删除「${title}」吗？删除后不可恢复。`)) return;
     await apiJson(`/api/admin/${kind}/${id}`, "DELETE", {});
     await loadAdmin();
+    if (kind === "categories" && editingCategory === id) {
+      setCategoryForm(emptyCategory);
+      setEditingCategory(null);
+    }
+    if (kind === "links" && editingLink === id) {
+      setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
+      setEditingLink(null);
+    }
+    if (kind === "search-engines" && editingEngine === id) {
+      setEngineForm(emptyEngine);
+      setEditingEngine(null);
+    }
+    notify("删除成功");
   }
 
   if (session === "checking" || (session === "authenticated" && !data)) {
@@ -1050,7 +1111,20 @@ function AdminApp() {
 
         {tab === "links" && (
           <AdminSection title={t.links}>
-            <LinkForm form={linkForm} setForm={setLinkForm} categories={adminData.categories} onSubmit={() => void saveLink()} t={t} />
+            <LinkForm
+              form={linkForm}
+              setForm={setLinkForm}
+              categories={adminData.categories}
+              isEditing={Boolean(editingLink)}
+              editingLabel={editingLink ? linkForm.title : ""}
+              onCreate={() => void createLink()}
+              onUpdate={() => void updateLink()}
+              onCancelEdit={() => {
+                setEditingLink(null);
+                setLinkForm({ ...emptyLink, categoryId: adminData.categories[0]?.id ?? null });
+              }}
+              t={t}
+            />
             <AdminLinkGroups
               links={adminData.links}
               categories={adminData.categories}
@@ -1058,14 +1132,26 @@ function AdminApp() {
                 setEditingLink(link.id);
                 setLinkForm(link);
               }}
-              onDelete={(link) => void remove("links", link.id)}
+              onDelete={(link) => void remove("links", link.id, link.title)}
             />
           </AdminSection>
         )}
 
         {tab === "categories" && (
           <AdminSection title={t.categories}>
-            <CategoryForm form={categoryForm} setForm={setCategoryForm} onSubmit={() => void saveCategory()} t={t} />
+            <CategoryForm
+              form={categoryForm}
+              setForm={setCategoryForm}
+              isEditing={Boolean(editingCategory)}
+              editingLabel={editingCategory ? categoryForm.nameZh : ""}
+              onCreate={() => void createCategory()}
+              onUpdate={() => void updateCategory()}
+              onCancelEdit={() => {
+                setEditingCategory(null);
+                setCategoryForm(emptyCategory);
+              }}
+              t={t}
+            />
             <AdminList
               items={adminData.categories}
               title={(category) => category.nameZh}
@@ -1074,14 +1160,26 @@ function AdminApp() {
                 setEditingCategory(category.id);
                 setCategoryForm(category);
               }}
-              onDelete={(category) => void remove("categories", category.id)}
+              onDelete={(category) => void remove("categories", category.id, category.nameZh)}
             />
           </AdminSection>
         )}
 
         {tab === "engines" && (
           <AdminSection title={t.engines}>
-            <EngineForm form={engineForm} setForm={setEngineForm} onSubmit={() => void saveEngine()} t={t} />
+            <EngineForm
+              form={engineForm}
+              setForm={setEngineForm}
+              isEditing={Boolean(editingEngine)}
+              editingLabel={editingEngine ? engineForm.name : ""}
+              onCreate={() => void createEngine()}
+              onUpdate={() => void updateEngine()}
+              onCancelEdit={() => {
+                setEditingEngine(null);
+                setEngineForm(emptyEngine);
+              }}
+              t={t}
+            />
             <AdminList
               items={adminData.searchEngines}
               title={(engine) => engine.name}
@@ -1090,7 +1188,7 @@ function AdminApp() {
                 setEditingEngine(engine.id);
                 setEngineForm(engine);
               }}
-              onDelete={(engine) => void remove("search-engines", engine.id)}
+              onDelete={(engine) => void remove("search-engines", engine.id, engine.name)}
             />
           </AdminSection>
         )}
@@ -1116,7 +1214,7 @@ function AdminApp() {
                   onClick={() =>
                     void apiJson<BootstrapData>("/api/admin/import", "POST", JSON.parse(jsonBuffer)).then((next) => {
                       setData(next);
-                      setMessage("已导入");
+                      notify("保存成功");
                     })
                   }
                 >
@@ -1230,17 +1328,65 @@ function AdminField({
   );
 }
 
-
+function AdminFormActions({
+  isEditing,
+  editingLabel,
+  onCreate,
+  onUpdate,
+  onCancelEdit,
+}: {
+  isEditing: boolean;
+  editingLabel: string;
+  onCreate: () => void;
+  onUpdate: () => void;
+  onCancelEdit: () => void;
+}) {
+  return (
+    <div className="form-actions admin-form-actions">
+      <div className="admin-edit-state">
+        {isEditing ? (
+          <>
+            <span>正在编辑</span>
+            <strong>{editingLabel || "当前项目"}</strong>
+          </>
+        ) : (
+          <span>当前为新增模式</span>
+        )}
+      </div>
+      {isEditing && (
+        <button className="tool-button admin-cancel-button" type="button" onClick={onCancelEdit}>
+          取消编辑
+        </button>
+      )}
+      <button className="tool-button admin-save-button" type="button" onClick={onCreate}>
+        <Plus size={16} />
+        新增
+      </button>
+      <button className="primary-button admin-save-button" type="button" onClick={onUpdate} disabled={!isEditing}>
+        <Check size={16} />
+        保存修改
+      </button>
+    </div>
+  );
+}
 
 function CategoryForm({
   form,
   setForm,
-  onSubmit,
+  isEditing,
+  editingLabel,
+  onCreate,
+  onUpdate,
+  onCancelEdit,
   t,
 }: {
   form: Category;
   setForm: (form: Category) => void;
-  onSubmit: () => void;
+  isEditing: boolean;
+  editingLabel: string;
+  onCreate: () => void;
+  onUpdate: () => void;
+  onCancelEdit: () => void;
   t: Record<string, string>;
 }) {
   const SelectedIcon = iconMap[form.icon] ?? Folder;
@@ -1296,12 +1442,7 @@ function CategoryForm({
           {t.active}
         </label>
       </div>
-      <div className="form-actions">
-        <button className="primary-button admin-save-button" onClick={onSubmit}>
-          <Plus size={16} />
-          {t.save}
-        </button>
-      </div>
+      <AdminFormActions isEditing={isEditing} editingLabel={editingLabel} onCreate={onCreate} onUpdate={onUpdate} onCancelEdit={onCancelEdit} />
     </div>
   );
 }
@@ -1311,13 +1452,21 @@ function LinkForm({
   form,
   setForm,
   categories,
-  onSubmit,
+  isEditing,
+  editingLabel,
+  onCreate,
+  onUpdate,
+  onCancelEdit,
   t,
 }: {
   form: NavLink;
   setForm: (form: NavLink) => void;
   categories: Category[];
-  onSubmit: () => void;
+  isEditing: boolean;
+  editingLabel: string;
+  onCreate: () => void;
+  onUpdate: () => void;
+  onCancelEdit: () => void;
   t: Record<string, string>;
 }) {
   return (
@@ -1365,12 +1514,7 @@ function LinkForm({
           {t.active}
         </label>
       </div>
-      <div className="form-actions">
-        <button className="primary-button admin-save-button" onClick={onSubmit}>
-          <Plus size={16} />
-          {t.save}
-        </button>
-      </div>
+      <AdminFormActions isEditing={isEditing} editingLabel={editingLabel} onCreate={onCreate} onUpdate={onUpdate} onCancelEdit={onCancelEdit} />
     </div>
   );
 }
@@ -1459,12 +1603,20 @@ function AdminCategorySelect({
 function EngineForm({
   form,
   setForm,
-  onSubmit,
+  isEditing,
+  editingLabel,
+  onCreate,
+  onUpdate,
+  onCancelEdit,
   t,
 }: {
   form: SearchEngine;
   setForm: (form: SearchEngine) => void;
-  onSubmit: () => void;
+  isEditing: boolean;
+  editingLabel: string;
+  onCreate: () => void;
+  onUpdate: () => void;
+  onCancelEdit: () => void;
   t: Record<string, string>;
 }) {
   return (
@@ -1495,12 +1647,7 @@ function EngineForm({
           {t.active}
         </label>
       </div>
-      <div className="form-actions">
-        <button className="primary-button admin-save-button" onClick={onSubmit}>
-          <Plus size={16} />
-          {t.save}
-        </button>
-      </div>
+      <AdminFormActions isEditing={isEditing} editingLabel={editingLabel} onCreate={onCreate} onUpdate={onUpdate} onCancelEdit={onCancelEdit} />
     </div>
   );
 }

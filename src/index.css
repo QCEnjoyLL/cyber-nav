@@ -1887,11 +1887,59 @@ a {
   margin-top: 2px;
 }
 
+.admin-form-actions {
+  flex-wrap: wrap;
+}
+
+.admin-edit-state {
+  min-height: 38px;
+  min-width: min(300px, 100%);
+  margin-right: auto;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 0 12px;
+  border-left: 2px solid color-mix(in srgb, var(--cyan) 56%, var(--line));
+  border-radius: 8px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--field-bg) 64%, transparent);
+}
+
+.admin-edit-state span,
+.admin-edit-state strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-edit-state span {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.admin-edit-state strong {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .admin-save-button {
   min-height: 38px;
   min-width: 104px;
   padding: 0 16px;
   border-radius: 8px;
+}
+
+.admin-cancel-button {
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+.primary-button:disabled,
+.tool-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+  transform: none;
+  box-shadow: none;
 }
 
 .admin-list {

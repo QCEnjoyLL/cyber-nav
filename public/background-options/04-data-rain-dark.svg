@@ -2,15 +2,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="04 霓虹雨幕 dark background">
   
   <defs>
-    <pattern id="data-rain-dark-micro" width="12" height="12" patternUnits="userSpaceOnUse">
-      <path d="M 12 0 L 0 0 0 12" fill="none" stroke="#0c5164" stroke-width="0.75" opacity="0.42"/>
+    <pattern id="data-rain-dark-field" width="320" height="240" patternUnits="userSpaceOnUse">
+      <path d="M 320 0 L 0 0 0 240" fill="none" stroke="#00e7ff" stroke-width="1.2" opacity="0.18"/>
+      <path d="M 160 0 V240 M 0 120 H320" fill="none" stroke="#0c5164" stroke-width="0.8" opacity="0.08"/>
     </pattern>
-    <pattern id="data-rain-dark-grid" width="96" height="96" patternUnits="userSpaceOnUse">
-      <rect width="96" height="96" fill="url(#data-rain-dark-micro)"/>
-      <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#00e7ff" stroke-width="1.1" opacity="0.7"/>
-    </pattern>
-    <pattern id="data-rain-dark-scan" width="1" height="6" patternUnits="userSpaceOnUse">
-      <rect y="0" width="1" height="1" fill="#ffffff" opacity="0.42"/>
+    <pattern id="data-rain-dark-scan" width="1" height="42" patternUnits="userSpaceOnUse">
+      <rect y="0" width="1" height="1" fill="#ffffff" opacity="0.08"/>
     </pattern>
     <filter id="data-rain-dark-glow" x="-25%" y="-25%" width="150%" height="150%">
       <feGaussianBlur stdDeviation="3.2" result="blur"/>
@@ -43,7 +40,7 @@
 
   <rect width="1600" height="1000" fill="#070a12"/>
   
-      <rect width="1600" height="1000" fill="url(#data-rain-dark-grid)" opacity="0.2"/>
+      <rect width="1600" height="1000" fill="url(#data-rain-dark-field)" opacity="0.16"/>
       <g filter="url(#data-rain-dark-soft-glow)">
         <path d="M42 28 v96" stroke="#fcee0a" stroke-width="2" opacity="0.15" stroke-dasharray="8 14"/>
 <path d="M79 101 v127" stroke="#00f5ff" stroke-width="1" opacity="0.185" stroke-dasharray="12 22"/>
@@ -111,7 +108,7 @@
         <circle cx="1252" cy="176" r="4" fill="#00f5ff" opacity="0.85"/>
         <circle cx="1408" cy="822" r="4" fill="#fcee0a" opacity="0.75"/>
       </g>
-      <rect width="1600" height="1000" fill="url(#data-rain-dark-scan)" opacity="0.34"/>
+      <rect width="1600" height="1000" fill="url(#data-rain-dark-scan)" opacity="0.1"/>
       <rect width="1600" height="1000" filter="url(#data-rain-dark-grain)" opacity="0.8"/>
     
 </svg>

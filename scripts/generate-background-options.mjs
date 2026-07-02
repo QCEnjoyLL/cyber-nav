@@ -24,15 +24,12 @@ const node = (x, y, fill, stroke, opacity = 1) => `
 
 const baseDefs = ({ id, major, minor, glow, scan, texture }) => `
   <defs>
-    <pattern id="${id}-micro" width="12" height="12" patternUnits="userSpaceOnUse">
-      <path d="M 12 0 L 0 0 0 12" fill="none" stroke="${minor}" stroke-width="0.75" opacity="0.42"/>
+    <pattern id="${id}-field" width="320" height="240" patternUnits="userSpaceOnUse">
+      <path d="M 320 0 L 0 0 0 240" fill="none" stroke="${major}" stroke-width="1.2" opacity="0.18"/>
+      <path d="M 160 0 V240 M 0 120 H320" fill="none" stroke="${minor}" stroke-width="0.8" opacity="0.08"/>
     </pattern>
-    <pattern id="${id}-grid" width="96" height="96" patternUnits="userSpaceOnUse">
-      <rect width="96" height="96" fill="url(#${id}-micro)"/>
-      <path d="M 96 0 L 0 0 0 96" fill="none" stroke="${major}" stroke-width="1.1" opacity="0.7"/>
-    </pattern>
-    <pattern id="${id}-scan" width="1" height="6" patternUnits="userSpaceOnUse">
-      <rect y="0" width="1" height="1" fill="${scan}" opacity="0.42"/>
+    <pattern id="${id}-scan" width="1" height="42" patternUnits="userSpaceOnUse">
+      <rect y="0" width="1" height="1" fill="${scan}" opacity="0.08"/>
     </pattern>
     <filter id="${id}-glow" x="-25%" y="-25%" width="150%" height="150%">
       <feGaussianBlur stdDeviation="3.2" result="blur"/>
@@ -63,6 +60,35 @@ const baseDefs = ({ id, major, minor, glow, scan, texture }) => `
     </filter>
   </defs>
 `;
+
+const option0 = (mode) => {
+  const p = palette[mode];
+  const id = `soft-field-${mode}`;
+  return wrap({
+    id,
+    title: "00 柔光线路",
+    mode,
+    bg: mode === "dark" ? "#080b12" : "#f1f8f7",
+    defs: baseDefs({ id, ...p }),
+    body: `
+      <rect width="1600" height="1000" fill="url(#${id}-edge)" opacity="${mode === "dark" ? 0.72 : 0.56}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-field)" opacity="${mode === "dark" ? 0.36 : 0.28}"/>
+      <g filter="url(#${id}-soft-glow)" opacity="${mode === "dark" ? 0.82 : 0.58}">
+        ${path("M92 238 H384 L438 292 H646 L708 354 H1030 L1092 416 H1478", p.cyan, 2.2, 0.58)}
+        ${path("M146 806 H426 L492 744 H682 L742 682 H1034 L1112 606 H1450", p.yellow, 2.4, 0.62)}
+        ${path("M956 126 V278 L1018 340 V532 L1082 594 V842", p.magenta, 2, 0.5)}
+      </g>
+      <g opacity="${mode === "dark" ? 0.55 : 0.38}">
+        ${node(438, 292, p.panel, p.cyan)}
+        ${node(742, 682, p.panel, p.yellow)}
+        ${node(1018, 340, p.panel, p.magenta)}
+        ${dot(1092, 416, 4, p.cyan, 0.76)}
+        ${dot(1112, 606, 4, p.yellow, 0.72)}
+      </g>
+      <rect width="1600" height="1000" filter="url(#${id}-grain)" opacity="0.58"/>
+    `,
+  });
+};
 
 const wrap = ({ id, title, mode, bg, defs, body }) => `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="${esc(title)} ${mode} background">
@@ -116,8 +142,8 @@ const option1 = (mode) => {
     defs: baseDefs({ id, ...p }),
     body: `
       <rect width="1600" height="1000" fill="url(#${id}-edge)"/>
-      <rect width="1600" height="1000" fill="url(#${id}-grid)" opacity="${mode === "dark" ? 0.78 : 0.58}"/>
-      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.26 : 0.16}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-field)" opacity="${mode === "dark" ? 0.42 : 0.32}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.12 : 0.08}"/>
       <g filter="url(#${id}-soft-glow)" opacity="${mode === "dark" ? 0.96 : 0.7}">
         ${line("-140,832 612,704 746,716 1190,608 1760,492", p.yellow, 3.8, 0.72)}
         ${line("1088,904 1608,632 1750,602", p.magenta, 3, 0.66)}
@@ -145,7 +171,7 @@ const option2 = (mode) => {
     bg: p.bg,
     defs: baseDefs({ id, ...p }),
     body: `
-      <rect width="1600" height="1000" fill="url(#${id}-grid)" opacity="${mode === "dark" ? 0.46 : 0.38}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-field)" opacity="${mode === "dark" ? 0.28 : 0.22}"/>
       <rect x="78" y="74" width="1444" height="852" fill="none" stroke="${p.major}" stroke-width="1.2" opacity="${mode === "dark" ? 0.32 : 0.2}"/>
       <g filter="url(#${id}-glow)">
         ${path("M88 286 H314 V196 H536 V150 H844 V216 H1032 V154 H1472", p.cyan, 2.4, 0.62)}
@@ -167,7 +193,7 @@ const option2 = (mode) => {
         <rect x="702" y="446" width="192" height="42" fill="none" stroke="${p.yellow}" stroke-width="1"/>
         <path d="M660 530 l-70 72 M936 404 l94 -78 M936 530 l126 88" stroke="${p.magenta}" stroke-width="1" fill="none"/>
       </g>
-      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.18 : 0.1}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.08 : 0.05}"/>
       <rect width="1600" height="1000" filter="url(#${id}-grain)" opacity="0.72"/>
     `,
   });
@@ -184,7 +210,7 @@ const option3 = (mode) => {
     defs: baseDefs({ id, ...p }),
     body: `
       <rect width="1600" height="1000" fill="url(#${id}-edge)"/>
-      <rect width="1600" height="1000" fill="url(#${id}-grid)" opacity="${mode === "dark" ? 0.32 : 0.28}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-field)" opacity="${mode === "dark" ? 0.24 : 0.18}"/>
       <g filter="url(#${id}-glow)" opacity="${mode === "dark" ? 0.82 : 0.62}">
         ${path("M-40 604 C130 540 226 652 378 580 S690 470 832 538 1124 678 1314 540 1580 468 1680 534", p.cyan, 2.1, 0.56)}
         ${path("M-20 674 C142 620 246 720 396 646 S714 548 868 620 1120 760 1328 614 1588 550 1690 620", p.cyan, 1.3, 0.38)}
@@ -204,7 +230,7 @@ const option3 = (mode) => {
         <rect x="1112" y="704" width="352" height="174" fill="none" stroke="${p.yellow}" stroke-width="1"/>
         <path d="M96 298 l-34 34 M488 96 l34 -34 M1112 704 l-42 -42 M1464 878 l44 44" stroke="${p.magenta}" fill="none"/>
       </g>
-      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.2 : 0.12}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.08 : 0.05}"/>
       <rect width="1600" height="1000" filter="url(#${id}-grain)" opacity="0.64"/>
     `,
   });
@@ -229,7 +255,7 @@ const option4 = (mode) => {
     bg: p.bg,
     defs: baseDefs({ id, ...p }),
     body: `
-      <rect width="1600" height="1000" fill="url(#${id}-grid)" opacity="${mode === "dark" ? 0.2 : 0.18}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-field)" opacity="${mode === "dark" ? 0.16 : 0.12}"/>
       <g filter="url(#${id}-soft-glow)">
         ${rain}
       </g>
@@ -245,7 +271,7 @@ const option4 = (mode) => {
         ${dot(1252, 176, 4, p.cyan, 0.85)}
         ${dot(1408, 822, 4, p.yellow, 0.75)}
       </g>
-      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.34 : 0.16}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.1 : 0.06}"/>
       <rect width="1600" height="1000" filter="url(#${id}-grain)" opacity="0.8"/>
     `,
   });
@@ -261,7 +287,7 @@ const option5 = (mode) => {
     bg: mode === "dark" ? "#080b10" : "#f2f7f5",
     defs: baseDefs({ id, ...p, glow: [p.orange, p.cyan, p.magenta] }),
     body: `
-      <rect width="1600" height="1000" fill="url(#${id}-grid)" opacity="${mode === "dark" ? 0.36 : 0.26}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-field)" opacity="${mode === "dark" ? 0.24 : 0.16}"/>
       <g opacity="${mode === "dark" ? 0.34 : 0.2}">
         <path d="M0 0 H1600 V1000 H0 Z M128 126 H1472 V874 H128 Z" fill="${p.orange}" fill-rule="evenodd" opacity="${mode === "dark" ? 0.08 : 0.12}"/>
         <path d="M128 126 H1472 V874 H128 Z" fill="${mode === "dark" ? "#06111a" : "#f8fcfb"}" opacity="${mode === "dark" ? 0.34 : 0.38}"/>
@@ -286,13 +312,14 @@ const option5 = (mode) => {
         <rect x="620" y="462" width="360" height="92" fill="none" stroke="${p.orange}" stroke-width="1"/>
         <path d="M620 508 H980 M800 462 V554" stroke="${p.cyan}" stroke-width="1"/>
       </g>
-      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.18 : 0.1}"/>
+      <rect width="1600" height="1000" fill="url(#${id}-scan)" opacity="${mode === "dark" ? 0.08 : 0.05}"/>
       <rect width="1600" height="1000" filter="url(#${id}-grain)" opacity="0.7"/>
     `,
   });
 };
 
 const options = [
+  { name: "00-soft-field", title: "00 柔光线路", desc: "替代经典网格的低密度默认背景，保留线路和节点，不再使用密集小格子。" },
   { name: "01-night-lanes", title: "01 夜城斜轨", desc: "最接近当前赛博导航气质，但层次更多，适合作为默认深色背景。" },
   { name: "02-circuit-terrace", title: "02 高架电路", desc: "更像后台中控和硬件线路，秩序感强，适合卡片很多的导航页面。" },
   { name: "03-holo-map", title: "03 全息航图", desc: "地图/航线感更强，背景线条更柔，适合想弱化网格突兀感。" },
@@ -300,7 +327,7 @@ const options = [
   { name: "05-orange-core", title: "05 橙核矩阵", desc: "更贴合橙子导航和 Nerocats 的橙色识别，浅色模式也更温和。" },
 ];
 
-const generators = [option1, option2, option3, option4, option5];
+const generators = [option0, option1, option2, option3, option4, option5];
 
 generators.forEach((generator, index) => {
   const option = options[index];

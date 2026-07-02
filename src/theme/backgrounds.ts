@@ -26,12 +26,12 @@ export const DEFAULT_BACKGROUND_STYLE: BackgroundStyleId = "classic-grid";
 export const BACKGROUND_STYLES: BackgroundDefinition[] = [
   {
     id: "classic-grid",
-    nameZh: "经典网格",
-    nameEn: "Classic Grid",
-    descriptionZh: "当前站点默认背景，简洁的深浅网格和霓虹斜线。",
-    descriptionEn: "The current default grid with restrained neon diagonal lines.",
-    dark: "/cyber-grid-dark.png",
-    light: "/cyber-grid-light.png",
+    nameZh: "柔光线路",
+    nameEn: "Soft Lines",
+    descriptionZh: "低密度默认背景，保留霓虹线路和节点，不再使用密集小网格。",
+    descriptionEn: "A low-density default backdrop with neon rails and nodes, without dense micro grids.",
+    dark: "/background-options/00-soft-field-dark.svg",
+    light: "/background-options/00-soft-field-light.svg",
   },
   {
     id: "night-lanes",

@@ -460,6 +460,7 @@ a {
 }
 
 .search-box {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   grid-column: 2;
   width: 100%;
   min-height: 48px;
@@ -513,6 +514,7 @@ a {
 
 .search-box > svg,
 .search-box input,
+.search-clear-button,
 .search-box .engine-select {
   position: relative;
   z-index: 1;
@@ -565,6 +567,39 @@ a {
 
 .search-box input::placeholder {
   color: color-mix(in srgb, var(--muted) 78%, transparent);
+}
+
+.search-clear-button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--cyan) 24%, var(--line));
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--muted) 82%, var(--text));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 52%),
+    color-mix(in srgb, var(--panel-strong) 64%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 6%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.search-clear-button:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--cyan) 52%, var(--line));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 18%, transparent), color-mix(in srgb, var(--yellow) 8%, transparent)),
+    color-mix(in srgb, var(--panel-strong) 76%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 18px color-mix(in srgb, var(--cyan) 18%, transparent);
 }
 
 .search-box select,
@@ -692,7 +727,8 @@ a {
 }
 
 :root[data-theme="light"] .engine-trigger,
-:root[data-theme="light"] .engine-menu {
+:root[data-theme="light"] .engine-menu,
+:root[data-theme="light"] .search-clear-button {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 44%),
     rgba(255, 255, 255, 0.72);
@@ -2446,7 +2482,7 @@ a {
   }
 
   .search-box {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     grid-column: 1 / -1;
     grid-row: 2;
     width: 100%;

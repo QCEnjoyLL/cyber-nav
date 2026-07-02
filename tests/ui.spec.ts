@@ -7,6 +7,11 @@ test("public navigation renders and theme toggle works", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "橙子导航" })).toBeVisible();
   await expect(page).toHaveTitle("橙子导航");
   await expect(page.getByRole("heading", { name: "OpenAI" })).toBeVisible();
+  const searchInput = page.getByPlaceholder("搜索全网，也会同步筛选导航");
+  await searchInput.fill("open");
+  await expect(page.getByLabel("清空搜索")).toBeVisible();
+  await page.getByLabel("清空搜索").click();
+  await expect(searchInput).toHaveValue("");
   await page.getByLabel("theme").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", /light|dark/);
 });

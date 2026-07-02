@@ -56,7 +56,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
 import { BACKGROUND_STYLES, DEFAULT_BACKGROUND_STYLE, getBackgroundDefinition } from "./theme/backgrounds";
@@ -695,6 +695,20 @@ function PublicApp() {
               }}
               placeholder={t.searchPlaceholder}
             />
+            {query && (
+              <button
+                className="search-clear-button"
+                type="button"
+                aria-label="清空搜索"
+                title="清空搜索"
+                onClick={() => {
+                  setQuery("");
+                  searchInputRef.current?.focus();
+                }}
+              >
+                <X size={15} />
+              </button>
+            )}
             <EngineSelect engines={activeEngines} selectedEngine={selectedEngine} onChange={setEngineId} />
           </div>
           <div className="top-actions">
@@ -1742,6 +1756,78 @@ function AdminTagSelect({
   );
 }
 
+type AdminSelectOption<T extends string> = {
+  value: T;
+  label: string;
+  icon?: ReactNode;
+};
+
+function AdminOptionSelect<T extends string>({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  value: T;
+  options: AdminSelectOption<T>[];
+  onChange: (value: T) => void;
+  ariaLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const selectedOption = options.find((option) => option.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const selectValue = (nextValue: T) => {
+    onChange(nextValue);
+    setOpen(false);
+  };
+
+  return (
+    <div className="admin-select" ref={wrapperRef}>
+      <button className="admin-select-trigger" type="button" onClick={() => setOpen((state) => !state)} aria-label={ariaLabel} aria-haspopup="listbox" aria-expanded={open}>
+        <span className="admin-select-icon">{selectedOption?.icon}</span>
+        <span>{selectedOption?.label}</span>
+        <ChevronDown size={17} />
+      </button>
+      {open && (
+        <div className="admin-select-menu" role="listbox">
+          {options.map((option) => (
+            <button
+              className={clsx("admin-select-option", value === option.value && "active")}
+              key={option.value}
+              type="button"
+              onClick={() => selectValue(option.value)}
+              role="option"
+              aria-selected={value === option.value}
+            >
+              <span className="admin-select-icon">{option.icon}</span>
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminCategorySelect({
   categories,
   value,
@@ -1896,17 +1982,27 @@ function SettingsForm({
         <input value={form.titleEn} onChange={(event) => setForm({ ...form, titleEn: event.target.value })} placeholder="Orange Nav" />
       </AdminField>
       <AdminField label="默认语言" span="span-2">
-        <select value={form.defaultLocale} onChange={(event) => setForm({ ...form, defaultLocale: event.target.value as Locale })}>
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-        </select>
+        <AdminOptionSelect<Locale>
+          ariaLabel="默认语言"
+          value={form.defaultLocale}
+          options={[
+            { value: "zh", label: "中文", icon: <Languages size={17} /> },
+            { value: "en", label: "English", icon: <Languages size={17} /> },
+          ]}
+          onChange={(defaultLocale) => setForm({ ...form, defaultLocale })}
+        />
       </AdminField>
       <AdminField label="默认主题" span="span-2">
-        <select value={form.defaultTheme} onChange={(event) => setForm({ ...form, defaultTheme: event.target.value as ThemeMode })}>
-          <option value="system">System</option>
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-        </select>
+        <AdminOptionSelect<ThemeMode>
+          ariaLabel="默认主题"
+          value={form.defaultTheme}
+          options={[
+            { value: "system", label: "System", icon: <Settings size={17} /> },
+            { value: "dark", label: "Dark", icon: <Moon size={17} /> },
+            { value: "light", label: "Light", icon: <Sun size={17} /> },
+          ]}
+          onChange={(defaultTheme) => setForm({ ...form, defaultTheme })}
+        />
       </AdminField>
       <AdminField label="中文副标题" span="span-6">
         <input value={form.subtitleZh} onChange={(event) => setForm({ ...form, subtitleZh: event.target.value })} placeholder="个人导航系统" />

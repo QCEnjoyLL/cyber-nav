@@ -84,6 +84,16 @@ test("admin list scrolls independently and category icon can be picked", async (
   await page.locator(".admin-nav .category-button").nth(1).click();
   await page.locator('.icon-picker-button[aria-label="Server"]').click();
   await expect(page.locator('input[placeholder="Folder"]')).toHaveValue("Server");
+
+  await page.getByRole("button", { name: "站点设置" }).click();
+  const localeSelect = page.getByLabel("默认语言");
+  await localeSelect.click();
+  await page.getByRole("option", { name: "English" }).click();
+  await expect(localeSelect).toContainText("English");
+  const themeSelect = page.getByLabel("默认主题");
+  await themeSelect.click();
+  await page.getByRole("option", { name: "Dark" }).click();
+  await expect(themeSelect).toContainText("Dark");
 });
 
 test("admin create update and delete show explicit feedback", async ({ page }) => {

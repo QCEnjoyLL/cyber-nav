@@ -24,7 +24,7 @@ test("admin login screen renders", async ({ page }) => {
   await page.route("**/api/admin/session", (route) => route.abort());
   await page.goto("/admin");
 
-  await expect(page.getByRole("heading", { name: "进入后台" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "进入管理" })).toBeVisible();
   await expect(page.getByPlaceholder("管理密码")).toBeVisible();
   await expect(page).toHaveTitle("橙子导航");
 });

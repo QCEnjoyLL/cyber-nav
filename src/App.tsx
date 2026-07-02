@@ -11,6 +11,7 @@ import {
   Folder,
   GitBranch,
   Globe2,
+  Home,
   Languages,
   LayoutDashboard,
   Lock,
@@ -61,7 +62,7 @@ const iconMap: Record<string, LucideIcon> = {
 const text = {
   zh: {
     all: "全部",
-    admin: "后台",
+    admin: "管理",
     command: "命令",
     favoriteOnly: "收藏",
     filterPlaceholder: "搜索站点、标签或地址",
@@ -71,7 +72,7 @@ const text = {
     pinned: "置顶",
     searchPlaceholder: "搜索全网，也会同步筛选导航",
     tags: "标签",
-    loginTitle: "进入后台",
+    loginTitle: "进入管理",
     password: "管理密码",
     login: "登录",
     logout: "退出",
@@ -884,6 +885,9 @@ function AdminApp() {
   if (session === "anonymous") {
     return (
       <div className="admin-login">
+        <a className="home-icon-link" href="/" aria-label="返回首页" title="返回首页">
+          <Home size={18} />
+        </a>
         <div className="login-panel">
           <Lock size={32} />
           <h1>{t.loginTitle}</h1>
@@ -942,6 +946,9 @@ function AdminApp() {
       </aside>
       <main className="admin-main">
         <header className="admin-topbar">
+          <a className="icon-button admin-home-button" href="/" aria-label="返回首页" title="返回首页">
+            <Home size={18} />
+          </a>
           <h1>{t.dashboard}</h1>
           <div className="top-actions">
             <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language">
@@ -950,6 +957,8 @@ function AdminApp() {
             <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
           </div>
         </header>
+
+        <div className="admin-content">
 
         {tab === "links" && (
           <AdminSection title={t.links}>
@@ -1031,6 +1040,7 @@ function AdminApp() {
           </AdminSection>
         )}
         {message && <p className="form-message">{message}</p>}
+        </div>
       </main>
     </div>
   );

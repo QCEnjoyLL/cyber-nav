@@ -5,6 +5,7 @@ import {
   Command,
   Database,
   ExternalLink,
+  Film,
   Folder,
   GitBranch,
   Globe2,
@@ -14,6 +15,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  Network,
   Plus,
   Rocket,
   Search,
@@ -25,6 +27,7 @@ import {
   Sun,
   TerminalSquare,
   Trash2,
+  Users,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -38,13 +41,16 @@ const iconMap: Record<string, LucideIcon> = {
   Bot,
   Cloud,
   Database,
+  Film,
   Folder,
   Github: GitBranch,
   Globe2,
   LayoutDashboard,
+  Network,
   Rocket,
   Sparkles,
   TerminalSquare,
+  Users,
 };
 
 const text = {

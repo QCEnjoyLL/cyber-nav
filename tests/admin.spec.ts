@@ -237,7 +237,7 @@ test("admin mobile layout scrolls and keeps the form usable", async ({ page }) =
     title: `Mobile Site ${index + 1}`,
     descriptionZh: "",
     descriptionEn: "",
-    url: `https://example.com/mobile-${index + 1}`,
+    url: index % 3 === 0 ? `https://very-long-mobile-admin-card-url-${index + 1}.nerocats.example.com/path/without/overflow/check` : `https://example.com/mobile-${index + 1}`,
     iconUrl: "",
     tags: ["mobile"],
     isPinned: false,
@@ -279,6 +279,13 @@ test("admin mobile layout scrolls and keeps the form usable", async ({ page }) =
 
   await page.goto("/admin");
   await page.waitForSelector(".admin-list-row");
+  await expect
+    .poll(async () => {
+      const contentBox = await page.locator(".admin-content").boundingBox();
+      const rowBoxes = await page.locator(".admin-list-row").evaluateAll((rows) => rows.map((row) => row.getBoundingClientRect().right));
+      return rowBoxes.every((right) => contentBox ? right <= contentBox.x + contentBox.width + 1 : false);
+    })
+    .toBe(true);
   await expect.poll(() => page.locator(".admin-shell").evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
   await page.locator(".admin-shell").evaluate((element) => {
     element.scrollTop = 520;

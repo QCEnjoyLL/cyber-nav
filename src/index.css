@@ -2270,6 +2270,8 @@ a {
   display: grid;
   gap: 10px;
   margin-bottom: 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .admin-tag-order {
@@ -2404,12 +2406,18 @@ a {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .admin-list-row {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 116px;
   height: 116px;
+  overflow: hidden;
   border: 1px solid var(--line);
   background:
     linear-gradient(150deg, rgba(255, 255, 255, 0.08), transparent 48%),
@@ -2421,6 +2429,7 @@ a {
 .admin-list-row > button:first-child {
   height: 100%;
   width: 100%;
+  min-width: 0;
   border: 0;
   background: transparent;
   color: var(--text);
@@ -2431,6 +2440,8 @@ a {
 .admin-list-row strong,
 .admin-list-row span {
   display: block;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .admin-list-row strong {

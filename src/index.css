@@ -2247,7 +2247,7 @@ a {
 }
 
 .admin-link-group-icon svg {
-  transform: translateY(0.5px);
+  transform: translateY(1.5px);
 }
 
 .admin-link-group-header strong,
@@ -2475,7 +2475,7 @@ a {
 .admin-sort-badge span {
   display: block;
   line-height: 1;
-  transform: translateY(1px);
+  transform: translateY(-1px);
 }
 
 .danger-button {

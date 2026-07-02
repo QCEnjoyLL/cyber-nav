@@ -2137,13 +2137,14 @@ a {
 
 .admin-link-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
 }
 
 .admin-list-row {
   position: relative;
   min-height: 116px;
+  height: 116px;
   border: 1px solid var(--line);
   background:
     linear-gradient(150deg, rgba(255, 255, 255, 0.08), transparent 48%),
@@ -2153,13 +2154,13 @@ a {
 }
 
 .admin-list-row > button:first-child {
-  min-height: 116px;
+  height: 100%;
   width: 100%;
   border: 0;
   background: transparent;
   color: var(--text);
   text-align: left;
-  padding: 14px 54px 14px 14px;
+  padding: 14px 54px 32px 14px;
 }
 
 .admin-list-row strong,
@@ -2167,11 +2168,40 @@ a {
   display: block;
 }
 
+.admin-list-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .admin-list-row span {
   color: var(--muted);
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   margin-top: 8px;
   font-size: 0.86rem;
+}
+
+.admin-sort-badge {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  min-width: 34px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 34%, var(--line));
+  border-radius: 999px;
+  color: var(--cyan);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--cyan) 14%, transparent), color-mix(in srgb, var(--yellow) 7%, transparent)),
+    color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--cyan) 8%, transparent);
 }
 
 .danger-button {
@@ -2184,6 +2214,18 @@ a {
   place-items: center;
   color: var(--danger);
   background: rgba(255, 82, 109, 0.08);
+}
+
+@media (max-width: 1120px) {
+  .admin-link-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-link-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .form-message {

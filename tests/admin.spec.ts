@@ -52,6 +52,12 @@ test("admin list scrolls independently and category icon can be picked", async (
 
   await page.goto("/admin");
   await page.waitForSelector(".admin-list-row");
+  await expect(page.locator(".admin-sort-badge").first()).toHaveText("1#");
+  await expect
+    .poll(() =>
+      page.locator(".admin-link-grid").first().evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").filter(Boolean).length),
+    )
+    .toBe(6);
   await expect(page.locator(".admin-link-group-header").filter({ hasText: "Media" })).toBeVisible();
   await expect(page.locator(".admin-link-group-header").filter({ hasText: "Tools" })).toBeVisible();
   await expect(page.locator(".admin-tag-group-header").filter({ hasText: "test" }).first()).toBeVisible();

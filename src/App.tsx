@@ -37,7 +37,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
-import type { BootstrapData, Category, Locale, NavLink, SearchEngine, SiteSettings, ThemeMode } from "./types";
+import { DEFAULT_THEME_PALETTE, getPaletteDefinition, getThemeColors, isThemePalette, THEME_PALETTES, type ThemeColorSet } from "./theme/palettes";
+import type { BootstrapData, Category, Locale, NavLink, ResolvedThemeMode, SearchEngine, SiteSettings, ThemeMode, ThemePalette } from "./types";
 import { buildSearchUrl, filterLinks, normalizeUrl } from "./utils/navigation";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -297,6 +298,7 @@ function PublicApp() {
   const [data, setData] = useState<BootstrapData>(defaultBootstrap);
   const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", defaultBootstrap.settings.defaultLocale);
   const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", defaultBootstrap.settings.defaultTheme);
+  const [themePalette, setThemePalette] = useStoredThemePalette();
   const [query, setQuery] = useState("");
   const [selectionKey, setSelectionKey] = useState("all");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
@@ -321,8 +323,13 @@ function PublicApp() {
   }, []);
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    applyTheme(theme, themePalette);
+    if (theme !== "system") return;
+    const media = window.matchMedia("(prefers-color-scheme: light)");
+    const onChange = () => applyTheme(theme, themePalette);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [theme, themePalette]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -518,7 +525,7 @@ function PublicApp() {
             <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language">
               <Languages size={18} />
             </button>
-            <ThemeButton theme={theme} setTheme={setTheme} />
+            <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
           </div>
         </header>
 
@@ -683,6 +690,7 @@ function CommandPalette({
 function AdminApp() {
   const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", "zh");
   const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", "dark");
+  const [themePalette, setThemePalette] = useStoredThemePalette();
   const [session, setSession] = useState<"checking" | "anonymous" | "authenticated">("checking");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -700,8 +708,13 @@ function AdminApp() {
   const adminTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    applyTheme(theme, themePalette);
+    if (theme !== "system") return;
+    const media = window.matchMedia("(prefers-color-scheme: light)");
+    const onChange = () => applyTheme(theme, themePalette);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [theme, themePalette]);
 
   useEffect(() => {
     document.title = adminTitle;
@@ -835,7 +848,7 @@ function AdminApp() {
             <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language">
               <Languages size={18} />
             </button>
-            <ThemeButton theme={theme} setTheme={setTheme} />
+            <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
           </div>
         </header>
 
@@ -922,13 +935,71 @@ function AdminApp() {
   );
 }
 
-function ThemeButton({ theme, setTheme }: { theme: ThemeMode; setTheme: (theme: ThemeMode) => void }) {
-  const nextTheme = theme === "system" ? "dark" : theme === "dark" ? "light" : "system";
-  const Icon = theme === "light" ? Sun : theme === "dark" ? Moon : Settings;
+function ThemeButton({
+  theme,
+  setTheme,
+  palette,
+  setPalette,
+}: {
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+  palette: ThemePalette;
+  setPalette: (palette: ThemePalette) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedPalette = getPaletteDefinition(palette);
+  const resolvedMode = getResolvedThemeMode(theme);
+  const modeOptions: Array<{ key: ThemeMode; label: string; icon: React.ReactNode }> = [
+    { key: "system", label: "跟随系统", icon: <Settings size={17} /> },
+    { key: "light", label: "浅色", icon: <Sun size={17} /> },
+    { key: "dark", label: "深色", icon: <Moon size={17} /> },
+  ];
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest(".appearance-control")) setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
   return (
-    <button className="icon-button" onClick={() => setTheme(nextTheme)} aria-label="theme">
-      <Icon size={18} />
-    </button>
+    <div className="appearance-control">
+      <button className="appearance-trigger" onClick={() => setOpen((value) => !value)} aria-label="theme" aria-haspopup="menu" aria-expanded={open}>
+        <Settings size={18} />
+        <span className="appearance-trigger-swatch" style={{ background: getThemeColors(resolvedMode, palette).accent }} />
+        <span className="appearance-trigger-text">{selectedPalette.label}</span>
+      </button>
+      {open && (
+        <div className="appearance-menu" role="menu">
+          <div className="appearance-menu-group">
+            <strong>模式</strong>
+            {modeOptions.map((item) => (
+              <button className="appearance-menu-item" key={item.key} onClick={() => setTheme(item.key)} role="menuitem">
+                {item.icon}
+                <span>{item.label}</span>
+                {theme === item.key && <Check className="appearance-check" size={16} />}
+              </button>
+            ))}
+          </div>
+          <div className="appearance-menu-divider" />
+          <div className="appearance-menu-group">
+            <strong>配色</strong>
+            <div className="appearance-palette-list">
+              {THEME_PALETTES.map((item) => (
+                <button className="appearance-menu-item" key={item.key} onClick={() => setPalette(item.key)} role="menuitem">
+                  <span className="appearance-swatch" style={{ background: getThemeColors(resolvedMode, item.key).accent }} />
+                  <span>{item.label}</span>
+                  {palette === item.key && <Check className="appearance-check" size={16} />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1134,6 +1205,20 @@ function useStoredState<T extends string>(key: string, fallback: T): [T, (value:
   ];
 }
 
+function useStoredThemePalette(): [ThemePalette, (value: ThemePalette) => void] {
+  const [value, setValue] = useState<ThemePalette>(() => {
+    const stored = localStorage.getItem("cyber-nav-palette");
+    return stored && isThemePalette(stored) ? stored : DEFAULT_THEME_PALETTE;
+  });
+  return [
+    value,
+    (next) => {
+      localStorage.setItem("cyber-nav-palette", next);
+      setValue(next);
+    },
+  ];
+}
+
 function useStoredSet(key: string): [Set<string>, (update: (current: Set<string>) => Set<string>) => void] {
   const [value, setValue] = useState<Set<string>>(() => new Set(JSON.parse(localStorage.getItem(key) || "[]") as string[]));
   return [
@@ -1148,9 +1233,49 @@ function useStoredSet(key: string): [Set<string>, (update: (current: Set<string>
   ];
 }
 
-function applyTheme(theme: ThemeMode) {
-  const resolved = theme === "system" ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : theme;
+function getResolvedThemeMode(theme: ThemeMode): ResolvedThemeMode {
+  return theme === "system" ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : theme;
+}
+
+function applyTheme(theme: ThemeMode, palette: ThemePalette) {
+  const resolved = getResolvedThemeMode(theme);
+  const colors = getThemeColors(resolved, palette);
   document.documentElement.dataset.theme = resolved;
+  document.documentElement.dataset.palette = palette;
+  applyThemeVariables(colors, resolved);
+}
+
+function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode): void {
+  const root = document.documentElement;
+  const alphaPanel = resolved === "dark" ? "0.84" : "0.78";
+  const alphaStrong = resolved === "dark" ? "0.94" : "0.94";
+  const entries: Array<[string, string]> = [
+    ["--bg", colors.pageBg],
+    ["--bg-soft", colors.elevatedBg],
+    ["--panel", hexToRgba(colors.panelBg, alphaPanel)],
+    ["--panel-strong", hexToRgba(colors.sidebarBg, alphaStrong)],
+    ["--text", colors.text],
+    ["--muted", colors.muted],
+    ["--line", hexToRgba(colors.border, resolved === "dark" ? "0.72" : "0.58")],
+    ["--cyan", colors.accent],
+    ["--yellow", colors.accentHover],
+    ["--magenta", colors.accentHover],
+    ["--green", colors.accentHover],
+    ["--tile", hexToRgba(colors.panelBg, resolved === "dark" ? "0.72" : "0.68")],
+    ["--tile-hover", hexToRgba(colors.elevatedBg, resolved === "dark" ? "0.94" : "0.96")],
+    ["--field-bg", hexToRgba(colors.elevatedBg, resolved === "dark" ? "0.52" : "0.7")],
+    ["--shadow", resolved === "dark" ? "0 24px 60px rgba(0, 0, 0, 0.36)" : "0 18px 44px rgba(31, 56, 64, 0.12)"],
+  ];
+  entries.forEach(([key, value]) => root.style.setProperty(key, value));
+}
+
+function hexToRgba(value: string, alpha: string): string {
+  if (!/^#[0-9a-f]{6}$/i.test(value)) return value;
+  const numeric = Number.parseInt(value.slice(1), 16);
+  const red = (numeric >> 16) & 255;
+  const green = (numeric >> 8) & 255;
+  const blue = numeric & 255;
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
 function splitTags(value: string): string[] {

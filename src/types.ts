@@ -1,5 +1,34 @@
 export type Locale = "zh" | "en";
 export type ThemeMode = "system" | "light" | "dark";
+export type ResolvedThemeMode = "light" | "dark";
+export type ThemePalette =
+  | "absolutely"
+  | "ayu"
+  | "catppuccin"
+  | "codex"
+  | "dracula"
+  | "everforest"
+  | "github"
+  | "gruvbox"
+  | "linear"
+  | "lobster"
+  | "material"
+  | "matrix"
+  | "monokai"
+  | "night-owl"
+  | "nord"
+  | "notion"
+  | "one"
+  | "oscurance"
+  | "raycast"
+  | "rose-pine"
+  | "sentry"
+  | "solarized"
+  | "temple"
+  | "tokyo-night"
+  | "vercel"
+  | "vs-code-plus"
+  | "xcode";
 
 export interface Category {
   id: string;

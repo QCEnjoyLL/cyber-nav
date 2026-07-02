@@ -156,7 +156,7 @@ const text = {
     command: "命令",
     favoriteOnly: "收藏",
     filterPlaceholder: "搜索站点、标签或地址",
-    links: "导航",
+    links: "导航管理",
     noResult: "没有匹配的入口",
     openRandom: "随机",
     pinned: "置顶",
@@ -165,7 +165,7 @@ const text = {
     loginTitle: "进入管理",
     password: "管理密码",
     login: "登录",
-    logout: "退出",
+    logout: "退出登录",
     dashboard: "控制台",
     categories: "分类",
     engines: "搜索引擎",
@@ -1163,7 +1163,7 @@ function AdminApp() {
         </div>
         {[
           ["links", t.links, Globe2],
-          ["categories", t.categories, Folder],
+          ["categories", locale === "zh" ? "分类管理" : t.categories, Folder],
           ["engines", t.engines, Search],
           ["settings", t.settings, Settings],
           ["import", t.importExport, Database],

@@ -1461,6 +1461,10 @@ a {
   pointer-events: none;
 }
 
+.admin-mobile-actions {
+  display: none;
+}
+
 .floating-action-button {
   width: 30px;
   height: 30px;
@@ -2651,6 +2655,11 @@ a {
     right: 14px;
     bottom: 14px;
     gap: 7px;
+  }
+
+  .admin-mobile-actions {
+    display: grid;
+    z-index: 14;
   }
 
   .floating-action-button {

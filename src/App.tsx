@@ -932,6 +932,7 @@ function AdminApp() {
   const [engineForm, setEngineForm] = useState<SearchEngine>(emptyEngine);
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(defaultBootstrap.settings);
   const [jsonBuffer, setJsonBuffer] = useState("");
+  const adminShellRef = useRef<HTMLDivElement>(null);
   const messageTimer = useRef<number | null>(null);
   const t = text[locale];
   const adminTitle = data ? (locale === "zh" ? data.settings.titleZh : data.settings.titleEn) : "橙子导航";
@@ -1097,6 +1098,10 @@ function AdminApp() {
     notify("标签顺序已保存");
   }
 
+  function scrollAdminTop() {
+    adminShellRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   if (session === "checking" || (session === "authenticated" && !data)) {
     return (
       <div className="center-screen cute-loading-screen">
@@ -1145,7 +1150,7 @@ function AdminApp() {
   const adminData = data;
 
   return (
-    <div className="admin-shell">
+    <div className="admin-shell" ref={adminShellRef}>
       <aside className="admin-nav">
         <div className="brand-mark">
           <span className="brand-chip">
@@ -1310,6 +1315,11 @@ function AdminApp() {
         {message && <p className="form-message">{message}</p>}
         </div>
       </main>
+      <div className="floating-actions admin-mobile-actions" aria-label="admin quick actions">
+        <button className="floating-action-button" onClick={scrollAdminTop} title="回到顶部" aria-label="回到顶部">
+          <Navigation size={14} />
+        </button>
+      </div>
     </div>
   );
 }

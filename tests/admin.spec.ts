@@ -284,6 +284,9 @@ test("admin mobile layout scrolls and keeps the form usable", async ({ page }) =
     element.scrollTop = 520;
   });
   await expect.poll(() => page.locator(".admin-shell").evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await expect(page.locator(".admin-mobile-actions").getByLabel("回到顶部")).toBeVisible();
+  await page.locator(".admin-mobile-actions").getByLabel("回到顶部").click();
+  await expect.poll(() => page.locator(".admin-shell").evaluate((element) => element.scrollTop)).toBe(0);
   await page.locator('input[placeholder="偏爱一丛花"]').fill("Mobile Editable Site");
   await expect(page.locator('input[placeholder="偏爱一丛花"]')).toHaveValue("Mobile Editable Site");
 });

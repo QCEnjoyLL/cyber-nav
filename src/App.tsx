@@ -2193,7 +2193,9 @@ function AdminLinkGroups({
                         <strong>{link.title}</strong>
                         <span>{link.url}</span>
                       </button>
-                      <span className="admin-sort-badge">{index + 1}#</span>
+                      <span className="admin-sort-badge">
+                        <span>{index + 1}#</span>
+                      </span>
                       <button className="danger-button" onClick={() => onDelete(link)} aria-label="delete">
                         <Trash2 size={16} />
                       </button>

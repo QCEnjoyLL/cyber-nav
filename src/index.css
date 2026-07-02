@@ -2231,12 +2231,19 @@ a {
 .admin-link-group-icon {
   width: 30px;
   height: 30px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  line-height: 0;
   border: 1px solid color-mix(in srgb, var(--group-color, var(--cyan)) 38%, var(--line));
   border-radius: 9px;
   color: var(--group-color, var(--cyan));
   background: color-mix(in srgb, var(--group-color, var(--cyan)) 12%, transparent);
+}
+
+.admin-link-group-icon svg {
+  transform: translateY(0.5px);
 }
 
 .admin-link-group-header strong,
@@ -2459,6 +2466,12 @@ a {
   text-align: center;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--cyan) 8%, transparent);
+}
+
+.admin-sort-badge span {
+  display: block;
+  line-height: 1;
+  transform: translateY(1px);
 }
 
 .danger-button {

@@ -935,7 +935,9 @@ function AdminApp() {
         {tab === "import" && (
           <AdminSection title={t.importExport}>
             <div className="admin-form">
-              <textarea value={jsonBuffer} onChange={(event) => setJsonBuffer(event.target.value)} rows={18} />
+              <AdminField label="JSON 内容" span="span-12" hint="可导出当前配置备份，也可以粘贴 JSON 后导入。">
+                <textarea value={jsonBuffer} onChange={(event) => setJsonBuffer(event.target.value)} rows={18} />
+              </AdminField>
               <div className="form-actions">
                 <button className="tool-button" onClick={() => setJsonBuffer(JSON.stringify(data, null, 2))}>
                   {t.export}
@@ -1038,6 +1040,28 @@ function AdminSection({ title, children }: { title: string; children: React.Reac
   );
 }
 
+function AdminField({
+  label,
+  hint,
+  span = "span-3",
+  children,
+}: {
+  label: string;
+  hint?: string;
+  span?: "span-2" | "span-3" | "span-4" | "span-6" | "span-8" | "span-12";
+  children: React.ReactNode;
+}) {
+  return (
+    <label className={clsx("admin-field", span)}>
+      <span className="admin-field-label">{label}</span>
+      {children}
+      {hint && <small>{hint}</small>}
+    </label>
+  );
+}
+
+
+
 function CategoryForm({
   form,
   setForm,
@@ -1051,23 +1075,41 @@ function CategoryForm({
 }) {
   return (
     <div className="admin-form">
-      <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="id" />
-      <input value={form.nameZh} onChange={(event) => setForm({ ...form, nameZh: event.target.value })} placeholder="中文名称" />
-      <input value={form.nameEn} onChange={(event) => setForm({ ...form, nameEn: event.target.value })} placeholder="English name" />
-      <input value={form.icon} onChange={(event) => setForm({ ...form, icon: event.target.value })} placeholder="Icon" />
-      <input value={form.color} onChange={(event) => setForm({ ...form, color: event.target.value })} placeholder={t.color} />
-      <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder={t.sort} />
-      <label className="check-row">
-        <input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} />
-        {t.active}
-      </label>
-      <button className="primary-button" onClick={onSubmit}>
-        <Plus size={16} />
-        {t.save}
-      </button>
+      <AdminField label="分类 ID" hint="留空会自动生成；建议使用英文、数字或短横线。">
+        <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="tools" />
+      </AdminField>
+      <AdminField label="中文名称">
+        <input value={form.nameZh} onChange={(event) => setForm({ ...form, nameZh: event.target.value })} placeholder="AI 工具" />
+      </AdminField>
+      <AdminField label="英文名称">
+        <input value={form.nameEn} onChange={(event) => setForm({ ...form, nameEn: event.target.value })} placeholder="AI Tools" />
+      </AdminField>
+      <AdminField label="图标名称" hint="使用 lucide 图标名，例如 Folder、Bot。">
+        <input value={form.icon} onChange={(event) => setForm({ ...form, icon: event.target.value })} placeholder="Folder" />
+      </AdminField>
+      <AdminField label="强调色">
+        <input value={form.color} onChange={(event) => setForm({ ...form, color: event.target.value })} placeholder="#00f5ff" />
+      </AdminField>
+      <AdminField label="排序" span="span-2">
+        <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder="10" />
+      </AdminField>
+      <div className="admin-toggle-group span-4">
+        <span className="admin-field-label">状态</span>
+        <label className="check-row">
+          <input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} />
+          {t.active}
+        </label>
+      </div>
+      <div className="form-actions">
+        <button className="primary-button admin-save-button" onClick={onSubmit}>
+          <Plus size={16} />
+          {t.save}
+        </button>
+      </div>
     </div>
   );
 }
+
 
 function LinkForm({
   form,
@@ -1084,23 +1126,42 @@ function LinkForm({
 }) {
   return (
     <div className="admin-form">
-      <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="id" />
-      <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder={t.title} />
-      <input value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} placeholder={t.url} />
-      <select value={form.categoryId ?? ""} onChange={(event) => setForm({ ...form, categoryId: event.target.value || null })}>
-        <option value="">未分类</option>
-        {categories.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.nameZh}
-          </option>
-        ))}
-      </select>
-      <input value={form.descriptionZh} onChange={(event) => setForm({ ...form, descriptionZh: event.target.value })} placeholder="中文描述" />
-      <input value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} placeholder="English description" />
-      <input value={form.iconUrl} onChange={(event) => setForm({ ...form, iconUrl: event.target.value })} placeholder="Icon URL" />
-      <input value={form.tags.join(",")} onChange={(event) => setForm({ ...form, tags: splitTags(event.target.value) })} placeholder={t.tagsHint} />
-      <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder={t.sort} />
-      <div className="checkbox-grid">
+      <AdminField label="导航 ID" hint="留空会自动生成；导入旧数据时可保留原 ID。">
+        <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="nerocats-blog" />
+      </AdminField>
+      <AdminField label="站点名称">
+        <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="偏爱一丛花" />
+      </AdminField>
+      <AdminField label="所属分类">
+        <select value={form.categoryId ?? ""} onChange={(event) => setForm({ ...form, categoryId: event.target.value || null })}>
+          <option value="">未分类</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.nameZh}
+            </option>
+          ))}
+        </select>
+      </AdminField>
+      <AdminField label="排序" span="span-2">
+        <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder="100" />
+      </AdminField>
+      <AdminField label="站点网址" span="span-6">
+        <input value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} placeholder="https://www.example.com" />
+      </AdminField>
+      <AdminField label="图标地址" span="span-6" hint="可填写 favicon、图片 URL；留空会使用默认图标。">
+        <input value={form.iconUrl} onChange={(event) => setForm({ ...form, iconUrl: event.target.value })} placeholder="https://example.com/favicon.ico" />
+      </AdminField>
+      <AdminField label="中文描述" span="span-6">
+        <input value={form.descriptionZh} onChange={(event) => setForm({ ...form, descriptionZh: event.target.value })} placeholder="我的网站、博客" />
+      </AdminField>
+      <AdminField label="英文描述" span="span-6">
+        <input value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} placeholder="My website and blog" />
+      </AdminField>
+      <AdminField label="标签" span="span-8" hint="多个标签用英文逗号分隔，例如：博客,工具,AI。">
+        <input value={form.tags.join(",")} onChange={(event) => setForm({ ...form, tags: splitTags(event.target.value) })} placeholder="我的网站,博客" />
+      </AdminField>
+      <div className="admin-toggle-group span-4">
+        <span className="admin-field-label">展示选项</span>
         <label className="check-row">
           <input type="checkbox" checked={form.isPinned} onChange={(event) => setForm({ ...form, isPinned: event.target.checked })} />
           {t.pinned}
@@ -1114,13 +1175,16 @@ function LinkForm({
           {t.active}
         </label>
       </div>
-      <button className="primary-button" onClick={onSubmit}>
-        <Plus size={16} />
-        {t.save}
-      </button>
+      <div className="form-actions">
+        <button className="primary-button admin-save-button" onClick={onSubmit}>
+          <Plus size={16} />
+          {t.save}
+        </button>
+      </div>
     </div>
   );
 }
+
 
 function EngineForm({
   form,
@@ -1135,26 +1199,42 @@ function EngineForm({
 }) {
   return (
     <div className="admin-form">
-      <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="id" />
-      <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder={t.title} />
-      <input value={form.urlTemplate} onChange={(event) => setForm({ ...form, urlTemplate: event.target.value })} placeholder="https://...{query}" />
-      <input value={form.shortcut} onChange={(event) => setForm({ ...form, shortcut: event.target.value })} placeholder={t.shortcut} />
-      <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder={t.sort} />
-      <label className="check-row">
-        <input type="checkbox" checked={form.isDefault} onChange={(event) => setForm({ ...form, isDefault: event.target.checked })} />
-        {t.default}
-      </label>
-      <label className="check-row">
-        <input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} />
-        {t.active}
-      </label>
-      <button className="primary-button" onClick={onSubmit}>
-        <Plus size={16} />
-        {t.save}
-      </button>
+      <AdminField label="搜索引擎 ID">
+        <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="google" />
+      </AdminField>
+      <AdminField label="显示名称">
+        <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Google" />
+      </AdminField>
+      <AdminField label="快捷码" span="span-2">
+        <input value={form.shortcut} onChange={(event) => setForm({ ...form, shortcut: event.target.value })} placeholder="gg" />
+      </AdminField>
+      <AdminField label="排序" span="span-2">
+        <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder="10" />
+      </AdminField>
+      <AdminField label="搜索地址模板" span="span-8" hint="必须包含 {query}，搜索时会替换为关键词。">
+        <input value={form.urlTemplate} onChange={(event) => setForm({ ...form, urlTemplate: event.target.value })} placeholder="https://www.google.com/search?q={query}" />
+      </AdminField>
+      <div className="admin-toggle-group span-4">
+        <span className="admin-field-label">状态</span>
+        <label className="check-row">
+          <input type="checkbox" checked={form.isDefault} onChange={(event) => setForm({ ...form, isDefault: event.target.checked })} />
+          {t.default}
+        </label>
+        <label className="check-row">
+          <input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} />
+          {t.active}
+        </label>
+      </div>
+      <div className="form-actions">
+        <button className="primary-button admin-save-button" onClick={onSubmit}>
+          <Plus size={16} />
+          {t.save}
+        </button>
+      </div>
     </div>
   );
 }
+
 
 function SettingsForm({
   form,
@@ -1169,35 +1249,51 @@ function SettingsForm({
 }) {
   return (
     <div className="admin-form">
-      <input value={form.titleZh} onChange={(event) => setForm({ ...form, titleZh: event.target.value })} placeholder="中文标题" />
-      <input value={form.titleEn} onChange={(event) => setForm({ ...form, titleEn: event.target.value })} placeholder="English title" />
-      <input value={form.subtitleZh} onChange={(event) => setForm({ ...form, subtitleZh: event.target.value })} placeholder="中文副标题" />
-      <input value={form.subtitleEn} onChange={(event) => setForm({ ...form, subtitleEn: event.target.value })} placeholder="English subtitle" />
-      <select value={form.defaultLocale} onChange={(event) => setForm({ ...form, defaultLocale: event.target.value as Locale })}>
-        <option value="zh">中文</option>
-        <option value="en">English</option>
-      </select>
-      <select value={form.defaultTheme} onChange={(event) => setForm({ ...form, defaultTheme: event.target.value as ThemeMode })}>
-        <option value="system">System</option>
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
-      </select>
-      <select
-        value={form.backgroundStyle}
-        onChange={(event) => setForm({ ...form, backgroundStyle: event.target.value as BackgroundStyle })}
-        aria-label="背景风格"
-        title="背景风格"
-      >
-        {BACKGROUND_STYLES.map((style) => (
-          <option key={style.id} value={style.id}>
-            {style.nameZh} / {style.nameEn}
-          </option>
-        ))}
-      </select>
-      <button className="primary-button" onClick={onSubmit}>
-        <Check size={16} />
-        {t.save}
-      </button>
+      <AdminField label="中文站点名称">
+        <input value={form.titleZh} onChange={(event) => setForm({ ...form, titleZh: event.target.value })} placeholder="橙子导航" />
+      </AdminField>
+      <AdminField label="英文站点名称">
+        <input value={form.titleEn} onChange={(event) => setForm({ ...form, titleEn: event.target.value })} placeholder="Orange Nav" />
+      </AdminField>
+      <AdminField label="默认语言" span="span-2">
+        <select value={form.defaultLocale} onChange={(event) => setForm({ ...form, defaultLocale: event.target.value as Locale })}>
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+        </select>
+      </AdminField>
+      <AdminField label="默认主题" span="span-2">
+        <select value={form.defaultTheme} onChange={(event) => setForm({ ...form, defaultTheme: event.target.value as ThemeMode })}>
+          <option value="system">System</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </AdminField>
+      <AdminField label="中文副标题" span="span-6">
+        <input value={form.subtitleZh} onChange={(event) => setForm({ ...form, subtitleZh: event.target.value })} placeholder="个人导航系统" />
+      </AdminField>
+      <AdminField label="英文副标题" span="span-6">
+        <input value={form.subtitleEn} onChange={(event) => setForm({ ...form, subtitleEn: event.target.value })} placeholder="Personal navigation system" />
+      </AdminField>
+      <AdminField label="背景风格" span="span-6">
+        <select
+          value={form.backgroundStyle}
+          onChange={(event) => setForm({ ...form, backgroundStyle: event.target.value as BackgroundStyle })}
+          aria-label="背景风格"
+          title="背景风格"
+        >
+          {BACKGROUND_STYLES.map((style) => (
+            <option key={style.id} value={style.id}>
+              {style.nameZh} / {style.nameEn}
+            </option>
+          ))}
+        </select>
+      </AdminField>
+      <div className="form-actions">
+        <button className="primary-button admin-save-button" onClick={onSubmit}>
+          <Check size={16} />
+          {t.save}
+        </button>
+      </div>
     </div>
   );
 }

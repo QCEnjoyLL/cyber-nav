@@ -1392,17 +1392,18 @@ a {
 
 .admin-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 16px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 18px;
   border: 1px solid var(--line);
+  border-radius: 8px;
   background:
     linear-gradient(135deg, rgba(0, 245, 255, 0.08), transparent 46%),
     linear-gradient(315deg, rgba(252, 238, 10, 0.06), transparent 42%),
     var(--panel);
   box-shadow: var(--shadow);
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
 }
 
 .admin-form textarea {
@@ -1411,14 +1412,73 @@ a {
   min-height: 320px;
 }
 
+.admin-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-field.span-2,
+.admin-toggle-group.span-2 {
+  grid-column: span 2;
+}
+
+.admin-field.span-3,
+.admin-toggle-group.span-3 {
+  grid-column: span 3;
+}
+
+.admin-field.span-4,
+.admin-toggle-group.span-4 {
+  grid-column: span 4;
+}
+
+.admin-field.span-6,
+.admin-toggle-group.span-6 {
+  grid-column: span 6;
+}
+
+.admin-field.span-8,
+.admin-toggle-group.span-8 {
+  grid-column: span 8;
+}
+
+.admin-field.span-12,
+.admin-toggle-group.span-12 {
+  grid-column: 1 / -1;
+}
+
+.admin-field-label {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.admin-field small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
 .admin-form input,
 .admin-form select,
 .admin-form textarea {
   border: 1px solid transparent;
   border-left: 2px solid rgba(0, 245, 255, 0.54);
   border-bottom: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 7px;
   background: var(--field-bg);
+  min-height: 42px;
 }
 
 .admin-form input:focus,
@@ -1440,11 +1500,23 @@ a {
   align-content: start;
 }
 
+.admin-toggle-group {
+  padding: 0;
+}
+
+.admin-toggle-group .admin-field-label {
+  flex: 0 0 100%;
+}
+
+.admin-toggle-group .check-row {
+  width: fit-content;
+}
+
 .check-row {
   position: relative;
-  min-height: 42px;
+  min-height: 34px;
   justify-content: flex-start;
-  padding: 0 14px 0 54px;
+  padding: 0 12px 0 46px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
@@ -1473,18 +1545,18 @@ a {
 }
 
 .check-row::before {
-  left: 14px;
-  width: 30px;
-  height: 18px;
+  left: 12px;
+  width: 26px;
+  height: 16px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(148, 163, 184, 0.16);
 }
 
 .check-row::after {
-  left: 18px;
-  width: 12px;
-  height: 12px;
+  left: 15px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   background: var(--muted);
 }
@@ -1501,8 +1573,21 @@ a {
 }
 
 .check-row:has(input:checked)::after {
-  left: 30px;
+  left: 27px;
   background: #111827;
+}
+
+.admin-form .form-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.admin-save-button {
+  min-height: 38px;
+  min-width: 104px;
+  padding: 0 16px;
+  border-radius: 8px;
 }
 
 .admin-list {
@@ -1598,6 +1683,12 @@ a {
   .tool-row,
   .admin-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-field,
+  .admin-toggle-group,
+  .admin-form .form-actions {
+    grid-column: 1 / -1;
   }
 
   .tool-row {

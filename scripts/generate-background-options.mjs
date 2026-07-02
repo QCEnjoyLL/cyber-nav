@@ -90,7 +90,7 @@ const option0 = (mode) => {
   });
 };
 
-const wrap = ({ id, title, mode, bg, defs, body }) => `<?xml version="1.0" encoding="UTF-8"?>
+const wrap = ({ title, mode, bg, defs, body }) => `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="${esc(title)} ${mode} background">
   ${defs}
   <rect width="1600" height="1000" fill="${bg}"/>

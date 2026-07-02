@@ -1051,10 +1051,9 @@ function AdminApp() {
         {tab === "links" && (
           <AdminSection title={t.links}>
             <LinkForm form={linkForm} setForm={setLinkForm} categories={adminData.categories} onSubmit={() => void saveLink()} t={t} />
-            <AdminList
-              items={adminData.links}
-              title={(link) => link.title}
-              detail={(link) => link.url}
+            <AdminLinkGroups
+              links={adminData.links}
+              categories={adminData.categories}
               onEdit={(link) => {
                 setEditingLink(link.id);
                 setLinkForm(link);
@@ -1329,16 +1328,10 @@ function LinkForm({
       <AdminField label="站点名称">
         <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="偏爱一丛花" />
       </AdminField>
-      <AdminField label="所属分类">
-        <select value={form.categoryId ?? ""} onChange={(event) => setForm({ ...form, categoryId: event.target.value || null })}>
-          <option value="">未分类</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.nameZh}
-            </option>
-          ))}
-        </select>
-      </AdminField>
+      <div className="admin-field span-3">
+        <span className="admin-field-label">所属分类</span>
+        <AdminCategorySelect categories={categories} value={form.categoryId ?? ""} onChange={(categoryId) => setForm({ ...form, categoryId: categoryId || null })} />
+      </div>
       <AdminField label="排序" span="span-2">
         <input type="number" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: Number(event.target.value) })} placeholder="100" />
       </AdminField>
@@ -1378,6 +1371,86 @@ function LinkForm({
           {t.save}
         </button>
       </div>
+    </div>
+  );
+}
+
+function AdminCategorySelect({
+  categories,
+  value,
+  onChange,
+}: {
+  categories: Category[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const sortedCategories = [...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh));
+  const selectedCategory = categories.find((category) => category.id === value);
+  const selectedLabel = selectedCategory?.nameZh ?? "未分类";
+  const SelectedIcon = iconMap[selectedCategory?.icon ?? "Folder"] ?? Folder;
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const selectValue = (nextValue: string) => {
+    onChange(nextValue);
+    setOpen(false);
+  };
+
+  return (
+    <div className="admin-select" ref={wrapperRef}>
+      <button className="admin-select-trigger" type="button" onClick={() => setOpen((state) => !state)} aria-haspopup="listbox" aria-expanded={open}>
+        <span className="admin-select-icon">
+          <SelectedIcon size={17} style={{ color: selectedCategory?.color ?? "var(--cyan)" }} />
+        </span>
+        <span>{selectedLabel}</span>
+        <ChevronDown size={17} />
+      </button>
+      {open && (
+        <div className="admin-select-menu" role="listbox">
+          <button className={clsx("admin-select-option", !value && "active")} type="button" onClick={() => selectValue("")} role="option" aria-selected={!value}>
+            <span className="admin-select-icon">
+              <Folder size={17} />
+            </span>
+            <span>未分类</span>
+          </button>
+          {sortedCategories.map((category) => {
+            const Icon = iconMap[category.icon] ?? Folder;
+            return (
+              <button
+                className={clsx("admin-select-option", value === category.id && "active")}
+                key={category.id}
+                type="button"
+                onClick={() => selectValue(category.id)}
+                role="option"
+                aria-selected={value === category.id}
+              >
+                <span className="admin-select-icon">
+                  <Icon size={17} style={{ color: category.color }} />
+                </span>
+                <span>{category.nameZh}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1491,6 +1564,79 @@ function SettingsForm({
           {t.save}
         </button>
       </div>
+    </div>
+  );
+}
+
+function AdminLinkGroups({
+  links,
+  categories,
+  onEdit,
+  onDelete,
+}: {
+  links: NavLink[];
+  categories: Category[];
+  onEdit: (link: NavLink) => void;
+  onDelete: (link: NavLink) => void;
+}) {
+  const sortedLinks = [...links].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
+  const categoryMap = new Map(categories.map((category) => [category.id, category]));
+  const groups = [
+    {
+      id: "",
+      title: "未分类",
+      detail: "未设置所属分类",
+      color: "var(--cyan)",
+      icon: "Folder",
+      sortOrder: -1,
+      links: sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId)),
+    },
+    ...[...categories]
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh))
+      .map((category) => ({
+        id: category.id,
+        title: category.nameZh,
+        detail: category.id,
+        color: category.color,
+        icon: category.icon,
+        sortOrder: category.sortOrder,
+        links: sortedLinks.filter((link) => link.categoryId === category.id),
+      })),
+  ].filter((group) => group.links.length > 0);
+
+  return (
+    <div className="admin-list admin-link-groups">
+      {groups.map((group) => {
+        const Icon = iconMap[group.icon] ?? Folder;
+        return (
+          <section className="admin-link-group" key={group.id || "uncategorized"}>
+            <header className="admin-link-group-header" style={{ "--group-color": group.color } as React.CSSProperties}>
+              <span className="admin-link-group-icon">
+                <Icon size={18} />
+              </span>
+              <div>
+                <strong>{group.title}</strong>
+                <span>
+                  {group.links.length} 个导航 · {group.detail}
+                </span>
+              </div>
+            </header>
+            <div className="admin-link-grid">
+              {group.links.map((link) => (
+                <div className="admin-list-row" key={link.id}>
+                  <button onClick={() => onEdit(link)}>
+                    <strong>{link.title}</strong>
+                    <span>{link.url}</span>
+                  </button>
+                  <button className="danger-button" onClick={() => onDelete(link)} aria-label="delete">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

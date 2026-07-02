@@ -52,6 +52,13 @@ test("admin list scrolls independently and category icon can be picked", async (
 
   await page.goto("/admin");
   await page.waitForSelector(".admin-list-row");
+  await expect(page.locator(".admin-link-group-header").filter({ hasText: "Media" })).toBeVisible();
+  await expect(page.locator(".admin-link-group-header").filter({ hasText: "Tools" })).toBeVisible();
+  await page.locator(".admin-select-trigger").click();
+  await expect(page.locator(".admin-select-menu")).toBeVisible();
+  await page.locator(".admin-select-option").filter({ hasText: "Tools" }).click();
+  await expect(page.locator(".admin-select-trigger")).toContainText("Tools");
+
   const before = await page.locator(".admin-form").boundingBox();
   await page.locator(".admin-list").evaluate((element) => {
     element.scrollTop = 600;

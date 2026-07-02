@@ -1704,6 +1704,94 @@ a {
   box-shadow: inset 0 -2px 0 rgba(0, 245, 255, 0.38);
 }
 
+.admin-select {
+  position: relative;
+  z-index: 4;
+}
+
+.admin-select-trigger {
+  width: 100%;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 34%, var(--line));
+  border-left: 2px solid rgba(0, 245, 255, 0.54);
+  border-radius: 9px;
+  color: var(--text);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 13%, transparent), transparent 52%),
+    color-mix(in srgb, var(--field-bg) 82%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--cyan) 8%, transparent);
+  backdrop-filter: blur(16px) saturate(1.25);
+}
+
+.admin-select-trigger > span:nth-child(2),
+.admin-select-option > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-select-trigger svg:last-child {
+  color: var(--muted);
+}
+
+.admin-select-icon {
+  display: grid;
+  place-items: center;
+  color: var(--cyan);
+}
+
+.admin-select-menu {
+  position: absolute;
+  inset: calc(100% + 8px) 0 auto 0;
+  max-height: min(320px, 42vh);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 28%, var(--line));
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 46%),
+    linear-gradient(315deg, color-mix(in srgb, var(--magenta) 10%, transparent), transparent 48%),
+    color-mix(in srgb, var(--panel-strong) 76%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 22px 60px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(24px) saturate(1.35);
+  z-index: 40;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--cyan) 46%, transparent) transparent;
+}
+
+.admin-select-option {
+  width: 100%;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: color-mix(in srgb, var(--text) 86%, var(--muted));
+  background: transparent;
+  text-align: left;
+}
+
+.admin-select-option:hover,
+.admin-select-option.active {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--cyan) 34%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--cyan) 16%, transparent), color-mix(in srgb, var(--yellow) 8%, transparent)),
+    color-mix(in srgb, var(--field-bg) 68%, transparent);
+}
+
 .checkbox-grid,
 .check-row {
   display: flex;
@@ -1832,6 +1920,72 @@ a {
   border-radius: 999px;
   background: color-mix(in srgb, var(--cyan) 34%, var(--line));
   background-clip: padding-box;
+}
+
+.admin-link-groups {
+  display: block;
+}
+
+.admin-link-group {
+  margin-bottom: 26px;
+}
+
+.admin-link-group:last-child {
+  margin-bottom: 8px;
+}
+
+.admin-link-group-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--group-color, var(--cyan)) 36%, var(--line));
+  border-radius: 10px;
+  color: var(--text);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--group-color, var(--cyan)) 18%, transparent), transparent 72%),
+    color-mix(in srgb, var(--panel-strong) 82%, transparent);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(16px) saturate(1.25);
+}
+
+.admin-link-group-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--group-color, var(--cyan)) 38%, var(--line));
+  border-radius: 9px;
+  color: var(--group-color, var(--cyan));
+  background: color-mix(in srgb, var(--group-color, var(--cyan)) 12%, transparent);
+}
+
+.admin-link-group-header strong,
+.admin-link-group-header span {
+  display: block;
+}
+
+.admin-link-group-header strong {
+  font-size: 0.95rem;
+}
+
+.admin-link-group-header span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.admin-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
 }
 
 .admin-list-row {

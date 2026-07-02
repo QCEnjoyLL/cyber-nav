@@ -1,37 +1,58 @@
 import {
   Bell,
+  Archive,
+  BookOpen,
   Bot,
+  Box,
+  Bookmark,
+  Briefcase,
   Check,
   ChevronDown,
   Cloud,
+  Code2,
   Command,
+  Compass,
+  Cpu,
   Database,
   ExternalLink,
   Film,
   Folder,
+  Gamepad2,
   GitBranch,
   Globe2,
+  HardDrive,
   Home,
+  Image,
   Languages,
   LayoutDashboard,
+  Link2,
   Lock,
   LogOut,
   Menu,
+  Monitor,
   Moon,
+  Music,
   Navigation,
   Network,
+  Newspaper,
+  Palette,
   Plus,
   Rocket,
   Search,
+  Server,
   Settings,
   ShieldCheck,
   Shuffle,
+  Smartphone,
   Sparkles,
   Star,
   Sun,
   TerminalSquare,
   Trash2,
   Users,
+  Video,
+  Wifi,
+  Wrench,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -44,20 +65,87 @@ import type { BackgroundStyle, BootstrapData, Category, Locale, NavLink, Resolve
 import { buildSearchUrl, filterLinks, normalizeUrl } from "./utils/navigation";
 
 const iconMap: Record<string, LucideIcon> = {
+  Archive,
+  Bell,
+  BookOpen,
   Bot,
+  Box,
+  Bookmark,
+  Briefcase,
   Cloud,
+  Code2,
+  Command,
+  Compass,
+  Cpu,
   Database,
   Film,
   Folder,
+  Gamepad2,
   Github: GitBranch,
   Globe2,
+  HardDrive,
+  Home,
+  Image,
+  Link2,
   LayoutDashboard,
+  Monitor,
+  Music,
   Network,
+  Newspaper,
+  Palette,
   Rocket,
+  Server,
+  ShieldCheck,
+  Smartphone,
   Sparkles,
+  Star,
   TerminalSquare,
   Users,
+  Video,
+  Wifi,
+  Wrench,
 };
+
+const categoryIconOptions = [
+  "Folder",
+  "Globe2",
+  "Bot",
+  "Film",
+  "Cloud",
+  "Database",
+  "Network",
+  "Rocket",
+  "Sparkles",
+  "TerminalSquare",
+  "LayoutDashboard",
+  "Github",
+  "Users",
+  "Home",
+  "Bookmark",
+  "BookOpen",
+  "Newspaper",
+  "Video",
+  "Music",
+  "Gamepad2",
+  "Image",
+  "Palette",
+  "Code2",
+  "Command",
+  "Server",
+  "Monitor",
+  "HardDrive",
+  "Wifi",
+  "Cpu",
+  "ShieldCheck",
+  "Bell",
+  "Archive",
+  "Box",
+  "Briefcase",
+  "Compass",
+  "Link2",
+  "Wrench",
+  "Star",
+] as const;
 
 const text = {
   zh: {
@@ -561,7 +649,7 @@ function PublicApp() {
           </a>
           <div className="sidebar-copyright">
             <span>© 2021 - 2026</span>
-            <a href="https://www.nerocats.com/" target="_blank" rel="noreferrer">Nerocats</a>
+            <a href="https://www.nerocats.com/" target="_blank" rel="noreferrer">偏爱一丛花</a>
           </div>
         </div>
       </aside>
@@ -724,7 +812,7 @@ function SiteFooter() {
       <p>
         © 2021 - 2026 By{" "}
         <a href="https://www.nerocats.com/" target="_blank" rel="noreferrer">
-          Nerocats
+          偏爱一丛花
         </a>
       </p>
     </footer>
@@ -1156,6 +1244,8 @@ function CategoryForm({
   onSubmit: () => void;
   t: Record<string, string>;
 }) {
+  const SelectedIcon = iconMap[form.icon] ?? Folder;
+
   return (
     <div className="admin-form">
       <AdminField label="分类 ID" hint="留空会自动生成；建议使用英文、数字或短横线。">
@@ -1170,6 +1260,30 @@ function CategoryForm({
       <AdminField label="图标名称" hint="使用 lucide 图标名，例如 Folder、Bot。">
         <input value={form.icon} onChange={(event) => setForm({ ...form, icon: event.target.value })} placeholder="Folder" />
       </AdminField>
+      <div className="icon-picker span-6">
+        <span className="admin-field-label">图标预览</span>
+        <div className="icon-picker-current">
+          <SelectedIcon size={22} />
+          <span>{form.icon || "Folder"}</span>
+        </div>
+        <div className="icon-picker-grid" aria-label="选择分类图标">
+          {categoryIconOptions.map((iconName) => {
+            const Icon = iconMap[iconName] ?? Folder;
+            return (
+              <button
+                className={clsx("icon-picker-button", form.icon === iconName && "active")}
+                key={iconName}
+                type="button"
+                onClick={() => setForm({ ...form, icon: iconName })}
+                title={iconName}
+                aria-label={iconName}
+              >
+                <Icon size={18} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <AdminField label="强调色">
         <input value={form.color} onChange={(event) => setForm({ ...form, color: event.target.value })} placeholder="#00f5ff" />
       </AdminField>

@@ -1,8 +1,8 @@
 import type { BootstrapData, SiteSettings } from "../types";
 
 export const defaultSettings: SiteSettings = {
-  titleZh: "夜城导航",
-  titleEn: "Night City Nav",
+  titleZh: "橙子导航",
+  titleEn: "Orange Nav",
   subtitleZh: "个人工作流、AI 工具和灵感站点的赛博入口",
   subtitleEn: "A cyberpunk hub for workflows, AI tools, and inspiration",
   defaultLocale: "zh",

@@ -62,8 +62,8 @@ CREATE INDEX IF NOT EXISTS idx_search_engines_active_sort ON search_engines(is_a
 CREATE INDEX IF NOT EXISTS idx_login_attempts_ip_time ON login_attempts(ip_hash, created_at);
 
 INSERT OR IGNORE INTO settings (key, value) VALUES
-  ('titleZh', '夜城导航'),
-  ('titleEn', 'Night City Nav'),
+  ('titleZh', '橙子导航'),
+  ('titleEn', 'Orange Nav'),
   ('subtitleZh', '个人工作流、AI 工具和灵感站点的赛博入口'),
   ('subtitleEn', 'A cyberpunk hub for workflows, AI tools, and inspiration'),
   ('defaultLocale', 'zh'),

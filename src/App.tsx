@@ -360,6 +360,10 @@ function PublicApp() {
     [activeCategories, queryMatchedLinks, selectedNav],
   );
   const siteTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
+  useEffect(() => {
+    document.title = siteTitle;
+  }, [siteTitle]);
+
   const commonLinks = useMemo(
     () => (selectedNav.type === "all" ? visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)) : []),
     [favorites, selectedNav.type, visibleLinks],
@@ -661,10 +665,15 @@ function AdminApp() {
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(defaultBootstrap.settings);
   const [jsonBuffer, setJsonBuffer] = useState("");
   const t = text[locale];
+  const adminTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
 
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.title = adminTitle;
+  }, [adminTitle]);
 
   useEffect(() => {
     void apiGet("/api/admin/session")

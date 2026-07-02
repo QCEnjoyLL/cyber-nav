@@ -426,7 +426,9 @@ function PublicApp() {
       <div className="noise-layer" />
       <aside className={clsx("sidebar", sidebarOpen && "sidebar-open")}>
         <div className="brand-mark">
-          <span className="brand-chip">NC</span>
+          <span className="brand-chip">
+            <img src="/logo-mark.svg" alt="" />
+          </span>
           <div>
             <strong>{siteTitle}</strong>
             <span>{locale === "zh" ? "个人导航系统" : "Personal nav system"}</span>
@@ -818,7 +820,9 @@ function AdminApp() {
     <div className="admin-shell">
       <aside className="admin-nav">
         <div className="brand-mark">
-          <span className="brand-chip">ADM</span>
+          <span className="brand-chip">
+            <img src="/logo-mark.svg" alt="" />
+          </span>
           <div>
             <strong>{t.dashboard}</strong>
             <span>{data.settings.titleZh}</span>

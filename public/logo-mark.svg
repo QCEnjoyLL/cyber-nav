@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">橙子导航 Logo</title>
+  <desc id="desc">A cyberpunk orange cat navigation logo mark.</desc>
+  <defs>
+    <linearGradient id="shell" x1="12" y1="14" x2="84" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff45c"/>
+      <stop offset="0.32" stop-color="#fcee0a"/>
+      <stop offset="0.7" stop-color="#ffb800"/>
+      <stop offset="1" stop-color="#ff7a18"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="22" y1="28" x2="72" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#141b2b"/>
+      <stop offset="1" stop-color="#05070d"/>
+    </linearGradient>
+    <filter id="cyanGlow" x="-22%" y="-22%" width="144%" height="144%">
+      <feGaussianBlur stdDeviation="3.4" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0 0 0 0 0 .84 0 0 0 0 1 0 0 0 .72 0" result="cyan"/>
+      <feMerge>
+        <feMergeNode in="cyan"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="frameClip">
+      <path d="M12 12h58l14 14v45L70 84H12V12Z"/>
+    </clipPath>
+  </defs>
+
+  <path d="M15 16h57l11 11v42L68 83H15V16Z" fill="#00f0ff" opacity=".34" transform="translate(4 4)"/>
+  <path d="M12 12h58l14 14v45L70 84H12V12Z" fill="url(#shell)" filter="url(#cyanGlow)"/>
+  <g clip-path="url(#frameClip)">
+    <path d="M-8 76 82 17" stroke="#00f0ff" stroke-width="5" opacity=".72"/>
+    <path d="M9 90 96 30" stroke="#ff2a6d" stroke-width="3.6" opacity=".52"/>
+    <path d="M56 12h28v28L56 12Z" fill="#ff2a6d" opacity=".84"/>
+    <path d="M8 62h74" stroke="#111827" stroke-width="1.4" opacity=".28"/>
+  </g>
+
+  <path d="M26 38 35 24l8 14h12l8-14 9 14c4.8 7 4.5 17.1-1.2 23.8C65.2 68.5 57.3 72 48 72s-17.2-3.5-22.8-10.2C19.5 55.1 19.2 45 24 38Z" fill="url(#ink)"/>
+  <path d="M34 48h8v8h-8v-8Zm20 0h8v8h-8v-8Z" fill="#fcee0a"/>
+  <path d="M47.4 53.2 37.8 66h10.1l-1.7 8.6 12-15.3H48l-.6-6.1Z" fill="#00f0ff"/>
+  <path d="M22 22h18M17 31h13M68 75h15" stroke="#111827" stroke-width="3.4" stroke-linecap="square" opacity=".78"/>
+  <path d="M12 12h58l14 14" fill="none" stroke="#fffce1" stroke-width="2.2" opacity=".72"/>
+</svg>

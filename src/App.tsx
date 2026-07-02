@@ -311,7 +311,7 @@ function parseSelectionKey(key: string): NavSelection {
 }
 
 function getNextTheme(theme: ThemeMode): ThemeMode {
-  return theme === "system" ? "dark" : theme === "dark" ? "light" : "system";
+  return theme === "dark" ? "light" : "dark";
 }
 
 function getLinkSubcategory(link: NavLink, category: Category): string | null {

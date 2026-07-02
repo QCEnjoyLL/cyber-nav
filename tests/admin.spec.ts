@@ -145,10 +145,15 @@ test("admin create update and delete show explicit feedback", async ({ page }) =
   let updated = false;
   let deleted = false;
   let confirmed = false;
+  let reordered = false;
 
   await page.setViewportSize({ width: 1440, height: 920 });
   await page.route("**/api/admin/session", (route) => route.fulfill({ json: { ok: true } }));
   await page.route("**/api/admin/bootstrap", (route) => route.fulfill({ json: baseData }));
+  await page.route("**/api/admin/links/reorder", (route) => {
+    reordered = route.request().method() === "POST";
+    return route.fulfill({ json: baseData });
+  });
   await page.route("**/api/admin/links", async (route) => {
     const body = await route.request().postDataJSON();
     created = route.request().method() === "POST" && body.title === "Created Site";
@@ -177,6 +182,9 @@ test("admin create update and delete show explicit feedback", async ({ page }) =
   await page.goto("/admin");
   await page.waitForSelector(".admin-list-row");
   await expect(page.getByRole("button", { name: "保存修改" })).toBeDisabled();
+  await page.getByRole("button", { name: "重排序号" }).click();
+  await expect(page.locator(".form-message")).toContainText("重排成功");
+  expect(reordered).toBe(true);
 
   await page.locator('input[placeholder="偏爱一丛花"]').fill("Created Site");
   await page.locator('input[placeholder="https://www.example.com"]').fill("https://created.example.com");

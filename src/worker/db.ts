@@ -185,6 +185,35 @@ export async function deleteLink(db: D1Database, id: string): Promise<void> {
   await db.prepare("DELETE FROM links WHERE id = ?").bind(id).run();
 }
 
+export async function reorderLinksByGroups(db: D1Database): Promise<BootstrapData> {
+  const [categories, links] = await Promise.all([listCategories(db, true), listLinks(db, true)]);
+  const categoryMap = new Map(categories.map((category) => [category.id, category]));
+  const sortedLinks = [...links].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
+  const categoryGroups = [
+    sortedLinks.filter((link) => !link.categoryId || !categoryMap.has(link.categoryId)),
+    ...[...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.nameZh.localeCompare(b.nameZh)).map((category) => sortedLinks.filter((link) => link.categoryId === category.id)),
+  ].filter((groupLinks) => groupLinks.length > 0);
+  const updates: D1PreparedStatement[] = [];
+
+  for (const categoryLinks of categoryGroups) {
+    const category = categoryMap.get(categoryLinks[0]?.categoryId ?? "");
+    const tagGroups = buildLinkTagGroups(categoryLinks, category);
+    tagGroups.forEach((tagGroup, groupIndex) => {
+      tagGroup.links.forEach((link, linkIndex) => {
+        const nextSortOrder = (groupIndex + 1) * 1000 + linkIndex + 1;
+        if (link.sortOrder !== nextSortOrder) {
+          updates.push(db.prepare("UPDATE links SET sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(nextSortOrder, link.id));
+        }
+      });
+    });
+  }
+
+  if (updates.length > 0) {
+    await db.batch(updates);
+  }
+  return getBootstrap(db, true);
+}
+
 export async function listSearchEngines(db: D1Database, includeInactive = false): Promise<SearchEngine[]> {
   const where = includeInactive ? "" : "WHERE is_active = 1";
   const { results } = await db
@@ -314,4 +343,28 @@ function parseTags(value: string): string[] {
   } catch {
     return [];
   }
+}
+
+function buildLinkTagGroups(links: NavLink[], category?: Category): Array<{ tag: string; links: NavLink[] }> {
+  const tagMap = new Map<string, NavLink[]>();
+  for (const link of links) {
+    const tag = getLinkTagGroup(link, category);
+    tagMap.set(tag, [...(tagMap.get(tag) ?? []), link]);
+  }
+  return Array.from(tagMap, ([tag, tagLinks]) => ({ tag, links: tagLinks })).sort((a, b) => {
+    if (a.tag === "其他") return 1;
+    if (b.tag === "其他") return -1;
+    const sortDelta = Math.min(...a.links.map((link) => link.sortOrder)) - Math.min(...b.links.map((link) => link.sortOrder));
+    return sortDelta || a.tag.localeCompare(b.tag, "zh-Hans-CN");
+  });
+}
+
+function getLinkTagGroup(link: NavLink, category?: Category): string {
+  if (category) {
+    const [scope, subcategory] = link.tags;
+    if (subcategory && (scope === category.id || scope === category.nameZh || scope === category.nameEn)) return subcategory;
+    const fallback = link.tags.find((tag) => tag && tag !== category.id && tag !== category.nameZh && tag !== category.nameEn);
+    return fallback ?? "其他";
+  }
+  return link.tags[0] || "其他";
 }

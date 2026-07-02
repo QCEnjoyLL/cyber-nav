@@ -436,12 +436,27 @@ function BootstrapLoadingShell({
         </header>
         <div className="directory-content">
           <div className="bootstrap-loading-panel" role="status">
-            <span className="loading-pulse" />
+            <LoadingMascot />
             <strong>{locale === "zh" ? "正在加载导航数据" : "Loading navigation data"}</strong>
-            <p>{locale === "zh" ? "稍等片刻，页面会在数据就绪后显示。" : "The page will appear when the data is ready."}</p>
+            <p>{locale === "zh" ? "橙子正在整理入口，马上就好。" : "Orange is arranging your shortcuts."}</p>
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+function LoadingMascot() {
+  return (
+    <div className="loading-mascot" aria-hidden="true">
+      <span className="loading-orbit one" />
+      <span className="loading-orbit two" />
+      <span className="loading-logo">
+        <img src="/logo-mark.svg" alt="" />
+      </span>
+      <span className="loading-dot a" />
+      <span className="loading-dot b" />
+      <span className="loading-dot c" />
     </div>
   );
 }
@@ -925,12 +940,13 @@ function AdminApp() {
       .catch(() => setSession("anonymous"));
   }, []);
 
-  async function loadAdmin() {
+  async function loadAdmin(): Promise<BootstrapData> {
     const bootstrap = await apiGet<BootstrapData>("/api/admin/bootstrap");
     cacheBootstrap(bootstrap);
     setData(bootstrap);
     setSettingsForm(bootstrap.settings);
     setLinkForm({ ...emptyLink, categoryId: bootstrap.categories[0]?.id ?? null });
+    return bootstrap;
   }
 
   function notify(nextMessage: string) {
@@ -1037,8 +1053,22 @@ function AdminApp() {
     notify("删除成功");
   }
 
+  async function reorderLinks() {
+    const next = await apiJson<BootstrapData>("/api/admin/links/reorder", "POST", {});
+    cacheBootstrap(next);
+    setData(next);
+    setLinkForm({ ...emptyLink, categoryId: next.categories[0]?.id ?? null });
+    setEditingLink(null);
+    notify("重排成功");
+  }
+
   if (session === "checking" || (session === "authenticated" && !data)) {
-    return <div className="center-screen">Loading</div>;
+    return (
+      <div className="center-screen cute-loading-screen">
+        <LoadingMascot />
+        <strong>正在加载后台</strong>
+      </div>
+    );
   }
 
   if (session === "anonymous") {
@@ -1069,7 +1099,12 @@ function AdminApp() {
   }
 
   if (!data) {
-    return <div className="center-screen">Loading</div>;
+    return (
+      <div className="center-screen cute-loading-screen">
+        <LoadingMascot />
+        <strong>正在加载后台</strong>
+      </div>
+    );
   }
 
   const adminData = data;
@@ -1134,6 +1169,7 @@ function AdminApp() {
                 setEditingLink(null);
                 setLinkForm({ ...emptyLink, categoryId: adminData.categories[0]?.id ?? null });
               }}
+              onReorder={() => void reorderLinks()}
               t={t}
             />
             <AdminLinkGroups
@@ -1345,12 +1381,14 @@ function AdminFormActions({
   onCreate,
   onUpdate,
   onCancelEdit,
+  children,
 }: {
   isEditing: boolean;
   editingLabel: string;
   onCreate: () => void;
   onUpdate: () => void;
   onCancelEdit: () => void;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="form-actions admin-form-actions">
@@ -1369,6 +1407,7 @@ function AdminFormActions({
           取消编辑
         </button>
       )}
+      {children}
       <button className="tool-button admin-save-button" type="button" onClick={onCreate}>
         <Plus size={16} />
         新增
@@ -1469,6 +1508,7 @@ function LinkForm({
   onCreate,
   onUpdate,
   onCancelEdit,
+  onReorder,
   t,
 }: {
   form: NavLink;
@@ -1480,6 +1520,7 @@ function LinkForm({
   onCreate: () => void;
   onUpdate: () => void;
   onCancelEdit: () => void;
+  onReorder: () => void;
   t: Record<string, string>;
 }) {
   const selectedCategory = categories.find((category) => category.id === form.categoryId);
@@ -1528,7 +1569,12 @@ function LinkForm({
           {t.active}
         </label>
       </div>
-      <AdminFormActions isEditing={isEditing} editingLabel={editingLabel} onCreate={onCreate} onUpdate={onUpdate} onCancelEdit={onCancelEdit} />
+      <AdminFormActions isEditing={isEditing} editingLabel={editingLabel} onCreate={onCreate} onUpdate={onUpdate} onCancelEdit={onCancelEdit}>
+        <button className="tool-button admin-save-button" type="button" onClick={onReorder}>
+          <Shuffle size={16} />
+          重排序号
+        </button>
+      </AdminFormActions>
     </div>
   );
 }
@@ -1914,7 +1960,8 @@ function AdminLinkGroups({
     return Array.from(tagMap, ([tag, tagLinks]) => ({ tag, links: tagLinks })).sort((a, b) => {
       if (a.tag === "其他") return 1;
       if (b.tag === "其他") return -1;
-      return a.tag.localeCompare(b.tag, "zh-Hans-CN");
+      const sortDelta = Math.min(...a.links.map((link) => link.sortOrder)) - Math.min(...b.links.map((link) => link.sortOrder));
+      return sortDelta || a.tag.localeCompare(b.tag, "zh-Hans-CN");
     });
   };
   const groups = [
@@ -1969,13 +2016,13 @@ function AdminLinkGroups({
                   <em>{tagGroup.links.length}</em>
                 </header>
                 <div className="admin-link-grid">
-                  {tagGroup.links.map((link) => (
+                  {tagGroup.links.map((link, index) => (
                     <div className="admin-list-row" key={link.id}>
                       <button onClick={() => onEdit(link)}>
                         <strong>{link.title}</strong>
                         <span>{link.url}</span>
                       </button>
-                      <span className="admin-sort-badge">{link.sortOrder}#</span>
+                      <span className="admin-sort-badge">{index + 1}#</span>
                       <button className="danger-button" onClick={() => onDelete(link)} aria-label="delete">
                         <Trash2 size={16} />
                       </button>

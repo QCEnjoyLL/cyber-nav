@@ -14,6 +14,7 @@ import {
   listLinks,
   listSearchEngines,
   recordLoginAttempt,
+  reorderLinksByGroups,
   updateSettings,
   upsertCategory,
   upsertLink,
@@ -142,6 +143,7 @@ admin.delete("/categories/:id", async (c) => {
 });
 
 admin.get("/links", async (c) => c.json(await listLinks(c.env.DB, true)));
+admin.post("/links/reorder", async (c) => c.json(await reorderLinksByGroups(c.env.DB)));
 admin.post("/links", async (c) => c.json(await upsertLink(c.env.DB, await parseJson(c.req.raw, linkSchema)), 201));
 admin.put("/links/:id", async (c) => {
   const body = await parseJson(c.req.raw, linkSchema);

@@ -1,6 +1,13 @@
 export type Locale = "zh" | "en";
 export type ThemeMode = "system" | "light" | "dark";
 export type ResolvedThemeMode = "light" | "dark";
+export type BackgroundStyle =
+  | "classic-grid"
+  | "night-lanes"
+  | "circuit-terrace"
+  | "holo-map"
+  | "data-rain"
+  | "orange-core";
 export type ThemePalette =
   | "absolutely"
   | "ayu"
@@ -72,6 +79,7 @@ export interface SiteSettings {
   subtitleEn: string;
   defaultLocale: Locale;
   defaultTheme: ThemeMode;
+  backgroundStyle: BackgroundStyle;
 }
 
 export interface BootstrapData {

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="02 高架电路 light background">
+  
+  <defs>
+    <pattern id="circuit-terrace-light-micro" width="12" height="12" patternUnits="userSpaceOnUse">
+      <path d="M 12 0 L 0 0 0 12" fill="none" stroke="#d1e4e8" stroke-width="0.75" opacity="0.42"/>
+    </pattern>
+    <pattern id="circuit-terrace-light-grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <rect width="96" height="96" fill="url(#circuit-terrace-light-micro)"/>
+      <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#69aab8" stroke-width="1.1" opacity="0.7"/>
+    </pattern>
+    <pattern id="circuit-terrace-light-scan" width="1" height="6" patternUnits="userSpaceOnUse">
+      <rect y="0" width="1" height="1" fill="#315766" opacity="0.42"/>
+    </pattern>
+    <filter id="circuit-terrace-light-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="circuit-terrace-light-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .55 0" result="soft"/>
+      <feMerge>
+        <feMergeNode in="soft"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="circuit-terrace-light-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00a6c8" stop-opacity="0.34"/>
+      <stop offset="0.52" stop-color="#f8fafc" stop-opacity="0"/>
+      <stop offset="1" stop-color="#d73b78" stop-opacity="0.28"/>
+    </linearGradient>
+    <filter id="circuit-terrace-light-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.08"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#eef7f8"/>
+  
+      <rect width="1600" height="1000" fill="url(#circuit-terrace-light-grid)" opacity="0.38"/>
+      <rect x="78" y="74" width="1444" height="852" fill="none" stroke="#69aab8" stroke-width="1.2" opacity="0.2"/>
+      <g filter="url(#circuit-terrace-light-glow)">
+        <path d="M88 286 H314 V196 H536 V150 H844 V216 H1032 V154 H1472" fill="none" stroke="#00a6c8" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter" opacity="0.62" />
+        <path d="M118 742 H346 V650 H590 V708 H836 V604 H1090 V662 H1488" fill="none" stroke="#dfb900" stroke-width="2.8" stroke-linecap="square" stroke-linejoin="miter" opacity="0.68" />
+        <path d="M1034 910 V790 H1170 V524 H1328 V326 H1490" fill="none" stroke="#d73b78" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter" opacity="0.66" />
+        <path d="M170 908 V814 H246 V516 H420 V396 H702 V304" fill="none" stroke="#4763d5" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" opacity="0.58" />
+      </g>
+      <g opacity="0.62">
+        
+  <rect x="305" y="277" width="18" height="18" rx="3" fill="rgba(255, 255, 255, .56)" opacity="0.42"/>
+  <rect x="310" y="282" width="8" height="8" rx="1" fill="#00a6c8" opacity="1"/>
+
+        
+  <rect x="581" y="699" width="18" height="18" rx="3" fill="rgba(255, 255, 255, .56)" opacity="0.42"/>
+  <rect x="586" y="704" width="8" height="8" rx="1" fill="#dfb900" opacity="1"/>
+
+        
+  <rect x="1023" y="207" width="18" height="18" rx="3" fill="rgba(255, 255, 255, .56)" opacity="0.42"/>
+  <rect x="1028" y="212" width="8" height="8" rx="1" fill="#d73b78" opacity="1"/>
+
+        
+  <rect x="1161" y="781" width="18" height="18" rx="3" fill="rgba(255, 255, 255, .56)" opacity="0.42"/>
+  <rect x="1166" y="786" width="8" height="8" rx="1" fill="#00a6c8" opacity="1"/>
+
+        
+  <rect x="411" y="387" width="18" height="18" rx="3" fill="rgba(255, 255, 255, .56)" opacity="0.42"/>
+  <rect x="416" y="392" width="8" height="8" rx="1" fill="#4763d5" opacity="1"/>
+
+        <circle cx="844" cy="150" r="5" fill="#dfb900" opacity="0.78"/>
+        <circle cx="1328" cy="326" r="5" fill="#d73b78" opacity="0.74"/>
+      </g>
+      <g opacity="0.16">
+        <rect x="660" y="404" width="276" height="126" fill="none" stroke="#00a6c8" stroke-width="1"/>
+        <rect x="702" y="446" width="192" height="42" fill="none" stroke="#dfb900" stroke-width="1"/>
+        <path d="M660 530 l-70 72 M936 404 l94 -78 M936 530 l126 88" stroke="#d73b78" stroke-width="1" fill="none"/>
+      </g>
+      <rect width="1600" height="1000" fill="url(#circuit-terrace-light-scan)" opacity="0.1"/>
+      <rect width="1600" height="1000" filter="url(#circuit-terrace-light-grain)" opacity="0.72"/>
+    
+</svg>

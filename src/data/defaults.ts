@@ -7,6 +7,7 @@ export const defaultSettings: SiteSettings = {
   subtitleEn: "A cyberpunk hub for workflows, AI tools, and inspiration",
   defaultLocale: "zh",
   defaultTheme: "system",
+  backgroundStyle: "classic-grid",
 };
 
 export const defaultBootstrap: BootstrapData = {

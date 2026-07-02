@@ -1,4 +1,5 @@
 import { defaultSettings } from "../data/defaults";
+import { normalizeBackgroundStyle } from "../theme/backgrounds";
 import type { BootstrapData, Category, NavLink, SearchEngine, SiteSettings } from "../types";
 import type { CategoryInput, ImportInput, LinkInput, SearchEngineInput, SettingsInput } from "./validation";
 
@@ -65,6 +66,7 @@ export async function getSettings(db: D1Database): Promise<SiteSettings> {
     ...settings,
     defaultLocale: settings.defaultLocale === "en" ? "en" : "zh",
     defaultTheme: settings.defaultTheme === "light" || settings.defaultTheme === "dark" ? settings.defaultTheme : "system",
+    backgroundStyle: normalizeBackgroundStyle(settings.backgroundStyle),
   };
 }
 

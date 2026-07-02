@@ -37,8 +37,9 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
+import { BACKGROUND_STYLES, DEFAULT_BACKGROUND_STYLE, getBackgroundDefinition } from "./theme/backgrounds";
 import { DEFAULT_THEME_PALETTE, getPaletteDefinition, getThemeColors, isThemePalette, THEME_PALETTES, type ThemeColorSet } from "./theme/palettes";
-import type { BootstrapData, Category, Locale, NavLink, ResolvedThemeMode, SearchEngine, SiteSettings, ThemeMode, ThemePalette } from "./types";
+import type { BackgroundStyle, BootstrapData, Category, Locale, NavLink, ResolvedThemeMode, SearchEngine, SiteSettings, ThemeMode, ThemePalette } from "./types";
 import { buildSearchUrl, filterLinks, normalizeUrl } from "./utils/navigation";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -315,13 +316,13 @@ function PublicApp() {
   }, []);
 
   useEffect(() => {
-    applyTheme(theme, themePalette);
+    applyTheme(theme, themePalette, data.settings.backgroundStyle);
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette);
+    const onChange = () => applyTheme(theme, themePalette, data.settings.backgroundStyle);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [theme, themePalette]);
+  }, [data.settings.backgroundStyle, theme, themePalette]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -737,13 +738,13 @@ function AdminApp() {
   const adminTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
 
   useEffect(() => {
-    applyTheme(theme, themePalette);
+    applyTheme(theme, themePalette, data.settings.backgroundStyle);
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette);
+    const onChange = () => applyTheme(theme, themePalette, data.settings.backgroundStyle);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [theme, themePalette]);
+  }, [data.settings.backgroundStyle, theme, themePalette]);
 
   useEffect(() => {
     document.title = adminTitle;
@@ -1187,6 +1188,18 @@ function SettingsForm({
         <option value="dark">Dark</option>
         <option value="light">Light</option>
       </select>
+      <select
+        value={form.backgroundStyle}
+        onChange={(event) => setForm({ ...form, backgroundStyle: event.target.value as BackgroundStyle })}
+        aria-label="背景风格"
+        title="背景风格"
+      >
+        {BACKGROUND_STYLES.map((style) => (
+          <option key={style.id} value={style.id}>
+            {style.nameZh} / {style.nameEn}
+          </option>
+        ))}
+      </select>
       <button className="primary-button" onClick={onSubmit}>
         <Check size={16} />
         {t.save}
@@ -1268,12 +1281,14 @@ function getResolvedThemeMode(theme: ThemeMode): ResolvedThemeMode {
   return theme === "system" ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : theme;
 }
 
-function applyTheme(theme: ThemeMode, palette: ThemePalette) {
+function applyTheme(theme: ThemeMode, palette: ThemePalette, backgroundStyle: BackgroundStyle = DEFAULT_BACKGROUND_STYLE) {
   const resolved = getResolvedThemeMode(theme);
   const colors = getThemeColors(resolved, palette);
   document.documentElement.dataset.theme = resolved;
   document.documentElement.dataset.palette = palette;
+  document.documentElement.dataset.background = backgroundStyle;
   applyThemeVariables(colors, resolved);
+  applyBackgroundVariables(backgroundStyle, resolved);
 }
 
 function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode): void {
@@ -1298,6 +1313,12 @@ function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode)
     ["--shadow", resolved === "dark" ? "0 24px 60px rgba(0, 0, 0, 0.36)" : "0 18px 44px rgba(31, 56, 64, 0.12)"],
   ];
   entries.forEach(([key, value]) => root.style.setProperty(key, value));
+}
+
+function applyBackgroundVariables(backgroundStyle: BackgroundStyle, resolved: ResolvedThemeMode): void {
+  const root = document.documentElement;
+  const background = getBackgroundDefinition(backgroundStyle);
+  root.style.setProperty("--grid-bg", `url("${resolved === "dark" ? background.dark : background.light}")`);
 }
 
 function hexToRgba(value: string, alpha: string): string {

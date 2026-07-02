@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BACKGROUND_STYLE_IDS, DEFAULT_BACKGROUND_STYLE } from "../theme/backgrounds";
 
 const idSchema = z
   .string()
@@ -56,6 +57,7 @@ export const settingsSchema = z.object({
   subtitleEn: z.string().trim().max(180),
   defaultLocale: z.enum(["zh", "en"]),
   defaultTheme: z.enum(["system", "light", "dark"]),
+  backgroundStyle: z.enum(BACKGROUND_STYLE_IDS).default(DEFAULT_BACKGROUND_STYLE),
 });
 
 export const importSchema = z.object({

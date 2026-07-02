@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="01 夜城斜轨 dark background">
+  
+  <defs>
+    <pattern id="night-lanes-dark-micro" width="12" height="12" patternUnits="userSpaceOnUse">
+      <path d="M 12 0 L 0 0 0 12" fill="none" stroke="#0c5164" stroke-width="0.75" opacity="0.42"/>
+    </pattern>
+    <pattern id="night-lanes-dark-grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <rect width="96" height="96" fill="url(#night-lanes-dark-micro)"/>
+      <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#00e7ff" stroke-width="1.1" opacity="0.7"/>
+    </pattern>
+    <pattern id="night-lanes-dark-scan" width="1" height="6" patternUnits="userSpaceOnUse">
+      <rect y="0" width="1" height="1" fill="#ffffff" opacity="0.42"/>
+    </pattern>
+    <filter id="night-lanes-dark-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="night-lanes-dark-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .55 0" result="soft"/>
+      <feMerge>
+        <feMergeNode in="soft"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="night-lanes-dark-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00f5ff" stop-opacity="0.34"/>
+      <stop offset="0.52" stop-color="#111827" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ff3b8d" stop-opacity="0.28"/>
+    </linearGradient>
+    <filter id="night-lanes-dark-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.86" numOctaves="2" seed="7"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.08"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#070a12"/>
+  
+      <rect width="1600" height="1000" fill="url(#night-lanes-dark-edge)"/>
+      <rect width="1600" height="1000" fill="url(#night-lanes-dark-grid)" opacity="0.78"/>
+      <rect width="1600" height="1000" fill="url(#night-lanes-dark-scan)" opacity="0.26"/>
+      <g filter="url(#night-lanes-dark-soft-glow)" opacity="0.96">
+        <polyline points="-140,832 612,704 746,716 1190,608 1760,492" fill="none" stroke="#fcee0a" stroke-width="3.8" stroke-linecap="square" stroke-linejoin="miter" opacity="0.72" />
+        <polyline points="1088,904 1608,632 1750,602" fill="none" stroke="#ff3b8d" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter" opacity="0.66" />
+        <polyline points="-72,360 270,252 728,112" fill="none" stroke="#00f5ff" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.58" />
+      </g>
+      <g opacity="0.75">
+        <path d="M112 860 h290 l38 -28 h236" fill="none" stroke="#00f5ff" stroke-width="1.6" stroke-dasharray="18 12"/>
+        <path d="M962 170 h210 l52 48 h276" fill="none" stroke="#ff3b8d" stroke-width="1.5" stroke-dasharray="16 12"/>
+        
+  <rect x="1111" y="551" width="18" height="18" rx="3" fill="rgba(5, 10, 18, .68)" opacity="0.39899999999999997"/>
+  <rect x="1116" y="556" width="8" height="8" rx="1" fill="#00f5ff" opacity="0.95"/>
+
+        <circle cx="1038" cy="634" r="4" fill="#fcee0a" opacity="0.8"/>
+        <circle cx="1264" cy="226" r="5" fill="#ff3b8d" opacity="0.72"/>
+      </g>
+      <rect width="1600" height="1000" filter="url(#night-lanes-dark-grain)" opacity="0.85"/>
+    
+</svg>

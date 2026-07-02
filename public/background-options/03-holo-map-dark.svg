@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="03 全息航图 dark background">
+  
+  <defs>
+    <pattern id="holo-map-dark-micro" width="12" height="12" patternUnits="userSpaceOnUse">
+      <path d="M 12 0 L 0 0 0 12" fill="none" stroke="#0c5164" stroke-width="0.75" opacity="0.42"/>
+    </pattern>
+    <pattern id="holo-map-dark-grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <rect width="96" height="96" fill="url(#holo-map-dark-micro)"/>
+      <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#00e7ff" stroke-width="1.1" opacity="0.7"/>
+    </pattern>
+    <pattern id="holo-map-dark-scan" width="1" height="6" patternUnits="userSpaceOnUse">
+      <rect y="0" width="1" height="1" fill="#ffffff" opacity="0.42"/>
+    </pattern>
+    <filter id="holo-map-dark-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="holo-map-dark-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .55 0" result="soft"/>
+      <feMerge>
+        <feMergeNode in="soft"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="holo-map-dark-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00f5ff" stop-opacity="0.34"/>
+      <stop offset="0.52" stop-color="#111827" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ff3b8d" stop-opacity="0.28"/>
+    </linearGradient>
+    <filter id="holo-map-dark-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.86" numOctaves="2" seed="7"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.08"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#070a12"/>
+  
+      <rect width="1600" height="1000" fill="url(#holo-map-dark-edge)"/>
+      <rect width="1600" height="1000" fill="url(#holo-map-dark-grid)" opacity="0.32"/>
+      <g filter="url(#holo-map-dark-glow)" opacity="0.82">
+        <path d="M-40 604 C130 540 226 652 378 580 S690 470 832 538 1124 678 1314 540 1580 468 1680 534" fill="none" stroke="#00f5ff" stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" opacity="0.56" />
+        <path d="M-20 674 C142 620 246 720 396 646 S714 548 868 620 1120 760 1328 614 1588 550 1690 620" fill="none" stroke="#00f5ff" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter" opacity="0.38" />
+        <path d="M72 314 C252 222 398 330 572 256 S922 160 1120 252 1378 360 1540 282" fill="none" stroke="#fcee0a" stroke-width="1.9" stroke-linecap="square" stroke-linejoin="miter" opacity="0.56" />
+        <path d="M120 392 C302 318 450 420 620 338 S950 258 1138 332 1378 438 1510 364" fill="none" stroke="#ff3b8d" stroke-width="1.55" stroke-linecap="square" stroke-linejoin="miter" opacity="0.46" />
+      </g>
+      <g opacity="0.7">
+        <path d="M238 720 l146 -94 224 60 184 -118 232 68 224 -138 208 42" fill="none" stroke="#fcee0a" stroke-width="1.4" stroke-dasharray="8 16"/>
+        <path d="M280 220 l180 116 202 -64 238 128 262 -156 228 96" fill="none" stroke="#00f5ff" stroke-width="1.2" stroke-dasharray="10 12"/>
+        
+  <rect x="599" y="677" width="18" height="18" rx="3" fill="rgba(5, 10, 18, .68)" opacity="0.42"/>
+  <rect x="604" y="682" width="8" height="8" rx="1" fill="#fcee0a" opacity="1"/>
+
+        
+  <rect x="1015" y="627" width="18" height="18" rx="3" fill="rgba(5, 10, 18, .68)" opacity="0.42"/>
+  <rect x="1020" y="632" width="8" height="8" rx="1" fill="#ff3b8d" opacity="1"/>
+
+        
+  <rect x="1153" y="235" width="18" height="18" rx="3" fill="rgba(5, 10, 18, .68)" opacity="0.42"/>
+  <rect x="1158" y="240" width="8" height="8" rx="1" fill="#00f5ff" opacity="1"/>
+
+        <circle cx="792" cy="568" r="4" fill="#00f5ff" opacity="0.88"/>
+      </g>
+      <g opacity="0.25">
+        <rect x="96" y="96" width="392" height="202" fill="none" stroke="#00f5ff" stroke-width="1"/>
+        <rect x="1112" y="704" width="352" height="174" fill="none" stroke="#fcee0a" stroke-width="1"/>
+        <path d="M96 298 l-34 34 M488 96 l34 -34 M1112 704 l-42 -42 M1464 878 l44 44" stroke="#ff3b8d" fill="none"/>
+      </g>
+      <rect width="1600" height="1000" fill="url(#holo-map-dark-scan)" opacity="0.2"/>
+      <rect width="1600" height="1000" filter="url(#holo-map-dark-grain)" opacity="0.64"/>
+    
+</svg>

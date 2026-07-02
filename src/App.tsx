@@ -248,14 +248,6 @@ function buildCategoryNodes(categories: Category[], links: NavLink[]): CategoryN
   });
 }
 
-function filterLinksBySelection(links: NavLink[], categories: Category[], selection: NavSelection): NavLink[] {
-  if (selection.type === "all") return links;
-  if (selection.type === "category") return links.filter((link) => link.categoryId === selection.categoryId);
-  const category = categories.find((item) => item.id === selection.categoryId);
-  if (!category) return [];
-  return links.filter((link) => link.categoryId === selection.categoryId && getLinkSubcategory(link, category) === selection.subcategory);
-}
-
 function buildDirectorySections(categories: Category[], links: NavLink[], selection: NavSelection, locale: Locale): DirectorySectionData[] {
   const nodes = buildCategoryNodes(categories, links);
   const sections: DirectorySectionData[] = [];
@@ -350,7 +342,6 @@ function PublicApp() {
   const activeCategories = data.categories.filter((category) => category.isActive);
   const activeEngines = data.searchEngines.filter((engine) => engine.isActive);
   const selectedEngine = activeEngines.find((engine) => engine.id === engineId) ?? activeEngines[0] ?? defaultBootstrap.searchEngines[0];
-  const selectedNav = useMemo(() => parseSelectionKey(selectionKey), [selectionKey]);
   const queryMatchedLinks = useMemo(
     () =>
       filterLinks(
@@ -370,24 +361,21 @@ function PublicApp() {
     () => buildCategoryNodes(activeCategories, data.links.filter((link) => link.isActive)),
     [activeCategories, data.links],
   );
-  const visibleLinks = useMemo(
-    () => filterLinksBySelection(queryMatchedLinks, activeCategories, selectedNav),
-    [activeCategories, queryMatchedLinks, selectedNav],
-  );
+  const visibleLinks = queryMatchedLinks;
   const siteTitle = locale === "zh" ? data.settings.titleZh : data.settings.titleEn;
   useEffect(() => {
     document.title = siteTitle;
   }, [siteTitle]);
 
   const commonLinks = useMemo(
-    () => (selectedNav.type === "all" ? visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)) : []),
-    [favorites, selectedNav.type, visibleLinks],
+    () => visibleLinks.filter((link) => link.isPinned || link.isFavorite || favorites.has(link.id)),
+    [favorites, visibleLinks],
   );
   const commonLinkIds = useMemo(() => new Set(commonLinks.map((link) => link.id)), [commonLinks]);
   const groupedSections = useMemo(() => {
-    const sectionLinks = visibleLinks.filter((link) => selectedNav.type !== "all" || !commonLinkIds.has(link.id));
-    return buildDirectorySections(activeCategories, sectionLinks, selectedNav, locale);
-  }, [activeCategories, commonLinkIds, locale, selectedNav, visibleLinks]);
+    const sectionLinks = visibleLinks.filter((link) => !commonLinkIds.has(link.id));
+    return buildDirectorySections(activeCategories, sectionLinks, { type: "all" }, locale);
+  }, [activeCategories, commonLinkIds, locale, visibleLinks]);
 
   function runSearch() {
     const trimmed = query.trim();
@@ -421,6 +409,28 @@ function PublicApp() {
     searchInputRef.current?.select();
   }
 
+  function scrollToSection(sectionId: string) {
+    requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function getTargetSectionId(key: string): string | null {
+    const selection = parseSelectionKey(key);
+    if (selection.type === "all") return null;
+    if (selection.type === "subcategory") return `${selection.categoryId}:${selection.subcategory}`;
+    const node = sidebarNodes.find((item) => item.category.id === selection.categoryId);
+    return node?.subcategories[0] ? `${selection.categoryId}:${node.subcategories[0].id}` : selection.categoryId;
+  }
+
+  function navigateToSection(key: string) {
+    setSelectionKey(key);
+    setSidebarOpen(false);
+    const sectionId = getTargetSectionId(key);
+    if (sectionId) scrollToSection(sectionId);
+    else scrollDirectoryTop();
+  }
+
   return (
     <div className="app-shell">
       <div className="noise-layer" />
@@ -436,7 +446,7 @@ function PublicApp() {
         </div>
         <div className="sidebar-label">{t.categories}</div>
         <nav className="category-list" aria-label={t.categories}>
-          <button className={clsx("category-button", selectionKey === "all" && "active")} onClick={() => setSelectionKey("all")}>
+          <button className={clsx("category-button", selectionKey === "all" && "active")} onClick={() => navigateToSection("all")}>
             <LayoutDashboard size={18} />
             <span>{t.all}</span>
             <em>{data.links.filter((link) => link.isActive).length}</em>
@@ -449,10 +459,7 @@ function PublicApp() {
               <div className={clsx("category-group", subcategories.length > 0 && "has-children")} key={category.id}>
                 <button
                   className={clsx("category-button", selectionKey === categoryKey && "active")}
-                  onClick={() => {
-                    setSelectionKey(categoryKey);
-                    setSidebarOpen(false);
-                  }}
+                  onClick={() => navigateToSection(categoryKey)}
                 >
                   <Icon size={18} style={{ color: category.color }} />
                   <span>{locale === "zh" ? category.nameZh : category.nameEn}</span>
@@ -466,10 +473,7 @@ function PublicApp() {
                         <button
                           className={clsx("subcategory-button", selectionKey === key && "active")}
                           key={key}
-                          onClick={() => {
-                            setSelectionKey(key);
-                            setSidebarOpen(false);
-                          }}
+                          onClick={() => navigateToSection(key)}
                         >
                           <span>{subcategory.title}</span>
                           <em>{subcategory.links.length}</em>
@@ -487,6 +491,10 @@ function PublicApp() {
             <ShieldCheck size={16} />
             {t.admin}
           </a>
+          <div className="sidebar-copyright">
+            <span>© 2021 - 2026</span>
+            <a href="https://www.nerocats.com/" target="_blank" rel="noreferrer">Nerocats</a>
+          </div>
         </div>
       </aside>
 
@@ -533,8 +541,9 @@ function PublicApp() {
 
         <div className="directory-content" ref={directoryContentRef}>
           <h1 className="sr-only">{siteTitle}</h1>
-          {selectedNav.type === "all" && commonLinks.length > 0 && (
+          {commonLinks.length > 0 && (
             <DirectorySection
+              sectionId="section-favorites"
               title={locale === "zh" ? "我的常用" : "Favorites"}
               icon={<Sparkles size={24} />}
               links={commonLinks}
@@ -547,6 +556,7 @@ function PublicApp() {
           {groupedSections.map((section) => (
             <DirectorySection
               key={section.id}
+              sectionId={section.id}
               title={section.title}
               icon={section.icon}
               links={section.links}
@@ -557,19 +567,20 @@ function PublicApp() {
             />
           ))}
           {visibleLinks.length === 0 && <div className="empty-state">{t.noResult}</div>}
+          <SiteFooter />
         </div>
         <div className="floating-actions" aria-label="quick actions">
           <button className="floating-action-button" onClick={scrollDirectoryTop} title="回到顶部" aria-label="回到顶部">
-            <Navigation size={22} />
+            <Navigation size={14} />
           </button>
           <button className="floating-action-button" onClick={focusSearch} title="搜索" aria-label="搜索">
-            <Search size={22} />
+            <Search size={14} />
           </button>
           <button className="floating-action-button" onClick={() => setCommandOpen(true)} title={t.command} aria-label={t.command}>
-            <Bell size={22} />
+            <Bell size={14} />
           </button>
           <button className="floating-action-button" onClick={() => setTheme(getNextTheme(theme))} title="切换主题" aria-label="切换主题">
-            <Moon size={22} />
+            <Moon size={14} />
           </button>
         </div>
       </main>
@@ -591,6 +602,7 @@ function PublicApp() {
 }
 
 function DirectorySection({
+  sectionId,
   title,
   icon,
   links,
@@ -599,6 +611,7 @@ function DirectorySection({
   favorites,
   onToggleFavorite,
 }: {
+  sectionId: string;
   title: string;
   icon: React.ReactNode;
   links: NavLink[];
@@ -608,7 +621,7 @@ function DirectorySection({
   onToggleFavorite: (id: string) => void;
 }) {
   return (
-    <section className="directory-section">
+    <section className="directory-section" id={sectionId}>
       <h2>
         {icon}
         <span>{title}</span>
@@ -639,6 +652,20 @@ function DirectorySection({
         })}
       </div>
     </section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <p>本站内容源自互联网，如有内容侵犯了你的权益，请联系删除相关内容，联系邮箱：klts1228@163.com</p>
+      <p>
+        © 2021 - 2026 By{" "}
+        <a href="https://www.nerocats.com/" target="_blank" rel="noreferrer">
+          Nerocats
+        </a>
+      </p>
+    </footer>
   );
 }
 

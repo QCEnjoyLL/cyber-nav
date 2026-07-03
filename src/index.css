@@ -23,6 +23,16 @@
   --tile-hover: rgba(19, 29, 47, 0.94);
   --grid-bg: url("/cyber-grid-dark.png");
   --field-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-width: 224px;
+  --admin-sidebar-width: 260px;
+  --topbar-height: 66px;
+  --page-pad: 24px;
+  --section-gap: 44px;
+  --directory-gap: 18px;
+  --directory-card-height: 92px;
+  --admin-card-height: 116px;
+  --admin-form-pad: 18px;
+  --admin-form-gap: 16px;
 }
 
 :root[data-theme="light"] {
@@ -39,6 +49,48 @@
   --tile-hover: rgba(255, 255, 255, 0.96);
   --grid-bg: url("/cyber-grid-light.png");
   --field-bg: rgba(255, 255, 255, 0.7);
+}
+
+@media (min-width: 1800px) {
+  :root {
+    --sidebar-width: 244px;
+    --admin-sidebar-width: 280px;
+    --page-pad: 32px;
+    --section-gap: 52px;
+    --directory-gap: 20px;
+    --directory-card-height: 104px;
+    --admin-card-height: 124px;
+    --admin-form-pad: 22px;
+    --admin-form-gap: 18px;
+  }
+}
+
+@media (min-width: 861px) and (max-width: 1280px) {
+  :root {
+    --sidebar-width: 204px;
+    --admin-sidebar-width: 232px;
+    --topbar-height: 60px;
+    --page-pad: 18px;
+    --section-gap: 34px;
+    --directory-gap: 14px;
+    --directory-card-height: 86px;
+    --admin-card-height: 108px;
+    --admin-form-pad: 14px;
+    --admin-form-gap: 12px;
+  }
+}
+
+@media (min-width: 861px) and (max-height: 760px) {
+  :root {
+    --topbar-height: 58px;
+    --page-pad: 18px;
+    --section-gap: 28px;
+    --directory-gap: 14px;
+    --directory-card-height: 84px;
+    --admin-card-height: 104px;
+    --admin-form-pad: 14px;
+    --admin-form-gap: 12px;
+  }
 }
 
 * {
@@ -96,7 +148,7 @@ a {
 .app-shell {
   height: 100vh;
   display: grid;
-  grid-template-columns: 224px 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
   background-color: var(--bg);
   background-image: var(--grid-bg);
   background-position: center;
@@ -415,13 +467,13 @@ a {
 
 .topbar,
 .admin-topbar {
-  min-height: 66px;
+  min-height: var(--topbar-height);
   display: grid;
   grid-template-columns: 1fr minmax(320px, 560px) 1fr;
   gap: 14px;
   align-items: center;
   margin-bottom: 0;
-  padding: 0 24px;
+  padding: 0 var(--page-pad);
   background: rgba(23, 34, 52, 0.94);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(14px);
@@ -1287,13 +1339,13 @@ a {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 32px 24px 72px;
+  padding: calc(var(--page-pad) + 8px) var(--page-pad) 72px;
   scrollbar-gutter: stable;
 }
 
 .directory-section {
   width: min(100%, 1480px);
-  margin: 0 auto 44px;
+  margin: 0 auto var(--section-gap);
   scroll-margin-top: 24px;
 }
 
@@ -1315,12 +1367,12 @@ a {
 .directory-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: var(--directory-gap);
 }
 
 .directory-card {
   position: relative;
-  min-height: 92px;
+  min-height: var(--directory-card-height);
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 8px;
   background: rgba(53, 66, 86, 0.92);
@@ -1348,7 +1400,7 @@ a {
 }
 
 .directory-card-main {
-  min-height: 92px;
+  min-height: var(--directory-card-height);
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) auto;
   align-items: center;
@@ -1640,7 +1692,7 @@ a {
 .admin-shell {
   height: 100vh;
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: var(--admin-sidebar-width) 1fr;
   overflow: hidden;
   background:
     linear-gradient(120deg, rgba(255, 59, 141, 0.08), transparent 34%),
@@ -1705,9 +1757,9 @@ a {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: start;
-  gap: 16px;
+  gap: var(--admin-form-gap);
   margin-bottom: 22px;
-  padding: 18px;
+  padding: var(--admin-form-pad);
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
@@ -2415,8 +2467,8 @@ a {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 116px;
-  height: 116px;
+  min-height: var(--admin-card-height);
+  height: var(--admin-card-height);
   overflow: hidden;
   border: 1px solid var(--line);
   background:
@@ -2504,6 +2556,47 @@ a {
 @media (max-width: 1120px) {
   .admin-link-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1800px) {
+  .directory-section,
+  .site-footer {
+    width: min(100%, 1680px);
+  }
+
+  .directory-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .admin-content {
+    width: min(calc(100% - 64px), 1880px);
+  }
+
+  .admin-link-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 861px) and (max-width: 1280px) {
+  .topbar {
+    grid-template-columns: auto minmax(280px, 520px) auto;
+  }
+
+  .admin-form textarea {
+    min-height: 260px;
+  }
+}
+
+@media (min-width: 1121px) and (max-width: 1280px) {
+  .admin-link-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 861px) and (max-height: 760px) {
+  .admin-form textarea {
+    min-height: 220px;
   }
 }
 

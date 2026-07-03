@@ -29,6 +29,25 @@ test("mobile drawer opens", async ({ page }) => {
   await expect(page.getByLabel("收藏")).toBeVisible();
 });
 
+test("public layout adapts across desktop resolutions", async ({ page }) => {
+  await page.route("**/api/public/bootstrap", (route) => route.abort());
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto("/");
+
+  await expect
+    .poll(() =>
+      page.locator(".directory-grid").first().evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").filter(Boolean).length),
+    )
+    .toBe(5);
+
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await expect
+    .poll(() =>
+      page.locator(".directory-grid").first().evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").filter(Boolean).length),
+    )
+    .toBe(3);
+});
+
 test("admin login screen renders", async ({ page }) => {
   await page.route("**/api/admin/session", (route) => route.abort());
   await page.goto("/admin");

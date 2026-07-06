@@ -110,6 +110,59 @@ test("admin list scrolls independently and category icon can be picked", async (
   await expect(themeSelect).toContainText("Dark");
 });
 
+test("admin desktop layout keeps a usable card list at 1080p", async ({ page }) => {
+  const links = Array.from({ length: 18 }, (_, index) => ({
+    id: `desktop-link-${index + 1}`,
+    categoryId: "tools",
+    title: `Desktop Site ${index + 1}`,
+    descriptionZh: "",
+    descriptionEn: "",
+    url: `https://example.com/desktop-${index + 1}`,
+    iconUrl: "",
+    tags: index % 2 === 0 ? ["笔记"] : ["其他"],
+    isPinned: false,
+    isFavorite: false,
+    isActive: true,
+    sortOrder: index + 1,
+  }));
+
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.route("**/api/admin/session", (route) => route.fulfill({ json: { ok: true } }));
+  await page.route("**/api/admin/bootstrap", (route) =>
+    route.fulfill({
+      json: {
+        settings: {
+          titleZh: "Orange Nav",
+          titleEn: "Orange Nav",
+          subtitleZh: "Navigation",
+          subtitleEn: "Navigation",
+          defaultLocale: "zh",
+          defaultTheme: "system",
+          backgroundStyle: "soft-circuit",
+        },
+        categories: [{ id: "tools", nameZh: "Tools", nameEn: "Tools", icon: "Wrench", color: "#00f5ff", sortOrder: 20, isActive: true }],
+        links,
+        searchEngines: [
+          {
+            id: "bing",
+            name: "Bing",
+            shortcut: "b",
+            urlTemplate: "https://www.bing.com/search?q={query}",
+            isDefault: true,
+            isActive: true,
+            sortOrder: 10,
+          },
+        ],
+      },
+    }),
+  );
+
+  await page.goto("/admin");
+  await page.waitForSelector(".admin-list-row");
+  await expect.poll(() => page.locator(".admin-list").boundingBox().then((box) => Math.round(box?.height ?? 0))).toBeGreaterThan(320);
+  await expect.poll(() => page.locator(".admin-form").boundingBox().then((box) => Math.round(box?.height ?? 0))).toBeLessThan(620);
+});
+
 test("admin create update and delete show explicit feedback", async ({ page }) => {
   const baseData = {
     settings: {

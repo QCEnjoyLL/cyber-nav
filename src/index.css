@@ -33,6 +33,8 @@
   --admin-card-height: 116px;
   --admin-form-pad: 18px;
   --admin-form-gap: 16px;
+  --admin-list-min-height: clamp(280px, 34vh, 430px);
+  --admin-form-max-height: clamp(320px, calc(100dvh - var(--topbar-height) - var(--admin-list-min-height) - 150px), 640px);
 }
 
 :root[data-theme="light"] {
@@ -77,6 +79,7 @@
     --admin-card-height: 108px;
     --admin-form-pad: 14px;
     --admin-form-gap: 12px;
+    --admin-list-min-height: clamp(240px, 30vh, 340px);
   }
 }
 
@@ -90,6 +93,8 @@
     --admin-card-height: 104px;
     --admin-form-pad: 14px;
     --admin-form-gap: 12px;
+    --admin-list-min-height: clamp(220px, 28vh, 300px);
+    --admin-form-max-height: clamp(280px, calc(100dvh - var(--topbar-height) - var(--admin-list-min-height) - 132px), 520px);
   }
 }
 
@@ -1736,7 +1741,7 @@ a {
   height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, auto) minmax(var(--admin-list-min-height), 1fr);
   background: transparent;
   overflow: hidden;
   padding: 0;
@@ -1760,6 +1765,9 @@ a {
   gap: var(--admin-form-gap);
   margin-bottom: 22px;
   padding: var(--admin-form-pad);
+  max-height: var(--admin-form-max-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
@@ -1767,6 +1775,8 @@ a {
     linear-gradient(315deg, rgba(252, 238, 10, 0.06), transparent 42%),
     var(--panel);
   box-shadow: var(--shadow);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--cyan) 44%, transparent) transparent;
 }
 
 .admin-section > .admin-form {
@@ -2228,7 +2238,7 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   align-content: start;
   gap: 12px;
-  min-height: 0;
+  min-height: var(--admin-list-min-height);
   overflow-y: auto;
   padding: 2px 8px 10px 2px;
   overscroll-behavior: contain;
@@ -2673,6 +2683,7 @@ a {
   }
 
   .admin-list {
+    min-height: 0;
     overflow: visible;
   }
 
@@ -2706,6 +2717,12 @@ a {
   .tool-row,
   .admin-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-form {
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
   }
 
   .admin-field,

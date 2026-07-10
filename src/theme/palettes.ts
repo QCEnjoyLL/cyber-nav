@@ -17,6 +17,9 @@ export interface ThemePaletteDefinition {
   key: ThemePalette;
   label: string;
   swatch: string;
+  featured?: boolean;
+  tagline?: string;
+  preview?: [string, string, string];
   light: ThemeColorSet;
   dark: ThemeColorSet;
 }
@@ -70,6 +73,30 @@ const makePalette = (
 });
 
 const definitions: ThemePaletteDefinition[] = [
+  {
+    ...makePalette("aurora", "极光玻璃", "#78f7d4", "#0f9f8d", "#08776a", "rgba(15,159,141,.14)", "#78f7d4", "#b493ff", "rgba(120,247,212,.2)", { pageBg: "#edf8f6", panelBg: "#f9fffd", elevatedBg: "#e1f2ef", sidebarBg: "#e8f6f3", text: "#102b2b", muted: "#567171", border: "#b9d9d3" }, { pageBg: "#071411", panelBg: "#0d211c", elevatedBg: "#143129", sidebarBg: "#0a1b17", text: "#e9fff9", muted: "#91b9ae", border: "#295248" }),
+    featured: true,
+    tagline: "通透、轻盈、带一点未来感",
+    preview: ["#071411", "#143129", "#78f7d4"],
+  },
+  {
+    ...makePalette("porcelain", "暖纸编辑", "#d9653b", "#b84a25", "#96391b", "rgba(184,74,37,.14)", "#ff9b73", "#ffc1a8", "rgba(255,155,115,.2)", { pageBg: "#f3eee5", panelBg: "#fffaf1", elevatedBg: "#e9e0d3", sidebarBg: "#eee5d8", text: "#2e2924", muted: "#74695f", border: "#d7cabc" }, { pageBg: "#211d1a", panelBg: "#2b2521", elevatedBg: "#372f29", sidebarBg: "#191614", text: "#fff8ed", muted: "#c4b5a6", border: "#51463d" }),
+    featured: true,
+    tagline: "温暖、克制、像一本精装目录",
+    preview: ["#f3eee5", "#fffaf1", "#d9653b"],
+  },
+  {
+    ...makePalette("cobalt", "深海 Bento", "#4d7cff", "#315ee8", "#2447b8", "rgba(49,94,232,.14)", "#6c8fff", "#8ce7ff", "rgba(108,143,255,.22)", { pageBg: "#eef3ff", panelBg: "#ffffff", elevatedBg: "#dfe8ff", sidebarBg: "#e7edfb", text: "#111c3a", muted: "#596784", border: "#c7d2ec" }, { pageBg: "#080d1c", panelBg: "#10182d", elevatedBg: "#172440", sidebarBg: "#0b1225", text: "#edf3ff", muted: "#8fa1c4", border: "#26385f" }),
+    featured: true,
+    tagline: "高对比、模块化、偏产品工作台",
+    preview: ["#080d1c", "#172440", "#6c8fff"],
+  },
+  {
+    ...makePalette("moss", "苔原自然", "#4f7b58", "#386242", "#2b4f34", "rgba(56,98,66,.14)", "#9bcf91", "#d6e98d", "rgba(155,207,145,.2)", { pageBg: "#f1f3e8", panelBg: "#fbfcef", elevatedBg: "#e4e9d6", sidebarBg: "#e9eddd", text: "#263329", muted: "#657064", border: "#ced5c2" }, { pageBg: "#151b16", panelBg: "#1e281f", elevatedBg: "#29352a", sidebarBg: "#121813", text: "#f0f6e8", muted: "#a6b49f", border: "#3e4d3f" }),
+    featured: true,
+    tagline: "柔和、安静、适合长期使用",
+    preview: ["#f1f3e8", "#e4e9d6", "#4f7b58"],
+  },
   makePalette("one", "One", "#61afef", "#4078f2", "#2864d8", "rgba(64,120,242,.13)", "#61afef", "#7ec7ff", "rgba(97,175,239,.2)", { pageBg: "#fafafa", sidebarBg: "#f0f2f5", text: "#24292f" }, { pageBg: "#282c34", panelBg: "#2c313c", elevatedBg: "#343b48", sidebarBg: "#21252b", text: "#d7dae0", muted: "#abb2bf", border: "#3e4451" }),
   makePalette("absolutely", "Absolutely", "#cc7d5e", "#b85f43", "#9c4c34", "rgba(184,95,67,.14)", "#cc7d5e", "#dc8c69", "rgba(204,125,94,.22)", { pageBg: "#f5f1ec", sidebarBg: "#eee7df", panelBg: "#fffaf5", elevatedBg: "#f6eee7", border: "#dfd3c9", text: "#2d2926" }, { pageBg: "#2d2d2b", panelBg: "#353532", elevatedBg: "#3d3d39", sidebarBg: "#242421", text: "#f9f9f7", border: "#4b4944" }),
   makePalette("ayu", "Ayu", "#ffb454", "#c46f00", "#9f5a00", "rgba(196,111,0,.14)", "#ffb454", "#ffd580", "rgba(255,180,84,.18)", { pageBg: "#faf7ef", sidebarBg: "#f0eadf", panelBg: "#fffdf7", text: "#1f2933" }, { pageBg: "#111722", panelBg: "#11151c", elevatedBg: "#1b202a", sidebarBg: "#141922", text: "#e6e1cf", muted: "#9da8b8", border: "#27313f" }),
@@ -99,8 +126,11 @@ const definitions: ThemePaletteDefinition[] = [
   makePalette("xcode", "Xcode", "#007aff", "#007aff", "#005ecb", "rgba(0,122,255,.13)", "#0a84ff", "#5eb1ff", "rgba(10,132,255,.22)", { pageBg: "#f7fbff", sidebarBg: "#edf5ff", text: "#1d1d1f", border: "#d5e3f5" }, { pageBg: "#242833", panelBg: "#2b303d", elevatedBg: "#343b4c", sidebarBg: "#20242e", text: "#f2f2f7", muted: "#b9c2d0", border: "#465066" }),
 ];
 
-export const DEFAULT_THEME_PALETTE: ThemePalette = "one";
-export const THEME_PALETTES: ThemePaletteDefinition[] = [...definitions].sort((a, b) => a.key.localeCompare(b.key));
+export const DEFAULT_THEME_PALETTE: ThemePalette = "aurora";
+export const THEME_PALETTES: ThemePaletteDefinition[] = [
+  ...definitions.filter((item) => item.featured),
+  ...definitions.filter((item) => !item.featured).sort((a, b) => a.key.localeCompare(b.key)),
+];
 
 export function getPaletteDefinition(palette: ThemePalette): ThemePaletteDefinition {
   return THEME_PALETTES.find((item) => item.key === palette) ?? THEME_PALETTES.find((item) => item.key === DEFAULT_THEME_PALETTE) ?? THEME_PALETTES[0];

@@ -1338,6 +1338,8 @@ function ThemeButton({
   const [open, setOpen] = useState(false);
   const selectedPalette = getPaletteDefinition(palette);
   const resolvedMode = getResolvedThemeMode(theme);
+  const featuredPalettes = THEME_PALETTES.filter((item) => item.featured);
+  const classicPalettes = THEME_PALETTES.filter((item) => !item.featured);
   const modeOptions: Array<{ key: ThemeMode; label: string; icon: React.ReactNode }> = [
     { key: "system", label: "跟随系统", icon: <Settings size={17} /> },
     { key: "light", label: "浅色", icon: <Sun size={17} /> },
@@ -1375,9 +1377,27 @@ function ThemeButton({
           </div>
           <div className="appearance-menu-divider" />
           <div className="appearance-menu-group">
-            <strong>配色</strong>
+            <strong>精选主题</strong>
+            <div className="appearance-featured-list">
+              {featuredPalettes.map((item) => (
+                <button className="appearance-theme-card" key={item.key} onClick={() => setPalette(item.key)} role="menuitem">
+                  <span className="appearance-theme-preview" style={{ background: `linear-gradient(135deg, ${item.preview?.[0]}, ${item.preview?.[1]})` }}>
+                    <i style={{ background: item.preview?.[2] }} />
+                  </span>
+                  <span className="appearance-theme-copy">
+                    <b>{item.label}</b>
+                    <small>{item.tagline}</small>
+                  </span>
+                  {palette === item.key && <Check className="appearance-check" size={16} />}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="appearance-menu-divider" />
+          <div className="appearance-menu-group">
+            <strong>经典配色</strong>
             <div className="appearance-palette-list">
-              {THEME_PALETTES.map((item) => (
+              {classicPalettes.map((item) => (
                 <button className="appearance-menu-item" key={item.key} onClick={() => setPalette(item.key)} role="menuitem">
                   <span className="appearance-swatch" style={{ background: getThemeColors(resolvedMode, item.key).accent }} />
                   <span>{item.label}</span>

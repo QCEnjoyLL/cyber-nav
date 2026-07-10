@@ -1025,7 +1025,7 @@ a {
   top: calc(100% + 8px);
   right: 0;
   z-index: 20;
-  width: min(300px, calc(100vw - 32px));
+  width: min(380px, calc(100vw - 32px));
   max-height: min(70vh, 560px);
   overflow-y: auto;
   padding: 10px;
@@ -1041,6 +1041,83 @@ a {
   display: grid;
   gap: 4px;
 }
+
+.appearance-featured-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.appearance-theme-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: 12px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  text-align: left;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.appearance-theme-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--cyan) 52%, var(--line));
+  background: color-mix(in srgb, var(--cyan) 8%, var(--panel));
+}
+
+.appearance-theme-preview {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.appearance-theme-preview::before,
+.appearance-theme-preview::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.36);
+}
+
+.appearance-theme-preview::before { top: 11px; }
+.appearance-theme-preview::after { top: 23px; right: 17px; }
+
+.appearance-theme-preview i {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.appearance-theme-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.appearance-theme-copy b,
+.appearance-theme-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.appearance-theme-copy b { font-size: 0.84rem; }
+.appearance-theme-copy small { color: var(--muted); font-size: 0.68rem; }
 
 .appearance-menu-group strong {
   padding: 8px 10px 4px;
@@ -2561,6 +2638,237 @@ a {
   place-items: center;
   color: var(--danger);
   background: rgba(255, 82, 109, 0.08);
+}
+
+/* Signature themes: each palette changes material, geometry and rhythm — not just color. */
+:root[data-palette="aurora"] .app-shell {
+  background-image:
+    radial-gradient(circle at 72% 12%, color-mix(in srgb, var(--yellow) 20%, transparent), transparent 28%),
+    radial-gradient(circle at 42% 88%, color-mix(in srgb, var(--cyan) 20%, transparent), transparent 32%),
+    var(--grid-bg);
+}
+
+:root[data-palette="aurora"] .noise-layer {
+  background:
+    radial-gradient(ellipse at 18% 8%, color-mix(in srgb, var(--cyan) 30%, transparent), transparent 36%),
+    radial-gradient(ellipse at 88% 24%, color-mix(in srgb, var(--yellow) 22%, transparent), transparent 34%);
+  filter: blur(30px);
+  opacity: 0.72;
+}
+
+:root[data-palette="aurora"] .app-shell .sidebar,
+:root[data-palette="aurora"] .topbar,
+:root[data-palette="aurora"] .directory-card {
+  border-color: color-mix(in srgb, var(--cyan) 24%, var(--line));
+  background: color-mix(in srgb, var(--panel) 78%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 18px 54px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(22px) saturate(1.28);
+}
+
+:root[data-palette="aurora"] .directory-card,
+:root[data-palette="aurora"] .directory-icon,
+:root[data-palette="aurora"] .search-box { border-radius: 20px; }
+
+:root[data-palette="aurora"] .directory-icon {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--cyan) 16%, transparent), color-mix(in srgb, var(--yellow) 12%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 8px 22px color-mix(in srgb, var(--cyan) 12%, transparent);
+}
+
+:root[data-palette="aurora"] .directory-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  border-color: color-mix(in srgb, var(--cyan) 66%, var(--line));
+  background: color-mix(in srgb, var(--tile-hover) 82%, transparent);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.22), 0 0 30px color-mix(in srgb, var(--cyan) 10%, transparent);
+}
+
+:root[data-palette="aurora"] .sidebar .category-button.active {
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 20%, transparent), color-mix(in srgb, var(--yellow) 12%, transparent));
+}
+
+:root[data-palette="porcelain"] .app-shell {
+  background-image:
+    linear-gradient(90deg, color-mix(in srgb, var(--line) 35%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--line) 20%, transparent) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+:root[data-palette="porcelain"] .noise-layer {
+  background: radial-gradient(circle at 88% 4%, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 24%);
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+:root[data-palette="porcelain"] .app-shell .sidebar,
+:root[data-palette="porcelain"] .topbar {
+  background: var(--panel-strong);
+  backdrop-filter: none;
+}
+
+:root[data-palette="porcelain"] .app-shell .sidebar { border-right: 4px double var(--line); }
+
+:root[data-palette="porcelain"] .brand-mark strong,
+:root[data-palette="porcelain"] .directory-section h2,
+:root[data-palette="porcelain"] .directory-copy h3 {
+  font-family: Georgia, "Songti SC", "SimSun", serif;
+}
+
+:root[data-palette="porcelain"] .directory-section h2 {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.5rem;
+}
+
+:root[data-palette="porcelain"] .directory-card {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--line) 48%, transparent);
+}
+
+:root[data-palette="porcelain"] .directory-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: color-mix(in srgb, var(--cyan) 72%, transparent);
+}
+
+:root[data-palette="porcelain"] .directory-card:hover {
+  transform: translate(-2px, -2px);
+  border-color: var(--cyan);
+  background: var(--panel-strong);
+  box-shadow: 9px 9px 0 color-mix(in srgb, var(--cyan) 24%, transparent);
+}
+
+:root[data-palette="porcelain"] .directory-icon,
+:root[data-palette="porcelain"] .search-box,
+:root[data-palette="porcelain"] .engine-trigger { border-radius: 3px; }
+
+:root[data-palette="porcelain"] .sidebar .category-button.active {
+  border-radius: 2px;
+  border-left: 3px solid var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 10%, transparent);
+}
+
+:root[data-palette="cobalt"] .app-shell {
+  background-image:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--cyan) 24%, transparent), transparent 30%),
+    linear-gradient(135deg, transparent 0 62%, color-mix(in srgb, var(--yellow) 8%, transparent));
+}
+
+:root[data-palette="cobalt"] .noise-layer {
+  background: repeating-linear-gradient(120deg, transparent 0 34px, color-mix(in srgb, var(--cyan) 5%, transparent) 34px 35px);
+  opacity: 0.9;
+}
+
+:root[data-palette="cobalt"] .app-shell .sidebar,
+:root[data-palette="cobalt"] .topbar {
+  background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 24%, var(--line));
+}
+
+:root[data-palette="cobalt"] .directory-grid { gap: calc(var(--directory-gap) + 2px); }
+
+:root[data-palette="cobalt"] .directory-card {
+  border: 1px solid color-mix(in srgb, var(--cyan) 18%, var(--line));
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 46%),
+    var(--panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 32px rgba(2, 8, 24, 0.24);
+}
+
+:root[data-palette="cobalt"] .directory-card:nth-child(4n + 1) {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 52%),
+    var(--panel);
+}
+
+:root[data-palette="cobalt"] .directory-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--cyan);
+  background: color-mix(in srgb, var(--tile-hover) 88%, var(--cyan) 12%);
+  box-shadow: 0 24px 50px rgba(2, 8, 24, 0.34), 0 0 0 1px color-mix(in srgb, var(--cyan) 28%, transparent);
+}
+
+:root[data-palette="cobalt"] .directory-icon {
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cyan) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 20%, transparent);
+}
+
+:root[data-palette="cobalt"] .search-box {
+  border-radius: 18px;
+  border-color: color-mix(in srgb, var(--cyan) 58%, var(--line));
+}
+
+:root[data-palette="cobalt"] .sidebar .category-button.active {
+  border-radius: 12px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 24%, transparent), transparent);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+:root[data-palette="moss"] .app-shell {
+  background-image:
+    radial-gradient(circle at 10% 18%, color-mix(in srgb, var(--cyan) 14%, transparent), transparent 30%),
+    radial-gradient(circle at 94% 78%, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 34%);
+}
+
+:root[data-palette="moss"] .noise-layer {
+  background:
+    radial-gradient(ellipse at 18% 30%, color-mix(in srgb, var(--cyan) 13%, transparent), transparent 30%),
+    radial-gradient(ellipse at 76% 70%, color-mix(in srgb, var(--yellow) 10%, transparent), transparent 32%);
+  opacity: 0.75;
+}
+
+:root[data-palette="moss"] .app-shell .sidebar,
+:root[data-palette="moss"] .topbar {
+  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
+  border-color: color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+:root[data-palette="moss"] .directory-card {
+  border-color: color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: 26px 14px 26px 14px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+:root[data-palette="moss"] .directory-card:nth-child(even) { border-radius: 14px 26px 14px 26px; }
+
+:root[data-palette="moss"] .directory-card:hover {
+  transform: translateY(-3px) rotate(-0.2deg);
+  border-color: color-mix(in srgb, var(--cyan) 52%, var(--line));
+  background: var(--panel-strong);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+:root[data-palette="moss"] .directory-icon {
+  border-radius: 50% 42% 50% 42%;
+  background: color-mix(in srgb, var(--cyan) 12%, var(--field-bg));
+}
+
+:root[data-palette="moss"] .search-box,
+:root[data-palette="moss"] .engine-trigger,
+:root[data-palette="moss"] .sidebar .category-button.active { border-radius: 999px; }
+
+@media (min-width: 861px) {
+  :root[data-palette="aurora"] .app-shell {
+    grid-template-columns: calc(var(--sidebar-width) + 12px) 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  :root[data-palette="aurora"] .app-shell .sidebar {
+    min-height: 0;
+    height: calc(100vh - 24px);
+    border: 1px solid color-mix(in srgb, var(--cyan) 24%, var(--line));
+    border-radius: 24px;
+  }
+
+  :root[data-palette="aurora"] .workspace { height: calc(100vh - 24px); }
+  :root[data-palette="aurora"] .topbar { border: 0; border-radius: 22px; }
 }
 
 @media (max-width: 1120px) {

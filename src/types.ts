@@ -9,6 +9,10 @@ export type BackgroundStyle =
   | "data-rain"
   | "orange-core";
 export type ThemePalette =
+  | "aurora"
+  | "cobalt"
+  | "moss"
+  | "porcelain"
   | "absolutely"
   | "ayu"
   | "catppuccin"

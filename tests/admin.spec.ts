@@ -108,6 +108,11 @@ test("admin list scrolls independently and category icon can be picked", async (
   await themeSelect.click();
   await page.getByRole("option", { name: "Dark" }).click();
   await expect(themeSelect).toContainText("Dark");
+  const backgroundSelect = page.getByLabel("背景风格");
+  await backgroundSelect.click();
+  await expect(page.locator(".admin-select-menu")).toBeVisible();
+  await page.locator(".admin-select-option").filter({ hasText: "星港地平线" }).click();
+  await expect(backgroundSelect).toContainText("星港地平线");
 });
 
 test("admin desktop layout keeps a usable card list at 1080p", async ({ page }) => {

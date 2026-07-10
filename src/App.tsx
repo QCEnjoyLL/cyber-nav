@@ -149,6 +149,8 @@ const categoryIconOptions = [
   "Star",
 ] as const;
 
+const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun];
+
 const text = {
   zh: {
     all: "全部",
@@ -2026,7 +2028,7 @@ function SettingsForm({
   t: Record<string, string>;
 }) {
   return (
-    <div className="admin-form">
+    <div className="admin-form settings-form">
       <AdminField label="中文站点名称">
         <input value={form.titleZh} onChange={(event) => setForm({ ...form, titleZh: event.target.value })} placeholder="橙子导航" />
       </AdminField>
@@ -2063,18 +2065,19 @@ function SettingsForm({
         <input value={form.subtitleEn} onChange={(event) => setForm({ ...form, subtitleEn: event.target.value })} placeholder="Personal navigation system" />
       </AdminField>
       <AdminField label="背景风格" span="span-6">
-        <select
+        <AdminOptionSelect<BackgroundStyle>
+          ariaLabel="背景风格"
           value={form.backgroundStyle}
-          onChange={(event) => setForm({ ...form, backgroundStyle: event.target.value as BackgroundStyle })}
-          aria-label="背景风格"
-          title="背景风格"
-        >
-          {BACKGROUND_STYLES.map((style) => (
-            <option key={style.id} value={style.id}>
-              {style.nameZh} / {style.nameEn}
-            </option>
-          ))}
-        </select>
+          options={BACKGROUND_STYLES.map((style, index) => {
+            const BackgroundIcon = backgroundStyleIcons[index] ?? Sparkles;
+            return {
+              value: style.id,
+              label: `${style.nameZh} / ${style.nameEn}`,
+              icon: <BackgroundIcon size={17} />,
+            };
+          })}
+          onChange={(backgroundStyle) => setForm({ ...form, backgroundStyle })}
+        />
       </AdminField>
       <div className="form-actions">
         <button className="primary-button admin-save-button" onClick={onSubmit}>

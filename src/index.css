@@ -1860,6 +1860,13 @@ a {
   min-height: 0;
 }
 
+.settings-form {
+  position: relative;
+  z-index: 5;
+  max-height: none;
+  overflow: visible;
+}
+
 .admin-form textarea {
   grid-column: 1 / -1;
   padding: 12px;

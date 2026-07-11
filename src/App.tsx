@@ -150,7 +150,7 @@ const categoryIconOptions = [
   "Star",
 ] as const;
 
-const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun, Palette, Moon, Image, Gamepad2, Film, Bookmark, Cloud, Image];
+const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun, Palette, Moon, Image, Gamepad2, Film, Bookmark, Cloud, Star, Music, Sparkles, Palette, Gamepad2, Image];
 
 const text = {
   zh: {

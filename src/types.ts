@@ -15,6 +15,11 @@ export type BackgroundStyle =
   | "neon-alley"
   | "paper-fold"
   | "tidal-glass"
+  | "manga-stickers"
+  | "gummy-planet"
+  | "cat-cloud"
+  | "soda-pop"
+  | "star-doodle"
   | "custom-image";
 export type ThemePalette =
   | "aurora"
@@ -24,6 +29,7 @@ export type ThemePalette =
   | "ember"
   | "glacier"
   | "noir"
+  | "candy"
   | "absolutely"
   | "ayu"
   | "catppuccin"

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Star Doodle light background">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#fff9f0"/><stop offset="1" stop-color="#fff1e4"/></linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <g fill="none" stroke="#6a4a63" stroke-opacity=".2" stroke-width="3" stroke-dasharray="6 10" stroke-linecap="round">
+    <path d="M120 200c120 40 180-40 300 10"/><path d="M980 160c100 50 180 20 280 60"/><path d="M260 760c140-30 220 40 360 0"/><path d="M1040 720c120 40 200-20 300 30"/>
+  </g>
+  <g fill="#ffb84d">
+    <path d="M240 160l16 32 36 5-26 25 6 36-32-17-32 17 6-36-26-25 36-5z"/>
+    <path d="M1260 220l12 24 27 4-20 19 5 27-24-13-24 13 5-27-20-19 27-4z"/>
+    <path d="M860 700l18 36 40 6-29 28 7 40-36-19-36 19 7-40-29-28 40-6z"/>
+  </g>
+  <g fill="none" stroke="#ff7eb6" stroke-width="6" stroke-linecap="round">
+    <path d="M480 300c40-60 120-60 160 0"/><path d="M1100 520c30-50 100-50 130 0"/>
+  </g>
+  <g fill="#5fd4b0">
+    <circle cx="620" cy="480" r="10"/><circle cx="1400" cy="640" r="12"/><circle cx="180" cy="560" r="8"/>
+  </g>
+  <g fill="none" stroke="#5fd4b0" stroke-width="5">
+    <path d="M720 180c20 0 20 30 40 30s20-30 40-30 20 30 40 30"/><path d="M300 640c18 0 18 26 36 26s18-26 36-26 18 26 36 26"/>
+  </g>
+  <g fill="#ff7eb6" opacity=".85">
+    <path d="M980 320c0-14 11-26 26-26 8 0 15 3 20 9 5-6 12-9 20-9 15 0 26 12 26 26 0 28-46 54-46 54s-46-26-46-54z"/>
+    <path d="M420 780c0-12 9-22 22-22 7 0 13 3 17 8 4-5 10-8 17-8 13 0 22 10 22 22 0 24-39 46-39 46s-39-22-39-46z"/>
+  </g>
+</svg>

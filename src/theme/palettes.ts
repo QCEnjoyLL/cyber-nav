@@ -115,6 +115,12 @@ const definitions: ThemePaletteDefinition[] = [
     tagline: "深色影院、戏剧光感、适合沉浸浏览",
     preview: ["#120c1c", "#261a3a", "#c9a0ff"],
   },
+    {
+    ...makePalette("candy", "梦糖手账", "#ff7eb6", "#e85a97", "#c9447d", "rgba(232,90,151,.14)", "#ff8fc4", "#ffd18a", "rgba(255,143,196,.22)", { pageBg: "#fff3f8", panelBg: "#fffafc", elevatedBg: "#ffe6f1", sidebarBg: "#ffebf4", text: "#4a2740", muted: "#9a6a84", border: "#f3c7db" }, { pageBg: "#1a1018", panelBg: "#261722", elevatedBg: "#342030", sidebarBg: "#140c13", text: "#ffeaf4", muted: "#d1a4bc", border: "#4d3044" }),
+    featured: true,
+    tagline: "粉彩、软糖、像一本可爱手账",
+    preview: ["#fff3f8", "#ffe6f1", "#ff7eb6"],
+  },
   makePalette("one", "One", "#61afef", "#4078f2", "#2864d8", "rgba(64,120,242,.13)", "#61afef", "#7ec7ff", "rgba(97,175,239,.2)", { pageBg: "#fafafa", sidebarBg: "#f0f2f5", text: "#24292f" }, { pageBg: "#282c34", panelBg: "#2c313c", elevatedBg: "#343b48", sidebarBg: "#21252b", text: "#d7dae0", muted: "#abb2bf", border: "#3e4451" }),
   makePalette("absolutely", "Absolutely", "#cc7d5e", "#b85f43", "#9c4c34", "rgba(184,95,67,.14)", "#cc7d5e", "#dc8c69", "rgba(204,125,94,.22)", { pageBg: "#f5f1ec", sidebarBg: "#eee7df", panelBg: "#fffaf5", elevatedBg: "#f6eee7", border: "#dfd3c9", text: "#2d2926" }, { pageBg: "#2d2d2b", panelBg: "#353532", elevatedBg: "#3d3d39", sidebarBg: "#242421", text: "#f9f9f7", border: "#4b4944" }),
   makePalette("ayu", "Ayu", "#ffb454", "#c46f00", "#9f5a00", "rgba(196,111,0,.14)", "#ffb454", "#ffd580", "rgba(255,180,84,.18)", { pageBg: "#faf7ef", sidebarBg: "#f0eadf", panelBg: "#fffdf7", text: "#1f2933" }, { pageBg: "#111722", panelBg: "#11151c", elevatedBg: "#1b202a", sidebarBg: "#141922", text: "#e6e1cf", muted: "#9da8b8", border: "#27313f" }),

@@ -2921,6 +2921,159 @@ a {
 :root[data-palette="moss"] .engine-trigger,
 :root[data-palette="moss"] .sidebar .category-button.active { border-radius: 999px; }
 
+
+/* Additional signature themes */
+:root[data-palette="ember"] .app-shell,
+:root[data-palette="ember"] .admin-shell {
+  background-image:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--cyan) 18%, transparent), transparent 28%),
+    radial-gradient(circle at 88% 72%, color-mix(in srgb, var(--yellow) 14%, transparent), transparent 32%),
+    linear-gradient(160deg, transparent 0 55%, color-mix(in srgb, var(--cyan) 8%, transparent)),
+    var(--grid-bg);
+  background-size: auto, auto, auto, cover;
+  background-position: center;
+}
+
+:root[data-palette="ember"] .noise-layer {
+  background:
+    radial-gradient(ellipse at 20% 10%, color-mix(in srgb, var(--cyan) 24%, transparent), transparent 34%),
+    radial-gradient(ellipse at 80% 90%, color-mix(in srgb, var(--yellow) 16%, transparent), transparent 30%);
+  opacity: 0.78;
+}
+
+:root[data-palette="ember"] .app-shell .sidebar,
+:root[data-palette="ember"] .topbar,
+:root[data-palette="ember"] .admin-topbar {
+  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 28%, var(--line));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+:root[data-palette="ember"] .directory-card {
+  border-radius: 16px;
+  border-color: color-mix(in srgb, var(--cyan) 22%, var(--line));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 48%),
+    var(--panel);
+  box-shadow: 0 16px 36px rgba(20, 4, 10, 0.22);
+}
+
+:root[data-palette="ember"] .directory-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--cyan) 60%, var(--line));
+  box-shadow: 0 24px 48px rgba(20, 4, 10, 0.3), 0 0 24px color-mix(in srgb, var(--cyan) 12%, transparent);
+}
+
+:root[data-palette="ember"] .directory-icon {
+  border-radius: 12px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--cyan) 18%, transparent), color-mix(in srgb, var(--yellow) 12%, transparent));
+}
+
+:root[data-palette="ember"] .sidebar .category-button.active {
+  border-radius: 12px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 24%, transparent), transparent);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+:root[data-palette="glacier"] .app-shell,
+:root[data-palette="glacier"] .admin-shell {
+  background-image:
+    radial-gradient(circle at 80% 12%, color-mix(in srgb, var(--cyan) 20%, transparent), transparent 28%),
+    linear-gradient(180deg, color-mix(in srgb, var(--cyan) 6%, transparent), transparent 42%),
+    var(--grid-bg);
+  background-size: auto, auto, cover;
+  background-position: center;
+}
+
+:root[data-palette="glacier"] .noise-layer {
+  background:
+    linear-gradient(115deg, transparent 0 40%, color-mix(in srgb, var(--cyan) 8%, transparent) 40% 41%, transparent 41%),
+    radial-gradient(circle at 18% 78%, color-mix(in srgb, var(--yellow) 10%, transparent), transparent 30%);
+  opacity: 0.7;
+}
+
+:root[data-palette="glacier"] .app-shell .sidebar,
+:root[data-palette="glacier"] .topbar,
+:root[data-palette="glacier"] .admin-topbar {
+  background: color-mix(in srgb, var(--panel-strong) 88%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 30%, var(--line));
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+:root[data-palette="glacier"] .directory-card {
+  border-radius: 18px;
+  border-color: color-mix(in srgb, var(--cyan) 18%, var(--line));
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 14px 30px rgba(4, 18, 28, 0.18);
+}
+
+:root[data-palette="glacier"] .directory-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--cyan);
+  background: color-mix(in srgb, var(--tile-hover) 86%, var(--cyan) 8%);
+}
+
+:root[data-palette="glacier"] .directory-icon,
+:root[data-palette="glacier"] .search-box,
+:root[data-palette="glacier"] .engine-trigger {
+  border-radius: 14px;
+}
+
+:root[data-palette="glacier"] .sidebar .category-button.active {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cyan) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 34%, transparent);
+}
+
+:root[data-palette="noir"] .app-shell,
+:root[data-palette="noir"] .admin-shell {
+  background-image:
+    radial-gradient(circle at 70% 0%, color-mix(in srgb, var(--cyan) 16%, transparent), transparent 30%),
+    radial-gradient(circle at 10% 100%, color-mix(in srgb, var(--yellow) 10%, transparent), transparent 28%),
+    linear-gradient(135deg, transparent 0 58%, color-mix(in srgb, var(--cyan) 7%, transparent)),
+    var(--grid-bg);
+  background-size: auto, auto, auto, cover;
+  background-position: center;
+}
+
+:root[data-palette="noir"] .noise-layer {
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--cyan) 18%, transparent), transparent 40%),
+    radial-gradient(ellipse at 90% 80%, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 34%);
+  filter: blur(28px);
+  opacity: 0.75;
+}
+
+:root[data-palette="noir"] .app-shell .sidebar,
+:root[data-palette="noir"] .topbar,
+:root[data-palette="noir"] .admin-topbar,
+:root[data-palette="noir"] .directory-card {
+  border-color: color-mix(in srgb, var(--cyan) 20%, var(--line));
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 40px rgba(8, 2, 18, 0.28);
+}
+
+:root[data-palette="noir"] .directory-card {
+  border-radius: 22px;
+}
+
+:root[data-palette="noir"] .directory-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  border-color: color-mix(in srgb, var(--cyan) 58%, var(--line));
+  box-shadow: 0 26px 50px rgba(8, 2, 18, 0.34), 0 0 28px color-mix(in srgb, var(--cyan) 14%, transparent);
+}
+
+:root[data-palette="noir"] .directory-icon {
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--cyan) 22%, transparent), color-mix(in srgb, var(--yellow) 10%, transparent));
+}
+
+:root[data-palette="noir"] .sidebar .category-button.active {
+  border-radius: 16px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 22%, transparent), color-mix(in srgb, var(--yellow) 10%, transparent));
+}
+
 @media (min-width: 861px) {
   :root[data-palette="aurora"] .app-shell {
     grid-template-columns: calc(var(--sidebar-width) + 12px) 1fr;

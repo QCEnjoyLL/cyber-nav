@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Tidal Glass light background">
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#eef9ff"/><stop offset=".5" stop-color="#e7f5fb"/><stop offset="1" stop-color="#dceef7"/></linearGradient>
+    <linearGradient id="waveA" x2="1" y2="0"><stop stop-color="#2aa8d8" stop-opacity="0"/><stop offset=".5" stop-color="#2aa8d8" stop-opacity=".14"/><stop offset="1" stop-color="#2aa8d8" stop-opacity="0"/></linearGradient>
+    <linearGradient id="waveB" x2="1" y2="0"><stop stop-color="#3db89a" stop-opacity="0"/><stop offset=".5" stop-color="#3db89a" stop-opacity=".1"/><stop offset="1" stop-color="#3db89a" stop-opacity="0"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <path d="M-40 260 C280 180 520 340 860 250 S1400 160 1680 260 L1680 420 C1320 340 980 500 620 410 S120 420 -40 500z" fill="url(#waveA)" filter="url(#soft)"/>
+  <path d="M-40 520 C300 430 560 620 900 520 S1420 430 1680 540 L1680 700 C1300 590 980 780 620 680 S100 690 -40 780z" fill="url(#waveB)" filter="url(#soft)"/>
+  <path d="M-20 180 C360 120 700 240 1040 160 S1480 80 1640 150" fill="none" stroke="#2aa8d8" stroke-opacity=".12" stroke-width="2"/>
+  <circle cx="1260" cy="180" r="90" fill="#2aa8d8" fill-opacity=".05"/>
+  <circle cx="320" cy="760" r="140" fill="#3db89a" fill-opacity=".04"/>
+</svg>

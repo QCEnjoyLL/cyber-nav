@@ -11,6 +11,9 @@ export const BACKGROUND_STYLE_IDS = [
   "lunar-dunes",
   "ink-current",
   "pixel-parade",
+  "neon-alley",
+  "paper-fold",
+  "tidal-glass",
   "custom-image",
 ] as const;
 
@@ -118,6 +121,33 @@ export const BACKGROUND_STYLES: BackgroundDefinition[] = [
     descriptionEn: "Playful pixel blocks, checker forms and arcade colors without harsh contrast.",
     dark: "/background-options/09-pixel-parade-dark.svg",
     light: "/background-options/09-pixel-parade-light.svg",
+  },
+  {
+    id: "neon-alley",
+    nameZh: "霓虹雨巷",
+    nameEn: "Neon Alley",
+    descriptionZh: "湿润街面倒影与竖向霓虹，像一条夜间小巷。",
+    descriptionEn: "Wet-street reflections and vertical neon signs like a midnight alley.",
+    dark: "/background-options/10-neon-alley-dark.svg",
+    light: "/background-options/10-neon-alley-light.svg",
+  },
+  {
+    id: "paper-fold",
+    nameZh: "折纸台面",
+    nameEn: "Paper Fold",
+    descriptionZh: "柔和折纸几何与纹理纹，清爽但不单调。",
+    descriptionEn: "Soft folded-paper geometry and grain for a clean, crafted desk look.",
+    dark: "/background-options/11-paper-fold-dark.svg",
+    light: "/background-options/11-paper-fold-light.svg",
+  },
+  {
+    id: "tidal-glass",
+    nameZh: "潮汐玻璃",
+    nameEn: "Tidal Glass",
+    descriptionZh: "半透明浪纹与冰渊色块，像潮汐裤过玻璃。",
+    descriptionEn: "Translucent wave bands and abyss glass for a calm coastal feel.",
+    dark: "/background-options/12-tidal-glass-dark.svg",
+    light: "/background-options/12-tidal-glass-light.svg",
   },
   {
     id: "custom-image",

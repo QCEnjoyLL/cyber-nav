@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Neon Alley dark background">
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#09060f"/><stop offset=".55" stop-color="#140b1d"/><stop offset="1" stop-color="#1b1024"/></linearGradient>
+    <linearGradient id="wet" x2="0" y2="1"><stop stop-color="#ff4d8d" stop-opacity=".0"/><stop offset=".4" stop-color="#ff4d8d" stop-opacity=".18"/><stop offset="1" stop-color="#48e0ff" stop-opacity=".12"/></linearGradient>
+    <linearGradient id="signA" x2="0" y2="1"><stop stop-color="#ff4d8d"/><stop offset="1" stop-color="#ff9b63"/></linearGradient>
+    <linearGradient id="signB" x2="0" y2="1"><stop stop-color="#48e0ff"/><stop offset="1" stop-color="#7b6cff"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect y="620" width="1600" height="380" fill="url(#wet)"/>
+  <g opacity=".9">
+    <rect x="180" y="90" width="42" height="520" rx="8" fill="url(#signA)" opacity=".72"/>
+    <rect x="280" y="150" width="34" height="430" rx="8" fill="url(#signB)" opacity=".55"/>
+    <rect x="1260" y="70" width="48" height="560" rx="8" fill="url(#signB)" opacity=".7"/>
+    <rect x="1360" y="180" width="30" height="390" rx="8" fill="url(#signA)" opacity=".5"/>
+  </g>
+  <g filter="url(#glow)" opacity=".55">
+    <rect x="180" y="90" width="42" height="520" rx="8" fill="#ff4d8d"/>
+    <rect x="1260" y="70" width="48" height="560" rx="8" fill="#48e0ff"/>
+  </g>
+  <path d="M0 760 Q400 700 800 760 T1600 740" fill="none" stroke="#ff4d8d" stroke-opacity=".18" stroke-width="3"/>
+  <path d="M0 820 Q500 770 900 830 T1600 800" fill="none" stroke="#48e0ff" stroke-opacity=".14" stroke-width="2"/>
+  <g fill="#fff" fill-opacity=".35">
+    <circle cx="220" cy="120" r="2"/><circle cx="420" cy="80" r="1.5"/><circle cx="980" cy="140" r="2"/><circle cx="1180" cy="60" r="1.4"/><circle cx="1480" cy="180" r="1.8"/>
+  </g>
+</svg>

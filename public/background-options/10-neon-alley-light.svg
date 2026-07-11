@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Neon Alley light background">
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#f7eef8"/><stop offset=".5" stop-color="#f3e7f4"/><stop offset="1" stop-color="#ebe0ef"/></linearGradient>
+    <linearGradient id="wet" x2="0" y2="1"><stop stop-color="#ff6b9d" stop-opacity="0"/><stop offset=".5" stop-color="#ff6b9d" stop-opacity=".12"/><stop offset="1" stop-color="#39c5e8" stop-opacity=".1"/></linearGradient>
+    <linearGradient id="signA" x2="0" y2="1"><stop stop-color="#e85b86"/><stop offset="1" stop-color="#f0a070"/></linearGradient>
+    <linearGradient id="signB" x2="0" y2="1"><stop stop-color="#39b7d8"/><stop offset="1" stop-color="#7a6ae0"/></linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect y="640" width="1600" height="360" fill="url(#wet)"/>
+  <rect x="200" y="120" width="36" height="480" rx="8" fill="url(#signA)" opacity=".35"/>
+  <rect x="300" y="180" width="28" height="400" rx="8" fill="url(#signB)" opacity=".28"/>
+  <rect x="1240" y="100" width="40" height="520" rx="8" fill="url(#signB)" opacity=".32"/>
+  <rect x="1340" y="190" width="26" height="380" rx="8" fill="url(#signA)" opacity=".25"/>
+  <path d="M0 780 Q420 720 820 780 T1600 760" fill="none" stroke="#e85b86" stroke-opacity=".14" stroke-width="3"/>
+  <path d="M0 840 Q520 790 920 850 T1600 820" fill="none" stroke="#39b7d8" stroke-opacity=".12" stroke-width="2"/>
+</svg>

@@ -12,12 +12,18 @@ export type BackgroundStyle =
   | "lunar-dunes"
   | "ink-current"
   | "pixel-parade"
+  | "neon-alley"
+  | "paper-fold"
+  | "tidal-glass"
   | "custom-image";
 export type ThemePalette =
   | "aurora"
   | "cobalt"
   | "moss"
   | "porcelain"
+  | "ember"
+  | "glacier"
+  | "noir"
   | "absolutely"
   | "ayu"
   | "catppuccin"

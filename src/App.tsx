@@ -58,7 +58,8 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
 import { BACKGROUND_STYLES, DEFAULT_BACKGROUND_STYLE, getBackgroundDefinition } from "./theme/backgrounds";
@@ -1358,8 +1359,9 @@ function ThemeButton({
   setPalette: (palette: ThemePalette) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const controlRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const selectedPalette = getPaletteDefinition(palette);
   const resolvedMode = getResolvedThemeMode(theme);
   const featuredPalettes = THEME_PALETTES.filter((item) => item.featured);
@@ -1370,49 +1372,63 @@ function ThemeButton({
     { key: "dark", label: "深色", icon: <Moon size={17} /> },
   ];
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return;
 
     const updateMenuPosition = () => {
       const rect = controlRef.current?.getBoundingClientRect();
       if (!rect) return;
+
       const width = Math.min(380, window.innerWidth - 32);
-      const left = Math.min(Math.max(16, rect.right - width), window.innerWidth - width - 16);
-      const top = Math.min(rect.bottom + 8, window.innerHeight - 24);
+      const maxHeight = Math.min(window.innerHeight * 0.7, 560);
+      const left = Math.min(Math.max(16, rect.right - width), Math.max(16, window.innerWidth - width - 16));
+      const preferredTop = rect.bottom + 8;
+      const top =
+        preferredTop + maxHeight > window.innerHeight - 16
+          ? Math.max(16, window.innerHeight - maxHeight - 16)
+          : preferredTop;
+
       setMenuStyle({
         position: "fixed",
         top,
         left,
         width,
+        maxHeight,
         right: "auto",
-        zIndex: 80,
+        zIndex: 1000,
       });
     };
 
     updateMenuPosition();
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target?.closest(".appearance-control") && !target?.closest(".appearance-menu")) setOpen(false);
-    };
-    window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("resize", updateMenuPosition);
     window.addEventListener("scroll", updateMenuPosition, true);
     return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
+  }, [open, theme, palette]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (controlRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
-  return (
-    <div className="appearance-control" ref={controlRef}>
-      <button className="appearance-trigger" onClick={() => setOpen((value) => !value)} aria-label="theme" aria-haspopup="menu" aria-expanded={open}>
-        <Settings size={18} />
-        <span className="appearance-trigger-swatch" style={{ background: getThemeColors(resolvedMode, palette).accent }} />
-        <span className="appearance-trigger-text">{selectedPalette.label}</span>
-      </button>
-      {open && (
-        <div className="appearance-menu" role="menu" style={menuStyle}>
+  const menu = open
+    ? createPortal(
+        <div className="appearance-menu" role="menu" ref={menuRef} style={menuStyle}>
           <div className="appearance-menu-group">
             <strong>模式</strong>
             {modeOptions.map((item) => (
@@ -1454,8 +1470,19 @@ function ThemeButton({
               ))}
             </div>
           </div>
-        </div>
-      )}
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div className="appearance-control" ref={controlRef}>
+      <button className="appearance-trigger" onClick={() => setOpen((value) => !value)} aria-label="theme" aria-haspopup="menu" aria-expanded={open}>
+        <Settings size={18} />
+        <span className="appearance-trigger-swatch" style={{ background: getThemeColors(resolvedMode, palette).accent }} />
+        <span className="appearance-trigger-text">{selectedPalette.label}</span>
+      </button>
+      {menu}
     </div>
   );
 }
@@ -2193,7 +2220,7 @@ function AdminTagOrder({
   };
 
   return (
-    <div className="admin-tag-order" style={{ "--group-color": color } as React.CSSProperties}>
+    <div className="admin-tag-order" style={{ "--group-color": color } as CSSProperties}>
       <div className="admin-tag-order-title">
         <strong>标签顺序</strong>
         <span>点击上移/下移调整当前分类下的标签展示顺序</span>
@@ -2268,7 +2295,7 @@ function AdminLinkGroups({
         const Icon = iconMap[group.icon] ?? Folder;
         return (
           <section className="admin-link-group" key={group.id || "uncategorized"}>
-            <header className="admin-link-group-header" style={{ "--group-color": group.color } as React.CSSProperties}>
+            <header className="admin-link-group-header" style={{ "--group-color": group.color } as CSSProperties}>
               <span className="admin-link-group-icon">
                 <Icon size={18} />
               </span>

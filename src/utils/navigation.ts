@@ -44,7 +44,9 @@ export function buildSearchUrl(engine: SearchEngine, query: string): string {
 export function normalizeUrl(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return trimmed;
+  if (/^(javascript|data|vbscript):/i.test(trimmed)) return "";
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
   return `https://${trimmed}`;
 }
 

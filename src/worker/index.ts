@@ -56,6 +56,7 @@ app.use("*", async (c, next) => {
   c.header("X-Content-Type-Options", "nosniff");
   c.header("Referrer-Policy", "strict-origin-when-cross-origin");
   c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  c.header("X-Frame-Options", "DENY");
 });
 
 app.get("/api/health", (c) =>

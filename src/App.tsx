@@ -56,6 +56,7 @@ import {
   Wifi,
   Wrench,
   X,
+  Heart,
   type LucideIcon,
 } from "lucide-react";
 import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -150,7 +151,7 @@ const categoryIconOptions = [
   "Star",
 ] as const;
 
-const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun, Palette, Moon, Image, Gamepad2, Film, Bookmark, Cloud, Star, Music, Sparkles, Palette, Gamepad2, Image];
+const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun, Palette, Moon, Image, Gamepad2, Film, Bookmark, Cloud, Star, Music, Heart, Bot, Rocket, Image];
 
 const text = {
   zh: {
@@ -345,7 +346,7 @@ function buildDirectorySections(categories: Category[], links: NavLink[], select
         if (selection.type === "subcategory" && subcategory.id !== selection.subcategory) continue;
         if (subcategory.links.length === 0) continue;
         sections.push({
-          id: `${node.category.id}:${subcategory.id}`,
+          id: `${node.category.id}:${encodeURIComponent(subcategory.id)}`,
           title: subcategory.title,
           icon: <Icon size={24} style={{ color: node.category.color }} />,
           links: subcategory.links,
@@ -446,8 +447,8 @@ function LoadingMascot() {
 function PublicApp() {
   const [data, setData] = useState<BootstrapData | null>(() => readCachedBootstrap());
   const bootstrap = data ?? defaultBootstrap;
-  const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", bootstrap.settings.defaultLocale);
-  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", bootstrap.settings.defaultTheme);
+  const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", bootstrap.settings.defaultLocale, (value): value is Locale => value === "zh" || value === "en");
+  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", bootstrap.settings.defaultTheme, (value): value is ThemeMode => value === "system" || value === "light" || value === "dark");
   const [themePalette, setThemePalette] = useStoredThemePalette();
   const [query, setQuery] = useState("");
   const [selectionKey, setSelectionKey] = useState("all");
@@ -585,9 +586,9 @@ function PublicApp() {
   function getTargetSectionId(key: string): string | null {
     const selection = parseSelectionKey(key);
     if (selection.type === "all") return null;
-    if (selection.type === "subcategory") return `${selection.categoryId}:${selection.subcategory}`;
+    if (selection.type === "subcategory") return `${selection.categoryId}:${encodeURIComponent(selection.subcategory)}`;
     const node = sidebarNodes.find((item) => item.category.id === selection.categoryId);
-    return node?.subcategories[0] ? `${selection.categoryId}:${node.subcategories[0].id}` : selection.categoryId;
+    return node?.subcategories[0] ? `${selection.categoryId}:${encodeURIComponent(node.subcategories[0].id)}` : selection.categoryId;
   }
 
   function navigateToSection(key: string) {
@@ -815,7 +816,20 @@ function DirectorySection({
             <article className="directory-card" key={`${title}-${link.id}`}>
               <a href={link.url} target="_blank" rel="noreferrer" className="directory-card-main">
                 <span className="directory-icon" style={{ color: category?.color ?? "#00f5ff" }}>
-                  {link.iconUrl ? <img src={link.iconUrl} alt="" /> : <Icon size={24} />}
+                  {link.iconUrl ? (
+                    <img
+                      src={link.iconUrl}
+                      alt=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                        event.currentTarget.parentElement?.classList.add("icon-fallback");
+                      }}
+                    />
+                  ) : (
+                    <Icon size={24} />
+                  )}
                 </span>
                 <span className="directory-copy">
                   <h3>{link.title}</h3>
@@ -896,12 +910,13 @@ function CommandPalette({
 }
 
 function AdminApp() {
-  const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", "zh");
-  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", "dark");
+  const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", "zh", (value): value is Locale => value === "zh" || value === "en");
+  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", "dark", (value): value is ThemeMode => value === "system" || value === "light" || value === "dark");
   const [themePalette, setThemePalette] = useStoredThemePalette();
   const [session, setSession] = useState<"checking" | "anonymous" | "authenticated">("checking");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
   const [data, setData] = useState<BootstrapData | null>(null);
   const [tab, setTab] = useState<"links" | "categories" | "engines" | "settings" | "import">("links");
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -971,16 +986,22 @@ function AdminApp() {
   }
 
   async function runAdminAction(action: () => Promise<void>, successMessage?: string) {
+    if (busy) return;
+    setBusy(true);
     try {
       await action();
       if (successMessage) notify(successMessage);
     } catch (error) {
       notify(getErrorMessage(error));
+    } finally {
+      setBusy(false);
     }
   }
 
   async function login() {
+    if (busy) return;
     setMessage("");
+    setBusy(true);
     try {
       await apiJson("/api/auth/login", "POST", { password });
       setPassword("");
@@ -988,6 +1009,8 @@ function AdminApp() {
       setSession("authenticated");
     } catch (error) {
       setMessage(getErrorMessage(error, "登录失败"));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -1157,7 +1180,7 @@ function AdminApp() {
             }}
             placeholder={t.password}
           />
-          <button className="primary-button" onClick={() => void login()}>
+          <button className="primary-button" onClick={() => void login()} disabled={busy}>
             {t.login}
           </button>
           {message && <p className="form-message">{message}</p>}
@@ -1311,7 +1334,7 @@ function AdminApp() {
 
         {tab === "settings" && (
           <AdminSection title={t.settings}>
-            <SettingsForm form={settingsForm} setForm={setSettingsForm} onSubmit={() => void saveSettings()} t={t} />
+            <SettingsForm form={settingsForm} setForm={setSettingsForm} onSubmit={() => void saveSettings()} busy={busy} t={t} />
           </AdminSection>
         )}
 
@@ -1523,6 +1546,7 @@ function AdminFormActions({
   onUpdate,
   onCancelEdit,
   children,
+  disabled = false,
 }: {
   isEditing: boolean;
   editingLabel: string;
@@ -1530,6 +1554,7 @@ function AdminFormActions({
   onUpdate: () => void;
   onCancelEdit: () => void;
   children?: React.ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <div className="form-actions admin-form-actions">
@@ -1544,16 +1569,16 @@ function AdminFormActions({
         )}
       </div>
       {isEditing && (
-        <button className="tool-button admin-cancel-button" type="button" onClick={onCancelEdit}>
+        <button className="tool-button admin-cancel-button" type="button" onClick={onCancelEdit} disabled={disabled}>
           取消编辑
         </button>
       )}
       {children}
-      <button className="tool-button admin-save-button" type="button" onClick={onCreate}>
+      <button className="tool-button admin-save-button" type="button" onClick={onCreate} disabled={disabled}>
         <Plus size={16} />
         新增
       </button>
-      <button className="primary-button admin-save-button" type="button" onClick={onUpdate} disabled={!isEditing}>
+      <button className="primary-button admin-save-button" type="button" onClick={onUpdate} disabled={disabled || !isEditing}>
         <Check size={16} />
         保存修改
       </button>
@@ -2094,11 +2119,13 @@ function SettingsForm({
   setForm,
   onSubmit,
   t,
+  busy = false,
 }: {
   form: SiteSettings;
   setForm: (form: SiteSettings) => void;
   onSubmit: () => void;
   t: Record<string, string>;
+  busy?: boolean;
 }) {
   return (
     <div className="admin-form settings-form">
@@ -2174,7 +2201,7 @@ function SettingsForm({
         </AdminField>
       )}
       <div className="form-actions">
-        <button className="primary-button admin-save-button" onClick={onSubmit}>
+        <button className="primary-button admin-save-button" onClick={onSubmit} disabled={busy}>
           <Check size={16} />
           {t.save}
         </button>
@@ -2457,8 +2484,12 @@ function readStoredStringArray(key: string): string[] {
   }
 }
 
-function useStoredState<T extends string>(key: string, fallback: T): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(() => (readLocalStorage(key) as T | null) ?? fallback);
+function useStoredState<T extends string>(key: string, fallback: T, isValid?: (value: string) => value is T): [T, (value: T) => void] {
+  const [value, setValue] = useState<T>(() => {
+    const stored = readLocalStorage(key);
+    if (stored && (!isValid || isValid(stored))) return stored as T;
+    return fallback;
+  });
   return [
     value,
     (next) => {

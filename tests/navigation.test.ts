@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultBootstrap } from "../src/data/defaults";
-import { buildCategorySubcategories, buildSearchUrl, filterLinks, getLinkSubcategory } from "../src/utils/navigation";
+import { buildCategorySubcategories, buildSearchUrl, filterLinks, getLinkSubcategory, normalizeUrl } from "../src/utils/navigation";
 
 describe("navigation helpers", () => {
   it("filters links by category, query, tag, and favorites", () => {
@@ -89,5 +89,11 @@ describe("navigation helpers", () => {
     const titles = groups.map((group) => group.title).sort();
     expect(titles).toEqual(["其他", "博客"]);
     expect(groups.find((group) => group.title === "其他")?.links.map((link) => link.id)).toEqual(["misc"]);
+  });
+  it("normalizes urls and rejects dangerous schemes", () => {
+    expect(normalizeUrl("example.com")).toBe("https://example.com");
+    expect(normalizeUrl("https://example.com")).toBe("https://example.com");
+    expect(normalizeUrl("javascript:alert(1)")).toBe("");
+    expect(normalizeUrl("data:text/html,hi")).toBe("");
   });
 });

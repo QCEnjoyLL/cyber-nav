@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Ink Current dark background">
+  <defs><linearGradient id="paper" x2="1" y2="1"><stop stop-color="#101311"/><stop offset="1" stop-color="#171719"/></linearGradient><filter id="ink"><feTurbulence baseFrequency=".012 .028" numOctaves="3" seed="17"/><feDisplacementMap in="SourceGraphic" scale="24"/></filter><filter id="grain"><feTurbulence baseFrequency=".7" numOctaves="3"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .07 0"/></filter></defs>
+  <rect width="1600" height="1000" fill="url(#paper)"/>
+  <g fill="none" stroke-linecap="round" filter="url(#ink)"><path d="M-100 690c250-260 430 190 680-40s390 130 600-80 360 20 520-130" stroke="#d7ddd6" stroke-opacity=".16" stroke-width="80"/><path d="M-80 820c280-210 430 120 670-60s380 100 590-50 320 20 500-100" stroke="#7ca69c" stroke-opacity=".22" stroke-width="34"/><path d="M40 905c230-130 440 70 670-55s430 30 700-100" stroke="#c8d2cd" stroke-opacity=".12" stroke-width="12"/></g>
+  <circle cx="1260" cy="230" r="86" fill="#b34b3e" opacity=".3"/><path d="M1260 170v120M1200 230h120" stroke="#d98b79" stroke-opacity=".28"/>
+  <rect width="1600" height="1000" filter="url(#grain)"/>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Prism Shards light background">
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f1fbfa"/><stop offset=".5" stop-color="#f0f2ff"/><stop offset="1" stop-color="#fff0f8"/></linearGradient><linearGradient id="a" x2="1" y2="1"><stop stop-color="#48cbb6" stop-opacity=".3"/><stop offset="1" stop-color="#6177dd" stop-opacity=".05"/></linearGradient><linearGradient id="b" x2="1"><stop stop-color="#dc5cab" stop-opacity=".24"/><stop offset="1" stop-color="#875bdd" stop-opacity=".04"/></linearGradient></defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <path d="M140 90 660 260 410 760z" fill="url(#a)"/><path d="m610 180 470-90 280 520-610 120z" fill="url(#b)"/><path d="m1120 410 390-120-80 610-430-170z" fill="url(#a)"/>
+  <g fill="none" stroke="#59798b" stroke-opacity=".13"><path d="M140 90 660 260 410 760 140 90z"/><path d="m610 180 470-90 280 520-610 120z"/><path d="m1120 410 390-120-80 610-430-170z"/></g>
+</svg>

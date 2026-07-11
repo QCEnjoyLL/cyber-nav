@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Prism Shards dark background">
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#080b18"/><stop offset=".5" stop-color="#10152b"/><stop offset="1" stop-color="#160d22"/></linearGradient><linearGradient id="a" x2="1" y2="1"><stop stop-color="#61f4dc" stop-opacity=".72"/><stop offset="1" stop-color="#6177ff" stop-opacity=".08"/></linearGradient><linearGradient id="b" x2="1"><stop stop-color="#ff77cf" stop-opacity=".58"/><stop offset="1" stop-color="#875bff" stop-opacity=".05"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="18"/></filter></defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <path d="M140 90 660 260 410 760z" fill="url(#a)" opacity=".28"/><path d="m610 180 470-90 280 520-610 120z" fill="url(#b)" opacity=".25"/><path d="m1120 410 390-120-80 610-430-170z" fill="url(#a)" opacity=".2"/>
+  <g fill="none" stroke="#b8eaff" stroke-opacity=".24"><path d="M140 90 660 260 410 760 140 90z"/><path d="m610 180 470-90 280 520-610 120z"/><path d="m1120 410 390-120-80 610-430-170z"/></g>
+  <path d="M0 720 1600 210" stroke="#72f5de" stroke-opacity=".16" stroke-width="46" filter="url(#glow)"/><path d="M220 1000 1260 0" stroke="#ff75c8" stroke-opacity=".12" stroke-width="34" filter="url(#glow)"/>
+</svg>

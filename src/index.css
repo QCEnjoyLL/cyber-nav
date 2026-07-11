@@ -1867,6 +1867,41 @@ a {
   overflow: visible;
 }
 
+.custom-background-field {
+  display: grid;
+  gap: 10px;
+}
+
+.custom-background-preview {
+  position: relative;
+  min-height: 180px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cyan) 32%, var(--line));
+  border-radius: 12px;
+  background: var(--bg-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.custom-background-preview img {
+  width: 100%;
+  height: 180px;
+  display: block;
+  object-fit: cover;
+}
+
+.custom-background-preview .tool-button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-strong) 88%, transparent);
+  backdrop-filter: blur(14px);
+}
+
 .admin-form textarea {
   grid-column: 1 / -1;
   padding: 12px;

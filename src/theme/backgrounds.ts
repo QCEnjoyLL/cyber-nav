@@ -7,6 +7,11 @@ export const BACKGROUND_STYLE_IDS = [
   "holo-map",
   "data-rain",
   "orange-core",
+  "prism-shards",
+  "lunar-dunes",
+  "ink-current",
+  "pixel-parade",
+  "custom-image",
 ] as const;
 
 export type BackgroundStyleId = (typeof BACKGROUND_STYLE_IDS)[number];
@@ -77,6 +82,51 @@ export const BACKGROUND_STYLES: BackgroundDefinition[] = [
     descriptionEn: "A retro sunset, vinyl rings and grainy color blocks that leave circuit imagery behind.",
     dark: "/background-options/05-orange-core-dark.svg",
     light: "/background-options/05-orange-core-light.svg",
+  },
+  {
+    id: "prism-shards",
+    nameZh: "棱镜碎片",
+    nameEn: "Prism Shards",
+    descriptionZh: "半透明多边形与折射光束组成的抽象晶体空间。",
+    descriptionEn: "An abstract crystal field of translucent polygons and refracted light.",
+    dark: "/background-options/06-prism-shards-dark.svg",
+    light: "/background-options/06-prism-shards-light.svg",
+  },
+  {
+    id: "lunar-dunes",
+    nameZh: "月下沙丘",
+    nameEn: "Lunar Dunes",
+    descriptionZh: "安静的月色、层叠沙丘与细腻星空，适合低干扰阅读。",
+    descriptionEn: "Quiet moonlight, layered dunes and a delicate sky for distraction-free reading.",
+    dark: "/background-options/07-lunar-dunes-dark.svg",
+    light: "/background-options/07-lunar-dunes-light.svg",
+  },
+  {
+    id: "ink-current",
+    nameZh: "墨色潮汐",
+    nameEn: "Ink Current",
+    descriptionZh: "东方水墨与流动波纹结合，形成留白充足的纸面氛围。",
+    descriptionEn: "East Asian ink wash and flowing ripples with generous negative space.",
+    dark: "/background-options/08-ink-current-dark.svg",
+    light: "/background-options/08-ink-current-light.svg",
+  },
+  {
+    id: "pixel-parade",
+    nameZh: "像素派对",
+    nameEn: "Pixel Parade",
+    descriptionZh: "明快像素块、棋盘图形和游戏机色彩，活泼但不刺眼。",
+    descriptionEn: "Playful pixel blocks, checker forms and arcade colors without harsh contrast.",
+    dark: "/background-options/09-pixel-parade-dark.svg",
+    light: "/background-options/09-pixel-parade-light.svg",
+  },
+  {
+    id: "custom-image",
+    nameZh: "自定义图片",
+    nameEn: "Custom Image",
+    descriptionZh: "使用后台填写的图片地址作为导航背景。",
+    descriptionEn: "Use an image URL configured in the admin panel as the navigation background.",
+    dark: "",
+    light: "",
   },
 ];
 

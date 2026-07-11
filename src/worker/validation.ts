@@ -32,7 +32,12 @@ export const linkSchema = z.object({
   descriptionZh: z.string().trim().max(280).default(""),
   descriptionEn: z.string().trim().max(280).default(""),
   url: z.string().trim().url().max(512),
-  iconUrl: z.string().trim().max(512).default(""),
+  iconUrl: z
+    .string()
+    .trim()
+    .max(512)
+    .refine((value) => !value || /^(https?:\/\/|\/|data:image\/)/i.test(value), "图标地址必须是 HTTP(S)、站内路径或 data:image")
+    .default(""),
   tags: tagsSchema,
   isPinned: z.boolean().default(false),
   isFavorite: z.boolean().default(false),
@@ -58,6 +63,12 @@ export const settingsSchema = z.object({
   defaultLocale: z.enum(["zh", "en"]),
   defaultTheme: z.enum(["system", "light", "dark"]),
   backgroundStyle: z.enum(BACKGROUND_STYLE_IDS).default(DEFAULT_BACKGROUND_STYLE),
+  customBackgroundImage: z
+    .string()
+    .trim()
+    .max(4096)
+    .refine((value) => !value || /^(https?:\/\/|\/)/i.test(value), "自定义背景必须是 HTTP(S) 地址或站内绝对路径")
+    .default(""),
 });
 
 export const importSchema = z.object({

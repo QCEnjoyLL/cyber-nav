@@ -64,7 +64,7 @@ import { defaultBootstrap } from "./data/defaults";
 import { BACKGROUND_STYLES, DEFAULT_BACKGROUND_STYLE, getBackgroundDefinition } from "./theme/backgrounds";
 import { DEFAULT_THEME_PALETTE, getPaletteDefinition, getThemeColors, isThemePalette, THEME_PALETTES, type ThemeColorSet } from "./theme/palettes";
 import type { BackgroundStyle, BootstrapData, Category, Locale, NavLink, ResolvedThemeMode, SearchEngine, SiteSettings, ThemeMode, ThemePalette } from "./types";
-import { buildSearchUrl, filterLinks, normalizeUrl } from "./utils/navigation";
+import { buildCategorySubcategories, buildSearchUrl, filterLinks, getLinkTagGroup, normalizeUrl } from "./utils/navigation";
 
 const iconMap: Record<string, LucideIcon> = {
   Archive,
@@ -149,7 +149,7 @@ const categoryIconOptions = [
   "Star",
 ] as const;
 
-const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun];
+const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun, Palette, Moon, Image, Gamepad2, Image];
 
 const text = {
   zh: {
@@ -316,40 +316,17 @@ function getNextTheme(theme: ThemeMode): ThemeMode {
   return theme === "dark" ? "light" : "dark";
 }
 
-function getLinkSubcategory(link: NavLink, category: Category): string | null {
-  const [scope, subcategory] = link.tags;
-  if (!subcategory) return null;
-  if (scope === category.nameZh || scope === category.nameEn || scope === category.id) return subcategory;
-  return null;
-}
-
 function getAdminLinkTagGroup(link: NavLink, category?: Category): string {
-  if (category) {
-    const subcategory = getLinkSubcategory(link, category);
-    if (subcategory) return subcategory;
-    const fallback = link.tags.find((tag) => tag && tag !== category.nameZh && tag !== category.nameEn && tag !== category.id);
-    return fallback ?? "其他";
-  }
-  return link.tags[0] || "其他";
+  return getLinkTagGroup(link, category);
 }
 
 function buildCategoryNodes(categories: Category[], links: NavLink[]): CategoryNode[] {
   return categories.map((category) => {
     const categoryLinks = links.filter((link) => link.categoryId === category.id);
-    const subcategoryMap = new Map<string, NavLink[]>();
-    for (const link of categoryLinks) {
-      const subcategory = getLinkSubcategory(link, category);
-      if (!subcategory) continue;
-      subcategoryMap.set(subcategory, [...(subcategoryMap.get(subcategory) ?? []), link]);
-    }
     return {
       category,
       links: categoryLinks,
-      subcategories: Array.from(subcategoryMap, ([title, subcategoryLinks]) => ({
-        id: title,
-        title,
-        links: subcategoryLinks,
-      })),
+      subcategories: buildCategorySubcategories(category, categoryLinks),
     };
   });
 }
@@ -496,13 +473,13 @@ function PublicApp() {
   }, []);
 
   useEffect(() => {
-    applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle);
+    applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage);
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle);
+    const onChange = () => applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [bootstrap.settings.backgroundStyle, theme, themePalette]);
+  }, [bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage, theme, themePalette]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -940,13 +917,13 @@ function AdminApp() {
   const adminTitle = data ? (locale === "zh" ? data.settings.titleZh : data.settings.titleEn) : "橙子导航";
 
   useEffect(() => {
-    applyTheme(theme, themePalette, data?.settings.backgroundStyle ?? defaultBootstrap.settings.backgroundStyle);
+    applyTheme(theme, themePalette, settingsForm.backgroundStyle, settingsForm.customBackgroundImage);
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette, data?.settings.backgroundStyle ?? defaultBootstrap.settings.backgroundStyle);
+    const onChange = () => applyTheme(theme, themePalette, settingsForm.backgroundStyle, settingsForm.customBackgroundImage);
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [data?.settings.backgroundStyle, theme, themePalette]);
+  }, [settingsForm.backgroundStyle, settingsForm.customBackgroundImage, theme, themePalette]);
 
   useEffect(() => {
     document.title = adminTitle;
@@ -987,117 +964,165 @@ function AdminApp() {
     return trimmed && trimmed !== editingId ? trimmed : undefined;
   }
 
+  function getErrorMessage(error: unknown, fallback = "操作失败"): string {
+    if (error instanceof Error && error.message.trim()) return error.message;
+    return fallback;
+  }
+
+  async function runAdminAction(action: () => Promise<void>, successMessage?: string) {
+    try {
+      await action();
+      if (successMessage) notify(successMessage);
+    } catch (error) {
+      notify(getErrorMessage(error));
+    }
+  }
+
   async function login() {
     setMessage("");
-    await apiJson("/api/auth/login", "POST", { password });
-    setPassword("");
-    await loadAdmin();
-    setSession("authenticated");
+    try {
+      await apiJson("/api/auth/login", "POST", { password });
+      setPassword("");
+      await loadAdmin();
+      setSession("authenticated");
+    } catch (error) {
+      setMessage(getErrorMessage(error, "登录失败"));
+    }
   }
 
   async function logout() {
-    await apiJson("/api/auth/logout", "POST", {});
+    try {
+      await apiJson("/api/auth/logout", "POST", {});
+    } catch {
+      // Still leave the admin page even if logout request fails.
+    }
     window.location.assign("/");
   }
 
   async function createCategory() {
-    const payload = { ...categoryForm, id: createId(categoryForm.id, editingCategory) };
-    const saved = await apiJson<Category>("/api/admin/categories", "POST", payload);
-    setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
-    setCategoryForm(emptyCategory);
-    setEditingCategory(null);
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const payload = { ...categoryForm, id: createId(categoryForm.id, editingCategory) };
+      const saved = await apiJson<Category>("/api/admin/categories", "POST", payload);
+      setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
+      setCategoryForm(emptyCategory);
+      setEditingCategory(null);
+    }, "保存成功");
   }
 
   async function updateCategory() {
     if (!editingCategory) return;
-    const saved = await apiJson<Category>(`/api/admin/categories/${editingCategory}`, "PUT", categoryForm);
-    setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
-    setCategoryForm(emptyCategory);
-    setEditingCategory(null);
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const saved = await apiJson<Category>(`/api/admin/categories/${editingCategory}`, "PUT", categoryForm);
+      setData((current) => (current ? { ...current, categories: upsertArray(current.categories, saved) } : current));
+      setCategoryForm(emptyCategory);
+      setEditingCategory(null);
+    }, "保存成功");
   }
 
   async function createLink() {
-    const payload = { ...linkForm, id: createId(linkForm.id, editingLink), url: normalizeUrl(linkForm.url) };
-    const saved = await apiJson<NavLink>("/api/admin/links", "POST", payload);
-    setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
-    setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
-    setEditingLink(null);
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const payload = { ...linkForm, id: createId(linkForm.id, editingLink), url: normalizeUrl(linkForm.url) };
+      const saved = await apiJson<NavLink>("/api/admin/links", "POST", payload);
+      setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
+      setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
+      setEditingLink(null);
+    }, "保存成功");
   }
 
   async function updateLink() {
     if (!editingLink) return;
-    const payload = { ...linkForm, url: normalizeUrl(linkForm.url) };
-    const saved = await apiJson<NavLink>(`/api/admin/links/${editingLink}`, "PUT", payload);
-    setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
-    setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
-    setEditingLink(null);
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const payload = { ...linkForm, url: normalizeUrl(linkForm.url) };
+      const saved = await apiJson<NavLink>(`/api/admin/links/${editingLink}`, "PUT", payload);
+      setData((current) => (current ? { ...current, links: upsertArray(current.links, saved) } : current));
+      setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
+      setEditingLink(null);
+    }, "保存成功");
   }
 
   async function createEngine() {
-    const payload = { ...engineForm, id: createId(engineForm.id, editingEngine) };
-    const saved = await apiJson<SearchEngine>("/api/admin/search-engines", "POST", payload);
-    setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
-    setEngineForm(emptyEngine);
-    setEditingEngine(null);
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const payload = { ...engineForm, id: createId(engineForm.id, editingEngine) };
+      const saved = await apiJson<SearchEngine>("/api/admin/search-engines", "POST", payload);
+      setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
+      setEngineForm(emptyEngine);
+      setEditingEngine(null);
+    }, "保存成功");
   }
 
   async function updateEngine() {
     if (!editingEngine) return;
-    const saved = await apiJson<SearchEngine>(`/api/admin/search-engines/${editingEngine}`, "PUT", engineForm);
-    setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
-    setEngineForm(emptyEngine);
-    setEditingEngine(null);
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const saved = await apiJson<SearchEngine>(`/api/admin/search-engines/${editingEngine}`, "PUT", engineForm);
+      setData((current) => (current ? { ...current, searchEngines: upsertArray(current.searchEngines, saved) } : current));
+      setEngineForm(emptyEngine);
+      setEditingEngine(null);
+    }, "保存成功");
   }
 
   async function saveSettings() {
-    const saved = await apiJson<SiteSettings>("/api/admin/settings", "PUT", settingsForm);
-    setData((current) => (current ? { ...current, settings: saved } : current));
-    notify("保存成功");
+    await runAdminAction(async () => {
+      const saved = await apiJson<SiteSettings>("/api/admin/settings", "PUT", settingsForm);
+      setData((current) => (current ? { ...current, settings: saved } : current));
+    }, "保存成功");
   }
 
   async function remove(kind: "categories" | "links" | "search-engines", id: string, title: string) {
     if (!window.confirm(`确认删除「${title}」吗？删除后不可恢复。`)) return;
-    await apiJson(`/api/admin/${kind}/${id}`, "DELETE", {});
-    await loadAdmin();
-    if (kind === "categories" && editingCategory === id) {
-      setCategoryForm(emptyCategory);
-      setEditingCategory(null);
-    }
-    if (kind === "links" && editingLink === id) {
-      setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
-      setEditingLink(null);
-    }
-    if (kind === "search-engines" && editingEngine === id) {
-      setEngineForm(emptyEngine);
-      setEditingEngine(null);
-    }
-    notify("删除成功");
+    await runAdminAction(async () => {
+      await apiJson(`/api/admin/${kind}/${id}`, "DELETE", {});
+      await loadAdmin();
+      if (kind === "categories" && editingCategory === id) {
+        setCategoryForm(emptyCategory);
+        setEditingCategory(null);
+      }
+      if (kind === "links" && editingLink === id) {
+        setLinkForm({ ...emptyLink, categoryId: data?.categories[0]?.id ?? null });
+        setEditingLink(null);
+      }
+      if (kind === "search-engines" && editingEngine === id) {
+        setEngineForm(emptyEngine);
+        setEditingEngine(null);
+      }
+    }, "删除成功");
   }
 
   async function reorderLinks() {
-    const next = await apiJson<BootstrapData>("/api/admin/links/reorder", "POST", {});
-    cacheBootstrap(next);
-    setData(next);
-    setLinkForm({ ...emptyLink, categoryId: next.categories[0]?.id ?? null });
-    setEditingLink(null);
-    notify("重排成功");
+    await runAdminAction(async () => {
+      const next = await apiJson<BootstrapData>("/api/admin/links/reorder", "POST", {});
+      cacheBootstrap(next);
+      setData(next);
+      setLinkForm({ ...emptyLink, categoryId: next.categories[0]?.id ?? null });
+      setEditingLink(null);
+    }, "重排成功");
   }
 
   async function reorderLinkTags(categoryId: string | null, tags: string[]) {
-    const next = await apiJson<BootstrapData>("/api/admin/links/reorder", "POST", { categoryId, tags });
-    cacheBootstrap(next);
-    setData(next);
-    setLinkForm((current) => {
-      const updatedLink = next.links.find((link) => link.id === current.id);
-      return updatedLink ?? current;
-    });
-    notify("标签顺序已保存");
+    await runAdminAction(async () => {
+      const next = await apiJson<BootstrapData>("/api/admin/links/reorder", "POST", { categoryId, tags });
+      cacheBootstrap(next);
+      setData(next);
+      setLinkForm((current) => {
+        const updatedLink = next.links.find((link) => link.id === current.id);
+        return updatedLink ?? current;
+      });
+    }, "标签顺序已保存");
+  }
+
+  async function importJson() {
+    await runAdminAction(async () => {
+      let payload: unknown;
+      try {
+        payload = JSON.parse(jsonBuffer);
+      } catch {
+        throw new Error("JSON 格式无效");
+      }
+      const next = await apiJson<BootstrapData>("/api/admin/import", "POST", payload);
+      cacheBootstrap(next);
+      setData(next);
+      setSettingsForm(next.settings);
+      setJsonBuffer(JSON.stringify(next, null, 2));
+    }, "保存成功");
   }
 
   function scrollAdminTop() {
@@ -1127,11 +1152,11 @@ function AdminApp() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") void login().catch((error: Error) => setMessage(error.message));
+              if (event.key === "Enter") void login();
             }}
             placeholder={t.password}
           />
-          <button className="primary-button" onClick={() => void login().catch((error: Error) => setMessage(error.message))}>
+          <button className="primary-button" onClick={() => void login()}>
             {t.login}
           </button>
           {message && <p className="form-message">{message}</p>}
@@ -1301,12 +1326,7 @@ function AdminApp() {
                 </button>
                 <button
                   className="primary-button"
-                  onClick={() =>
-                    void apiJson<BootstrapData>("/api/admin/import", "POST", JSON.parse(jsonBuffer)).then((next) => {
-                      setData(next);
-                      notify("保存成功");
-                    })
-                  }
+                  onClick={() => void importJson()}
                 >
                   {t.import}
                 </button>
@@ -2079,6 +2099,27 @@ function SettingsForm({
           onChange={(backgroundStyle) => setForm({ ...form, backgroundStyle })}
         />
       </AdminField>
+      {form.backgroundStyle === "custom-image" && (
+        <AdminField label="自定义背景图地址" span="span-12" hint="支持 HTTPS 图片地址或站内绝对路径，例如 /my-background.webp。建议使用 16:10 横图。">
+          <div className="custom-background-field">
+            <input
+              value={form.customBackgroundImage ?? ""}
+              onChange={(event) => setForm({ ...form, customBackgroundImage: event.target.value })}
+              placeholder="https://example.com/background.webp"
+              aria-label="自定义背景图地址"
+            />
+            {form.customBackgroundImage && (
+              <div className="custom-background-preview">
+                <img src={form.customBackgroundImage} alt="自定义背景预览" />
+                <button className="tool-button" type="button" onClick={() => setForm({ ...form, customBackgroundImage: "" })}>
+                  <X size={15} />
+                  清空
+                </button>
+              </div>
+            )}
+          </div>
+        </AdminField>
+      )}
       <div className="form-actions">
         <button className="primary-button admin-save-button" onClick={onSubmit}>
           <Check size={16} />
@@ -2335,12 +2376,40 @@ function EngineSelect({
   );
 }
 
+function readLocalStorage(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorage(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage can be unavailable in private browsing or strict browser settings.
+  }
+}
+
+function readStoredStringArray(key: string): string[] {
+  try {
+    const raw = readLocalStorage(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === "string");
+  } catch {
+    return [];
+  }
+}
+
 function useStoredState<T extends string>(key: string, fallback: T): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(() => (localStorage.getItem(key) as T | null) ?? fallback);
+  const [value, setValue] = useState<T>(() => (readLocalStorage(key) as T | null) ?? fallback);
   return [
     value,
     (next) => {
-      localStorage.setItem(key, next);
+      writeLocalStorage(key, next);
       setValue(next);
     },
   ];
@@ -2348,26 +2417,26 @@ function useStoredState<T extends string>(key: string, fallback: T): [T, (value:
 
 function useStoredThemePalette(): [ThemePalette, (value: ThemePalette) => void] {
   const [value, setValue] = useState<ThemePalette>(() => {
-    const stored = localStorage.getItem("cyber-nav-palette");
+    const stored = readLocalStorage("cyber-nav-palette");
     return stored && isThemePalette(stored) ? stored : DEFAULT_THEME_PALETTE;
   });
   return [
     value,
     (next) => {
-      localStorage.setItem("cyber-nav-palette", next);
+      writeLocalStorage("cyber-nav-palette", next);
       setValue(next);
     },
   ];
 }
 
 function useStoredSet(key: string): [Set<string>, (update: (current: Set<string>) => Set<string>) => void] {
-  const [value, setValue] = useState<Set<string>>(() => new Set(JSON.parse(localStorage.getItem(key) || "[]") as string[]));
+  const [value, setValue] = useState<Set<string>>(() => new Set(readStoredStringArray(key)));
   return [
     value,
     (update) => {
       setValue((current) => {
         const next = update(current);
-        localStorage.setItem(key, JSON.stringify(Array.from(next)));
+        writeLocalStorage(key, JSON.stringify(Array.from(next)));
         return next;
       });
     },
@@ -2378,14 +2447,19 @@ function getResolvedThemeMode(theme: ThemeMode): ResolvedThemeMode {
   return theme === "system" ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : theme;
 }
 
-function applyTheme(theme: ThemeMode, palette: ThemePalette, backgroundStyle: BackgroundStyle = DEFAULT_BACKGROUND_STYLE) {
+function applyTheme(
+  theme: ThemeMode,
+  palette: ThemePalette,
+  backgroundStyle: BackgroundStyle = DEFAULT_BACKGROUND_STYLE,
+  customBackgroundImage = "",
+) {
   const resolved = getResolvedThemeMode(theme);
   const colors = getThemeColors(resolved, palette);
   document.documentElement.dataset.theme = resolved;
   document.documentElement.dataset.palette = palette;
   document.documentElement.dataset.background = backgroundStyle;
   applyThemeVariables(colors, resolved);
-  applyBackgroundVariables(backgroundStyle, resolved);
+  applyBackgroundVariables(backgroundStyle, resolved, customBackgroundImage);
 }
 
 function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode): void {
@@ -2412,10 +2486,16 @@ function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode)
   entries.forEach(([key, value]) => root.style.setProperty(key, value));
 }
 
-function applyBackgroundVariables(backgroundStyle: BackgroundStyle, resolved: ResolvedThemeMode): void {
+function applyBackgroundVariables(backgroundStyle: BackgroundStyle, resolved: ResolvedThemeMode, customBackgroundImage: string): void {
   const root = document.documentElement;
+  if (backgroundStyle === "custom-image" && customBackgroundImage.trim()) {
+    root.style.setProperty("--grid-bg", `url(${JSON.stringify(customBackgroundImage.trim())})`);
+    return;
+  }
   const background = getBackgroundDefinition(backgroundStyle);
-  root.style.setProperty("--grid-bg", `url("${resolved === "dark" ? background.dark : background.light}")`);
+  const source = resolved === "dark" ? background.dark : background.light;
+  const fallback = getBackgroundDefinition(DEFAULT_BACKGROUND_STYLE);
+  root.style.setProperty("--grid-bg", `url("${source || (resolved === "dark" ? fallback.dark : fallback.light)}")`);
 }
 
 function hexToRgba(value: string, alpha: string): string {
@@ -2434,7 +2514,7 @@ function upsertArray<T extends { id: string }>(items: T[], item: T): T[] {
 
 function readCachedBootstrap(): BootstrapData | null {
   try {
-    const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
+    const raw = readLocalStorage(BOOTSTRAP_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as unknown;
     return isBootstrapData(parsed) ? parsed : null;
@@ -2444,11 +2524,7 @@ function readCachedBootstrap(): BootstrapData | null {
 }
 
 function cacheBootstrap(data: BootstrapData): void {
-  try {
-    localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify(data));
-  } catch {
-    // Storage can be unavailable in private browsing or strict browser settings.
-  }
+  writeLocalStorage(BOOTSTRAP_CACHE_KEY, JSON.stringify(data));
 }
 
 function isBootstrapData(value: unknown): value is BootstrapData {

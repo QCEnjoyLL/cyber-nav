@@ -67,6 +67,7 @@ export async function getSettings(db: D1Database): Promise<SiteSettings> {
     defaultLocale: settings.defaultLocale === "en" ? "en" : "zh",
     defaultTheme: settings.defaultTheme === "light" || settings.defaultTheme === "dark" ? settings.defaultTheme : "system",
     backgroundStyle: normalizeBackgroundStyle(settings.backgroundStyle),
+    customBackgroundImage: settings.customBackgroundImage?.trim() ?? "",
   };
 }
 

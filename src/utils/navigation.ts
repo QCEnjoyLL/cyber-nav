@@ -1,4 +1,4 @@
-import type { LinkFilter, Locale, NavLink, SearchEngine } from "../types";
+import type { Category, LinkFilter, Locale, NavLink, SearchEngine } from "../types";
 
 export function getLinkDescription(link: NavLink, locale: Locale): string {
   return locale === "zh" ? link.descriptionZh : link.descriptionEn || link.descriptionZh;
@@ -47,3 +47,52 @@ export function normalizeUrl(url: string): string {
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
 }
+
+export function getLinkSubcategory(link: NavLink, category: Category): string | null {
+  const [scope, subcategory] = link.tags;
+  if (!subcategory) return null;
+  if (scope === category.nameZh || scope === category.nameEn || scope === category.id) return subcategory;
+  return null;
+}
+
+export function getLinkTagGroup(link: NavLink, category?: Category): string {
+  if (category) {
+    const subcategory = getLinkSubcategory(link, category);
+    if (subcategory) return subcategory;
+    const fallback = link.tags.find((tag) => tag && tag !== category.nameZh && tag !== category.nameEn && tag !== category.id);
+    return fallback ?? "其他";
+  }
+  return link.tags[0] || "其他";
+}
+
+export function buildCategorySubcategories(
+  category: Category,
+  links: NavLink[],
+): Array<{ id: string; title: string; links: NavLink[] }> {
+  const categoryLinks = links.filter((link) => link.categoryId === category.id);
+  const subcategoryMap = new Map<string, NavLink[]>();
+  let hasScopedSubcategory = false;
+
+  for (const link of categoryLinks) {
+    const subcategory = getLinkSubcategory(link, category);
+    if (!subcategory) continue;
+    hasScopedSubcategory = true;
+    subcategoryMap.set(subcategory, [...(subcategoryMap.get(subcategory) ?? []), link]);
+  }
+
+  // When a category already has scoped subtags, keep ungrouped links visible under a fallback group.
+  if (hasScopedSubcategory) {
+    for (const link of categoryLinks) {
+      if (getLinkSubcategory(link, category)) continue;
+      const fallbackGroup = getLinkTagGroup(link, category);
+      subcategoryMap.set(fallbackGroup, [...(subcategoryMap.get(fallbackGroup) ?? []), link]);
+    }
+  }
+
+  return Array.from(subcategoryMap, ([title, subcategoryLinks]) => ({
+    id: title,
+    title,
+    links: subcategoryLinks,
+  }));
+}
+

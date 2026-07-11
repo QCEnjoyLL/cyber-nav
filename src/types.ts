@@ -7,7 +7,12 @@ export type BackgroundStyle =
   | "circuit-terrace"
   | "holo-map"
   | "data-rain"
-  | "orange-core";
+  | "orange-core"
+  | "prism-shards"
+  | "lunar-dunes"
+  | "ink-current"
+  | "pixel-parade"
+  | "custom-image";
 export type ThemePalette =
   | "aurora"
   | "cobalt"
@@ -84,6 +89,7 @@ export interface SiteSettings {
   defaultLocale: Locale;
   defaultTheme: ThemeMode;
   backgroundStyle: BackgroundStyle;
+  customBackgroundImage: string;
 }
 
 export interface BootstrapData {

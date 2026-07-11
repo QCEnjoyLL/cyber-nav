@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Pixel Parade dark background">
+  <rect width="1600" height="1000" fill="#111329"/>
+  <g opacity=".8"><path d="M0 0h320v120H0z" fill="#5b53d9"/><path d="M1280 0h320v220h-320z" fill="#ee4f93"/><path d="M0 780h250v220H0z" fill="#16b8aa"/><path d="M1240 760h360v240h-360z" fill="#f0a63b"/></g>
+  <g fill="#fff" opacity=".1"><path d="M360 80h80v80h-80zM440 160h80v80h-80zM520 80h80v80h-80zM600 160h80v80h-80z"/><path d="M930 690h70v70h-70zM1000 760h70v70h-70zM1070 690h70v70h-70zM1140 760h70v70h-70z"/></g>
+  <g fill="none" stroke="#76e8dd" stroke-width="10" opacity=".42"><path d="M300 620h160v-90h140v-120h180"/><circle cx="300" cy="620" r="18"/><circle cx="780" cy="410" r="18"/></g>
+  <g fill="#f7db61" opacity=".55"><path d="m840 130 24 48 54 8-39 38 9 54-48-25-48 25 9-54-39-38 54-8z"/><circle cx="1130" cy="350" r="34"/></g>
+</svg>

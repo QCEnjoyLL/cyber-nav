@@ -8,6 +8,7 @@ export const defaultSettings: SiteSettings = {
   defaultLocale: "zh",
   defaultTheme: "system",
   backgroundStyle: "classic-grid",
+  customBackgroundImage: "",
 };
 
 export const defaultBootstrap: BootstrapData = {

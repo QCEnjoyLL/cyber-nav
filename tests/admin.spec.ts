@@ -113,6 +113,11 @@ test("admin list scrolls independently and category icon can be picked", async (
   await expect(page.locator(".admin-select-menu")).toBeVisible();
   await page.locator(".admin-select-option").filter({ hasText: "星港地平线" }).click();
   await expect(backgroundSelect).toContainText("星港地平线");
+  await backgroundSelect.click();
+  await page.locator(".admin-select-option").filter({ hasText: "自定义图片" }).click();
+  const customBackgroundInput = page.getByLabel("自定义背景图地址");
+  await customBackgroundInput.fill("/background-options/07-lunar-dunes-dark.svg");
+  await expect(page.locator(".custom-background-preview img")).toHaveAttribute("src", "/background-options/07-lunar-dunes-dark.svg");
 });
 
 test("admin desktop layout keeps a usable card list at 1080p", async ({ page }) => {

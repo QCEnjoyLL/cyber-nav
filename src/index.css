@@ -484,7 +484,9 @@ a {
   backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 50;
+
+  overflow: visible;
 }
 
 .admin-topbar {
@@ -498,6 +500,10 @@ a {
 
 .admin-topbar .top-actions {
   margin-left: auto;
+
+  position: relative;
+  z-index: 60;
+  overflow: visible;
 }
 
 .admin-home-button {
@@ -976,6 +982,8 @@ a {
 
 .appearance-control {
   position: relative;
+
+  z-index: 60;
 }
 
 .appearance-trigger {
@@ -1024,7 +1032,7 @@ a {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  z-index: 20;
+  z-index: 70;
   width: min(380px, calc(100vw - 32px));
   max-height: min(70vh, 560px);
   overflow-y: auto;
@@ -1862,7 +1870,7 @@ a {
 
 .settings-form {
   position: relative;
-  z-index: 5;
+  z-index: 1;
   max-height: none;
   overflow: visible;
 }
@@ -2683,11 +2691,14 @@ a {
 }
 
 /* Signature themes: each palette changes material, geometry and rhythm — not just color. */
-:root[data-palette="aurora"] .app-shell {
+:root[data-palette="aurora"] .app-shell,
+:root[data-palette="aurora"] .admin-shell {
   background-image:
     radial-gradient(circle at 72% 12%, color-mix(in srgb, var(--yellow) 20%, transparent), transparent 28%),
     radial-gradient(circle at 42% 88%, color-mix(in srgb, var(--cyan) 20%, transparent), transparent 32%),
     var(--grid-bg);
+  background-size: auto, auto, cover;
+  background-position: center;
 }
 
 :root[data-palette="aurora"] .noise-layer {
@@ -2700,6 +2711,7 @@ a {
 
 :root[data-palette="aurora"] .app-shell .sidebar,
 :root[data-palette="aurora"] .topbar,
+:root[data-palette="aurora"] .admin-topbar,
 :root[data-palette="aurora"] .directory-card {
   border-color: color-mix(in srgb, var(--cyan) 24%, var(--line));
   background: color-mix(in srgb, var(--panel) 78%, transparent);
@@ -2728,11 +2740,14 @@ a {
   background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 20%, transparent), color-mix(in srgb, var(--yellow) 12%, transparent));
 }
 
-:root[data-palette="porcelain"] .app-shell {
+:root[data-palette="porcelain"] .app-shell,
+:root[data-palette="porcelain"] .admin-shell {
   background-image:
     linear-gradient(90deg, color-mix(in srgb, var(--line) 35%, transparent) 1px, transparent 1px),
-    linear-gradient(color-mix(in srgb, var(--line) 20%, transparent) 1px, transparent 1px);
-  background-size: 72px 72px;
+    linear-gradient(color-mix(in srgb, var(--line) 20%, transparent) 1px, transparent 1px),
+    var(--grid-bg);
+  background-size: 72px 72px, 72px 72px, cover;
+  background-position: center;
 }
 
 :root[data-palette="porcelain"] .noise-layer {
@@ -2742,7 +2757,8 @@ a {
 }
 
 :root[data-palette="porcelain"] .app-shell .sidebar,
-:root[data-palette="porcelain"] .topbar {
+:root[data-palette="porcelain"] .topbar,
+:root[data-palette="porcelain"] .admin-topbar {
   background: var(--panel-strong);
   backdrop-filter: none;
 }
@@ -2793,10 +2809,14 @@ a {
   background: color-mix(in srgb, var(--cyan) 10%, transparent);
 }
 
-:root[data-palette="cobalt"] .app-shell {
+:root[data-palette="cobalt"] .app-shell,
+:root[data-palette="cobalt"] .admin-shell {
   background-image:
     radial-gradient(circle at 100% 0, color-mix(in srgb, var(--cyan) 24%, transparent), transparent 30%),
-    linear-gradient(135deg, transparent 0 62%, color-mix(in srgb, var(--yellow) 8%, transparent));
+    linear-gradient(135deg, transparent 0 62%, color-mix(in srgb, var(--yellow) 8%, transparent)),
+    var(--grid-bg);
+  background-size: auto, auto, cover;
+  background-position: center;
 }
 
 :root[data-palette="cobalt"] .noise-layer {
@@ -2805,7 +2825,8 @@ a {
 }
 
 :root[data-palette="cobalt"] .app-shell .sidebar,
-:root[data-palette="cobalt"] .topbar {
+:root[data-palette="cobalt"] .topbar,
+:root[data-palette="cobalt"] .admin-topbar {
   background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
   border-color: color-mix(in srgb, var(--cyan) 24%, var(--line));
 }
@@ -2851,10 +2872,14 @@ a {
   box-shadow: inset 3px 0 0 var(--cyan);
 }
 
-:root[data-palette="moss"] .app-shell {
+:root[data-palette="moss"] .app-shell,
+:root[data-palette="moss"] .admin-shell {
   background-image:
     radial-gradient(circle at 10% 18%, color-mix(in srgb, var(--cyan) 14%, transparent), transparent 30%),
-    radial-gradient(circle at 94% 78%, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 34%);
+    radial-gradient(circle at 94% 78%, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 34%),
+    var(--grid-bg);
+  background-size: auto, auto, cover;
+  background-position: center;
 }
 
 :root[data-palette="moss"] .noise-layer {
@@ -2865,7 +2890,8 @@ a {
 }
 
 :root[data-palette="moss"] .app-shell .sidebar,
-:root[data-palette="moss"] .topbar {
+:root[data-palette="moss"] .topbar,
+:root[data-palette="moss"] .admin-topbar {
   background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
   border-color: color-mix(in srgb, var(--line) 70%, transparent);
 }
@@ -3058,7 +3084,7 @@ a {
   .admin-topbar {
     position: sticky;
     top: 0;
-    z-index: 12;
+    z-index: 50;
     min-height: 62px;
     padding: 0 16px;
   }

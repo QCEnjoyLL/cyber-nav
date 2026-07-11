@@ -1358,6 +1358,8 @@ function ThemeButton({
   setPalette: (palette: ThemePalette) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
+  const controlRef = useRef<HTMLDivElement>(null);
   const selectedPalette = getPaletteDefinition(palette);
   const resolvedMode = getResolvedThemeMode(theme);
   const featuredPalettes = THEME_PALETTES.filter((item) => item.featured);
@@ -1370,23 +1372,47 @@ function ThemeButton({
 
   useEffect(() => {
     if (!open) return;
+
+    const updateMenuPosition = () => {
+      const rect = controlRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const width = Math.min(380, window.innerWidth - 32);
+      const left = Math.min(Math.max(16, rect.right - width), window.innerWidth - width - 16);
+      const top = Math.min(rect.bottom + 8, window.innerHeight - 24);
+      setMenuStyle({
+        position: "fixed",
+        top,
+        left,
+        width,
+        right: "auto",
+        zIndex: 80,
+      });
+    };
+
+    updateMenuPosition();
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
-      if (!target?.closest(".appearance-control")) setOpen(false);
+      if (!target?.closest(".appearance-control") && !target?.closest(".appearance-menu")) setOpen(false);
     };
     window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
   }, [open]);
 
   return (
-    <div className="appearance-control">
+    <div className="appearance-control" ref={controlRef}>
       <button className="appearance-trigger" onClick={() => setOpen((value) => !value)} aria-label="theme" aria-haspopup="menu" aria-expanded={open}>
         <Settings size={18} />
         <span className="appearance-trigger-swatch" style={{ background: getThemeColors(resolvedMode, palette).accent }} />
         <span className="appearance-trigger-text">{selectedPalette.label}</span>
       </button>
       {open && (
-        <div className="appearance-menu" role="menu">
+        <div className="appearance-menu" role="menu" style={menuStyle}>
           <div className="appearance-menu-group">
             <strong>模式</strong>
             {modeOptions.map((item) => (

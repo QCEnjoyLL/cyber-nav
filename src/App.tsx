@@ -1,8 +1,8 @@
 import {
   ArrowDown,
   ArrowUp,
-  Bell,
   Archive,
+  Bell,
   BookOpen,
   Bot,
   Box,
@@ -10,6 +10,7 @@ import {
   Briefcase,
   Check,
   ChevronDown,
+  ChevronRight,
   Cloud,
   Code2,
   Command,
@@ -64,7 +65,16 @@ import { createPortal } from "react-dom";
 import { clsx } from "clsx";
 import { defaultBootstrap } from "./data/defaults";
 import { BACKGROUND_STYLES, DEFAULT_BACKGROUND_STYLE, getBackgroundDefinition } from "./theme/backgrounds";
-import { DEFAULT_THEME_PALETTE, getPaletteDefinition, getThemeColors, isThemePalette, THEME_PALETTES, type ThemeColorSet } from "./theme/palettes";
+import {
+  DEFAULT_THEME_PALETTE,
+  getPaletteDefinition,
+  getThemeColors,
+  isThemePalette,
+  MAGPIE_ACCENT_PRESETS,
+  parseHexColor,
+  THEME_PALETTES,
+  type ThemeColorSet,
+} from "./theme/palettes";
 import type { BackgroundStyle, BootstrapData, Category, Locale, NavLink, ResolvedThemeMode, SearchEngine, SiteSettings, ThemeMode, ThemePalette } from "./types";
 import { buildCategorySubcategories, buildSearchUrl, filterLinks, getLinkTagGroup, normalizeUrl } from "./utils/navigation";
 
@@ -151,7 +161,28 @@ const categoryIconOptions = [
   "Star",
 ] as const;
 
-const backgroundStyleIcons: LucideIcon[] = [Sparkles, Navigation, Cpu, Compass, TerminalSquare, Sun, Palette, Moon, Image, Gamepad2, Film, Bookmark, Cloud, Star, Music, Heart, Bot, Rocket, Image];
+const backgroundStyleIcons: Record<BackgroundStyle, LucideIcon> = {
+  "clean-surface": LayoutDashboard,
+  "classic-grid": Sparkles,
+  "night-lanes": Navigation,
+  "circuit-terrace": Cpu,
+  "holo-map": Compass,
+  "data-rain": TerminalSquare,
+  "orange-core": Sun,
+  "prism-shards": Palette,
+  "lunar-dunes": Moon,
+  "ink-current": Image,
+  "pixel-parade": Gamepad2,
+  "neon-alley": Film,
+  "paper-fold": Bookmark,
+  "tidal-glass": Cloud,
+  "manga-stickers": Star,
+  "gummy-planet": Music,
+  "cat-cloud": Heart,
+  "soda-pop": Bot,
+  "star-doodle": Rocket,
+  "custom-image": Image,
+};
 
 const text = {
   zh: {
@@ -333,6 +364,52 @@ function buildCategoryNodes(categories: Category[], links: NavLink[]): CategoryN
   });
 }
 
+function getHostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, "");
+  } catch {
+    return url;
+  }
+}
+
+function SiteIcon({
+  iconUrl,
+  fallbackIcon: FallbackIcon,
+  color,
+  size = 18,
+}: {
+  iconUrl: string;
+  fallbackIcon: LucideIcon;
+  color: string;
+  size?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [iconUrl]);
+
+  if (iconUrl && !failed) {
+    return (
+      <span className="directory-icon">
+        <img
+          src={iconUrl}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span className="directory-icon is-fallback" style={{ color }}>
+      <FallbackIcon size={size} strokeWidth={1.75} />
+    </span>
+  );
+}
+
 function buildDirectorySections(categories: Category[], links: NavLink[], selection: NavSelection, locale: Locale): DirectorySectionData[] {
   const nodes = buildCategoryNodes(categories, links);
   const sections: DirectorySectionData[] = [];
@@ -348,7 +425,7 @@ function buildDirectorySections(categories: Category[], links: NavLink[], select
         sections.push({
           id: `${node.category.id}:${encodeURIComponent(subcategory.id)}`,
           title: subcategory.title,
-          icon: <Icon size={24} style={{ color: node.category.color }} />,
+          icon: <Icon size={16} strokeWidth={1.75} style={{ color: node.category.color }} />,
           links: subcategory.links,
         });
       }
@@ -359,7 +436,7 @@ function buildDirectorySections(categories: Category[], links: NavLink[], select
     sections.push({
       id: node.category.id,
       title: locale === "zh" ? node.category.nameZh : node.category.nameEn,
-      icon: <Icon size={24} style={{ color: node.category.color }} />,
+      icon: <Icon size={16} strokeWidth={1.75} style={{ color: node.category.color }} />,
       links: node.links,
     });
   }
@@ -377,12 +454,16 @@ function BootstrapLoadingShell({
   setTheme,
   themePalette,
   setThemePalette,
+  magpieAccent,
+  setMagpieAccent,
 }: {
   locale: Locale;
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
   themePalette: ThemePalette;
   setThemePalette: (palette: ThemePalette) => void;
+  magpieAccent: string;
+  setMagpieAccent: (accent: string) => void;
 }) {
   const title = locale === "zh" ? "橙子导航" : "Orange Nav";
   return (
@@ -393,9 +474,9 @@ function BootstrapLoadingShell({
           <span className="brand-chip">
             <img src="/logo-mark.svg" alt="" />
           </span>
-          <div>
+          <div className="brand-copy">
             <strong>{title}</strong>
-            <span>{locale === "zh" ? "个人导航系统" : "Personal nav system"}</span>
+            <span>{locale === "zh" ? "个人导航工作台" : "Personal nav"}</span>
           </div>
         </div>
         <div className="sidebar-label">{locale === "zh" ? "分类" : "Categories"}</div>
@@ -408,20 +489,31 @@ function BootstrapLoadingShell({
       </aside>
       <main className="workspace">
         <header className="topbar">
+          <div className="topbar-crumb" aria-hidden="true">
+            <span>{title}</span>
+          </div>
           <div className="search-box loading-search" aria-hidden="true">
-            <Search size={19} />
+            <Search size={15} />
             <span />
             <em />
           </div>
           <div className="top-actions">
-            <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
+            <ThemeButton
+              theme={theme}
+              setTheme={setTheme}
+              palette={themePalette}
+              setPalette={setThemePalette}
+              accent={magpieAccent}
+              setAccent={setMagpieAccent}
+              locale={locale}
+            />
           </div>
         </header>
         <div className="directory-content">
           <div className="bootstrap-loading-panel" role="status">
             <LoadingMascot />
             <strong>{locale === "zh" ? "正在加载导航数据" : "Loading navigation data"}</strong>
-            <p>{locale === "zh" ? "橙子正在整理入口，马上就好。" : "Orange is arranging your shortcuts."}</p>
+            <p>{locale === "zh" ? "正在整理入口与分类，马上就好。" : "Arranging your shortcuts."}</p>
           </div>
         </div>
       </main>
@@ -432,14 +524,10 @@ function BootstrapLoadingShell({
 function LoadingMascot() {
   return (
     <div className="loading-mascot" aria-hidden="true">
-      <span className="loading-orbit one" />
-      <span className="loading-orbit two" />
       <span className="loading-logo">
         <img src="/logo-mark.svg" alt="" />
       </span>
-      <span className="loading-dot a" />
-      <span className="loading-dot b" />
-      <span className="loading-dot c" />
+      <span className="loading-spinner" />
     </div>
   );
 }
@@ -450,6 +538,7 @@ function PublicApp() {
   const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", bootstrap.settings.defaultLocale, (value): value is Locale => value === "zh" || value === "en");
   const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", bootstrap.settings.defaultTheme, (value): value is ThemeMode => value === "system" || value === "light" || value === "dark");
   const [themePalette, setThemePalette] = useStoredThemePalette();
+  const [magpieAccent, setMagpieAccent] = useStoredAccent();
   const [query, setQuery] = useState("");
   const [selectionKey, setSelectionKey] = useState("all");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
@@ -459,6 +548,7 @@ function PublicApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const directoryContentRef = useRef<HTMLDivElement>(null);
+  const themeMountedRef = useRef(false);
 
   useEffect(() => {
     void fetch("/api/public/bootstrap")
@@ -474,14 +564,30 @@ function PublicApp() {
       .catch(() => setData((current) => current ?? defaultBootstrap));
   }, []);
 
-  useEffect(() => {
-    applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage);
+  useLayoutEffect(() => {
+    applyTheme(
+      theme,
+      themePalette,
+      magpieAccent,
+      bootstrap.settings.backgroundStyle,
+      bootstrap.settings.customBackgroundImage,
+      themeMountedRef.current,
+    );
+    themeMountedRef.current = true;
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette, bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage);
+    const onChange = () =>
+      applyTheme(
+        theme,
+        themePalette,
+        magpieAccent,
+        bootstrap.settings.backgroundStyle,
+        bootstrap.settings.customBackgroundImage,
+        true,
+      );
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage, theme, themePalette]);
+  }, [bootstrap.settings.backgroundStyle, bootstrap.settings.customBackgroundImage, magpieAccent, theme, themePalette]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -523,6 +629,9 @@ function PublicApp() {
   );
   const visibleLinks = queryMatchedLinks;
   const siteTitle = locale === "zh" ? bootstrap.settings.titleZh : bootstrap.settings.titleEn;
+  const siteSubtitle = locale === "zh" ? bootstrap.settings.subtitleZh : bootstrap.settings.subtitleEn;
+  const resolvedTheme = getResolvedThemeMode(theme);
+
   useEffect(() => {
     if (data) document.title = siteTitle;
   }, [data, siteTitle]);
@@ -536,6 +645,15 @@ function PublicApp() {
     const sectionLinks = visibleLinks.filter((link) => !commonLinkIds.has(link.id));
     return buildDirectorySections(activeCategories, sectionLinks, { type: "all" }, locale);
   }, [activeCategories, commonLinkIds, locale, visibleLinks]);
+
+  const activeBreadcrumb = useMemo(() => {
+    const selection = parseSelectionKey(selectionKey);
+    if (selection.type === "all") return [t.all];
+    const cat = activeCategories.find((item) => item.id === selection.categoryId);
+    const catName = cat ? (locale === "zh" ? cat.nameZh : cat.nameEn) : selection.categoryId;
+    if (selection.type === "subcategory") return [catName, selection.subcategory];
+    return [catName];
+  }, [activeCategories, locale, selectionKey, t.all]);
 
   function runSearch() {
     const trimmed = query.trim();
@@ -600,7 +718,17 @@ function PublicApp() {
   }
 
   if (!data) {
-    return <BootstrapLoadingShell locale={locale} theme={theme} setTheme={setTheme} themePalette={themePalette} setThemePalette={setThemePalette} />;
+    return (
+      <BootstrapLoadingShell
+        locale={locale}
+        theme={theme}
+        setTheme={setTheme}
+        themePalette={themePalette}
+        setThemePalette={setThemePalette}
+        magpieAccent={magpieAccent}
+        setMagpieAccent={setMagpieAccent}
+      />
+    );
   }
 
   return (
@@ -611,15 +739,15 @@ function PublicApp() {
           <span className="brand-chip">
             <img src="/logo-mark.svg" alt="" />
           </span>
-          <div>
+          <div className="brand-copy">
             <strong>{siteTitle}</strong>
-            <span>{locale === "zh" ? "个人导航系统" : "Personal nav system"}</span>
+            <span title={siteSubtitle}>{siteSubtitle}</span>
           </div>
         </div>
         <div className="sidebar-label">{t.categories}</div>
         <nav className="category-list" aria-label={t.categories}>
           <button className={clsx("category-button", selectionKey === "all" && "active")} onClick={() => navigateToSection("all")}>
-            <LayoutDashboard size={18} />
+            <LayoutDashboard size={16} strokeWidth={1.75} />
             <span>{t.all}</span>
             <em>{data.links.filter((link) => link.isActive).length}</em>
           </button>
@@ -632,10 +760,15 @@ function PublicApp() {
                 <button
                   className={clsx("category-button", selectionKey === categoryKey && "active")}
                   onClick={() => navigateToSection(categoryKey)}
+                  aria-expanded={subcategories.length > 0 ? expanded : undefined}
                 >
-                  <Icon size={18} style={{ color: category.color }} />
+                  <Icon size={16} strokeWidth={1.75} />
                   <span>{locale === "zh" ? category.nameZh : category.nameEn}</span>
-                  {subcategories.length > 0 ? <ChevronDown className="category-chevron" size={15} /> : <em>{links.length}</em>}
+                  {subcategories.length > 0 ? (
+                    <ChevronRight className={clsx("category-chevron", expanded && "expanded")} size={14} strokeWidth={1.75} />
+                  ) : (
+                    <em>{links.length}</em>
+                  )}
                 </button>
                 {expanded && (
                   <div className="subcategory-list">
@@ -660,8 +793,8 @@ function PublicApp() {
         </nav>
         <div className="sidebar-footer">
           <a href="/admin" className="ghost-link">
-            <ShieldCheck size={16} />
-            {t.admin}
+            <ShieldCheck size={15} strokeWidth={1.75} />
+            <span>{t.admin}</span>
           </a>
           <div className="sidebar-copyright">
             <span>© 2021 - 2026</span>
@@ -672,11 +805,22 @@ function PublicApp() {
 
       <main className="workspace">
         <header className="topbar">
-          <button className="icon-button mobile-only" onClick={() => setSidebarOpen(true)} aria-label="menu">
-            <Menu size={20} />
-          </button>
+          <div className="topbar-leading">
+            <button className="icon-button mobile-only" onClick={() => setSidebarOpen(true)} aria-label="menu">
+              <Menu size={18} strokeWidth={1.75} />
+            </button>
+            <div className="topbar-crumb" aria-label="breadcrumb">
+              <span>{locale === "zh" ? "工作台" : "Workspace"}</span>
+              {activeBreadcrumb.map((part, index) => (
+                <span className="topbar-crumb-part" key={`${part}-${index}`}>
+                  <i aria-hidden="true">/</i>
+                  <b>{part}</b>
+                </span>
+              ))}
+            </div>
+          </div>
           <div className="search-box">
-            <Search size={19} />
+            <Search size={15} strokeWidth={1.8} />
             <input
               ref={searchInputRef}
               value={query}
@@ -686,7 +830,7 @@ function PublicApp() {
               }}
               placeholder={t.searchPlaceholder}
             />
-            {query && (
+            {query ? (
               <button
                 className="search-clear-button"
                 type="button"
@@ -697,25 +841,43 @@ function PublicApp() {
                   searchInputRef.current?.focus();
                 }}
               >
-                <X size={15} />
+                <X size={13} strokeWidth={2} />
+              </button>
+            ) : (
+              <button
+                className="search-kbd-hint"
+                type="button"
+                onClick={() => setCommandOpen(true)}
+                title={`${t.command} (⌘K / Ctrl+K)`}
+                aria-label={`${t.command} ⌘K`}
+              >
+                ⌘K
               </button>
             )}
             <EngineSelect engines={activeEngines} selectedEngine={selectedEngine} onChange={setEngineId} />
           </div>
           <div className="top-actions">
-            <button className={clsx("icon-button", favoriteOnly && "active")} onClick={() => setFavoriteOnly((value) => !value)} aria-label={t.favoriteOnly}>
-              <Star size={18} />
+            <button className={clsx("icon-button", favoriteOnly && "active")} onClick={() => setFavoriteOnly((value) => !value)} aria-label={t.favoriteOnly} title={t.favoriteOnly}>
+              <Star size={16} strokeWidth={1.75} />
             </button>
-            <button className="icon-button" onClick={openRandom} aria-label={t.openRandom}>
-              <Shuffle size={18} />
+            <button className="icon-button" onClick={openRandom} aria-label={t.openRandom} title={t.openRandom}>
+              <Shuffle size={16} strokeWidth={1.75} />
             </button>
-            <button className="icon-button" onClick={() => setCommandOpen(true)} aria-label={t.command}>
-              <Command size={18} />
+            <button className="icon-button" onClick={() => setCommandOpen(true)} aria-label={t.command} title={`${t.command} (Ctrl+K)`}>
+              <Command size={16} strokeWidth={1.75} />
             </button>
-            <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language">
-              <Languages size={18} />
+            <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language" title={locale === "zh" ? "Switch to English" : "切换为中文"}>
+              <Languages size={16} strokeWidth={1.75} />
             </button>
-            <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
+            <ThemeButton
+              theme={theme}
+              setTheme={setTheme}
+              palette={themePalette}
+              setPalette={setThemePalette}
+              accent={magpieAccent}
+              setAccent={setMagpieAccent}
+              locale={locale}
+            />
           </div>
         </header>
 
@@ -725,7 +887,7 @@ function PublicApp() {
             <DirectorySection
               sectionId="section-favorites"
               title={locale === "zh" ? "我的常用" : "Favorites"}
-              icon={<Sparkles size={24} />}
+              icon={<Sparkles size={16} strokeWidth={1.75} />}
               links={commonLinks}
               categories={activeCategories}
               locale={locale}
@@ -751,16 +913,19 @@ function PublicApp() {
         </div>
         <div className="floating-actions" aria-label="quick actions">
           <button className="floating-action-button" onClick={scrollDirectoryTop} title="回到顶部" aria-label="回到顶部">
-            <Navigation size={14} />
+            <ArrowUp size={14} strokeWidth={1.85} />
           </button>
+          <span className="floating-sep" aria-hidden="true" />
           <button className="floating-action-button" onClick={focusSearch} title="搜索" aria-label="搜索">
-            <Search size={14} />
+            <Search size={13} strokeWidth={1.85} />
           </button>
+          <span className="floating-sep" aria-hidden="true" />
           <button className="floating-action-button" onClick={() => setCommandOpen(true)} title={t.command} aria-label={t.command}>
-            <Bell size={14} />
+            <Command size={13} strokeWidth={1.85} />
           </button>
-          <button className="floating-action-button" onClick={() => setTheme(getNextTheme(theme))} title="切换主题" aria-label="切换主题">
-            <Moon size={14} />
+          <span className="floating-sep" aria-hidden="true" />
+          <button className="floating-action-button" onClick={() => setTheme(getNextTheme(resolvedTheme))} title="切换主题" aria-label="切换主题">
+            {resolvedTheme === "dark" ? <Sun size={13} strokeWidth={1.85} /> : <Moon size={13} strokeWidth={1.85} />}
           </button>
         </div>
       </main>
@@ -802,43 +967,34 @@ function DirectorySection({
 }) {
   return (
     <section className="directory-section" id={sectionId}>
-      <h2>
-        {icon}
-        <span>{title}</span>
-      </h2>
+      <div className="section-header">
+        <h2>
+          <span className="section-icon" aria-hidden="true">{icon}</span>
+          <span>{title}</span>
+        </h2>
+        <span className="section-count">{links.length}</span>
+      </div>
       <div className="directory-grid">
         {links.map((link) => {
           const category = categories.find((item) => item.id === link.categoryId);
-          const Icon = iconMap[category?.icon ?? "Globe2"] ?? Globe2;
-          const description = locale === "zh" ? link.descriptionZh : link.descriptionEn || link.descriptionZh;
+          const FallbackIcon = iconMap[category?.icon ?? "Globe2"] ?? Globe2;
+          const description = (locale === "zh" ? link.descriptionZh : link.descriptionEn || link.descriptionZh) || getHostname(link.url);
           const isFavorite = favorites.has(link.id) || link.isFavorite;
           return (
-            <article className="directory-card" key={`${title}-${link.id}`}>
+            <article className={clsx("directory-card", link.isPinned && "pinned")} key={`${title}-${link.id}`}>
               <a href={link.url} target="_blank" rel="noreferrer" className="directory-card-main">
-                <span className="directory-icon" style={{ color: category?.color ?? "#00f5ff" }}>
-                  {link.iconUrl ? (
-                    <img
-                      src={link.iconUrl}
-                      alt=""
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none";
-                        event.currentTarget.parentElement?.classList.add("icon-fallback");
-                      }}
-                    />
-                  ) : (
-                    <Icon size={24} />
-                  )}
-                </span>
+                <SiteIcon iconUrl={link.iconUrl} fallbackIcon={FallbackIcon} color={category?.color ?? "var(--accent)"} size={18} />
                 <span className="directory-copy">
-                  <h3>{link.title}</h3>
-                  <small>{description}</small>
+                  <h3 title={link.title}>
+                    <span>{link.title}</span>
+                    {link.isPinned && <i className="pin-dot" aria-label="置顶" title="置顶" />}
+                  </h3>
+                  <small title={description}>{description}</small>
                 </span>
-                <ExternalLink className="directory-open" size={15} />
+                <ExternalLink className="directory-open" size={14} strokeWidth={1.75} />
               </a>
-              <button className={clsx("star-button", isFavorite && "active")} onClick={() => onToggleFavorite(link.id)} aria-label="favorite">
-                <Star size={15} />
+              <button className={clsx("star-button", isFavorite && "active")} onClick={() => onToggleFavorite(link.id)} aria-label="favorite" title={isFavorite ? "取消收藏" : "收藏"}>
+                <Star size={14} strokeWidth={1.75} fill={isFavorite ? "currentColor" : "none"} />
               </button>
             </article>
           );
@@ -874,6 +1030,7 @@ function CommandPalette({
   onSelect: (link: NavLink) => void;
 }) {
   const [query, setQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const filtered = filterLinks(
     links,
     {
@@ -886,23 +1043,61 @@ function CommandPalette({
     locale,
   ).slice(0, 8);
 
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
+    <div
+      className="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label={locale === "zh" ? "快速命令面板" : "Command palette"}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <div className="command-panel">
         <div className="command-search">
-          <Command size={18} />
-          <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="输入入口名称" />
+          <Command size={16} strokeWidth={1.75} />
+          <input
+            autoFocus
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowDown" && filtered.length > 0) {
+                event.preventDefault();
+                setSelectedIndex((current) => (current + 1) % filtered.length);
+              } else if (event.key === "ArrowUp" && filtered.length > 0) {
+                event.preventDefault();
+                setSelectedIndex((current) => (current - 1 + filtered.length) % filtered.length);
+              } else if (event.key === "Enter" && filtered[selectedIndex]) {
+                event.preventDefault();
+                onSelect(filtered[selectedIndex]);
+              }
+            }}
+            placeholder={locale === "zh" ? "输入入口名称或网址" : "Search shortcuts or URLs"}
+          />
           <button className="icon-button" onClick={onClose} aria-label="close">
-            <X size={17} />
+            <X size={15} strokeWidth={1.75} />
           </button>
         </div>
         <div className="command-results">
-          {filtered.map((link) => (
-            <button key={link.id} onClick={() => onSelect(link)}>
-              <span>{link.title}</span>
-              <small>{new URL(link.url).hostname}</small>
-            </button>
-          ))}
+          {filtered.length > 0 ? (
+            filtered.map((link, index) => (
+              <button
+                key={link.id}
+                className={clsx(index === selectedIndex && "selected")}
+                onMouseEnter={() => setSelectedIndex(index)}
+                onClick={() => onSelect(link)}
+              >
+                <span>{link.title}</span>
+                <small>{getHostname(link.url)}</small>
+              </button>
+            ))
+          ) : (
+            <div className="command-empty">{locale === "zh" ? "没有匹配的入口" : "No matching shortcuts"}</div>
+          )}
         </div>
       </div>
     </div>
@@ -911,8 +1106,9 @@ function CommandPalette({
 
 function AdminApp() {
   const [locale, setLocale] = useStoredState<Locale>("cyber-nav-locale", "zh", (value): value is Locale => value === "zh" || value === "en");
-  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", "dark", (value): value is ThemeMode => value === "system" || value === "light" || value === "dark");
+  const [theme, setTheme] = useStoredState<ThemeMode>("cyber-nav-theme", "system", (value): value is ThemeMode => value === "system" || value === "light" || value === "dark");
   const [themePalette, setThemePalette] = useStoredThemePalette();
+  const [magpieAccent, setMagpieAccent] = useStoredAccent();
   const [session, setSession] = useState<"checking" | "anonymous" | "authenticated">("checking");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -929,17 +1125,34 @@ function AdminApp() {
   const [jsonBuffer, setJsonBuffer] = useState("");
   const adminShellRef = useRef<HTMLDivElement>(null);
   const messageTimer = useRef<number | null>(null);
+  const themeMountedRef = useRef(false);
   const t = text[locale];
   const adminTitle = data ? (locale === "zh" ? data.settings.titleZh : data.settings.titleEn) : "橙子导航";
 
-  useEffect(() => {
-    applyTheme(theme, themePalette, settingsForm.backgroundStyle, settingsForm.customBackgroundImage);
+  useLayoutEffect(() => {
+    applyTheme(
+      theme,
+      themePalette,
+      magpieAccent,
+      settingsForm.backgroundStyle,
+      settingsForm.customBackgroundImage,
+      themeMountedRef.current,
+    );
+    themeMountedRef.current = true;
     if (theme !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
-    const onChange = () => applyTheme(theme, themePalette, settingsForm.backgroundStyle, settingsForm.customBackgroundImage);
+    const onChange = () =>
+      applyTheme(
+        theme,
+        themePalette,
+        magpieAccent,
+        settingsForm.backgroundStyle,
+        settingsForm.customBackgroundImage,
+        true,
+      );
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [settingsForm.backgroundStyle, settingsForm.customBackgroundImage, theme, themePalette]);
+  }, [magpieAccent, settingsForm.backgroundStyle, settingsForm.customBackgroundImage, theme, themePalette]);
 
   useEffect(() => {
     document.title = adminTitle;
@@ -1166,10 +1379,12 @@ function AdminApp() {
     return (
       <div className="admin-login">
         <a className="home-icon-link" href="/" aria-label="返回首页" title="返回首页">
-          <Home size={18} />
+          <Home size={16} strokeWidth={1.75} />
         </a>
         <div className="login-panel">
-          <Lock size={32} />
+          <span className="login-badge" aria-hidden="true">
+            <Lock size={18} strokeWidth={1.75} />
+          </span>
           <h1>{t.loginTitle}</h1>
           <input
             type="password"
@@ -1199,6 +1414,13 @@ function AdminApp() {
   }
 
   const adminData = data;
+  const adminTabLabels: Record<typeof tab, string> = {
+    links: t.links,
+    categories: locale === "zh" ? "分类管理" : t.categories,
+    engines: t.engines,
+    settings: t.settings,
+    import: t.importExport,
+  };
 
   return (
     <div className="admin-shell" ref={adminShellRef}>
@@ -1207,39 +1429,54 @@ function AdminApp() {
           <span className="brand-chip">
             <img src="/logo-mark.svg" alt="" />
           </span>
-          <div>
+          <div className="brand-copy">
             <strong>{t.dashboard}</strong>
             <span>{adminData.settings.titleZh}</span>
           </div>
         </div>
-        {[
-          ["links", t.links, Globe2],
-          ["categories", locale === "zh" ? "分类管理" : t.categories, Folder],
-          ["engines", t.engines, Search],
-          ["settings", t.settings, Settings],
-          ["import", t.importExport, Database],
-        ].map(([key, label, Icon]) => (
-          <button key={String(key)} className={clsx("category-button", tab === key && "active")} onClick={() => setTab(key as typeof tab)}>
-            <Icon size={18} />
-            <span>{String(label)}</span>
+        <div className="category-list">
+          {[
+            ["links", t.links, Globe2],
+            ["categories", locale === "zh" ? "分类管理" : t.categories, Folder],
+            ["engines", t.engines, Search],
+            ["settings", t.settings, Settings],
+            ["import", t.importExport, Database],
+          ].map(([key, label, Icon]) => (
+            <button key={String(key)} className={clsx("category-button", tab === key && "active")} onClick={() => setTab(key as typeof tab)}>
+              <Icon size={16} strokeWidth={1.75} />
+              <span>{String(label)}</span>
+            </button>
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          <button className="ghost-link" onClick={logout}>
+            <LogOut size={15} strokeWidth={1.75} />
+            <span>{t.logout}</span>
           </button>
-        ))}
-        <button className="ghost-link" onClick={logout}>
-          <LogOut size={16} />
-          {t.logout}
-        </button>
+        </div>
       </aside>
       <main className="admin-main">
         <header className="admin-topbar">
           <a className="icon-button admin-home-button" href="/" aria-label="返回首页" title="返回首页">
-            <Home size={18} />
+            <Home size={16} strokeWidth={1.75} />
           </a>
-          <h1>{t.dashboard}</h1>
+          <div className="admin-topbar-title">
+            <h1>{t.dashboard}</h1>
+            <span className="admin-topbar-crumb" aria-hidden="true">/ {adminTabLabels[tab]}</span>
+          </div>
           <div className="top-actions">
-            <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language">
-              <Languages size={18} />
+            <button className="icon-button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")} aria-label="language" title={locale === "zh" ? "Switch to English" : "切换为中文"}>
+              <Languages size={16} strokeWidth={1.75} />
             </button>
-            <ThemeButton theme={theme} setTheme={setTheme} palette={themePalette} setPalette={setThemePalette} />
+            <ThemeButton
+              theme={theme}
+              setTheme={setTheme}
+              palette={themePalette}
+              setPalette={setThemePalette}
+              accent={magpieAccent}
+              setAccent={setMagpieAccent}
+              locale={locale}
+            />
           </div>
         </header>
 
@@ -1363,7 +1600,7 @@ function AdminApp() {
       </main>
       <div className="floating-actions admin-mobile-actions" aria-label="admin quick actions">
         <button className="floating-action-button" onClick={scrollAdminTop} title="回到顶部" aria-label="回到顶部">
-          <Navigation size={14} />
+          <ArrowUp size={14} strokeWidth={1.85} />
         </button>
       </div>
     </div>
@@ -1375,11 +1612,17 @@ function ThemeButton({
   setTheme,
   palette,
   setPalette,
+  accent = "",
+  setAccent,
+  locale = "zh",
 }: {
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
   palette: ThemePalette;
   setPalette: (palette: ThemePalette) => void;
+  accent?: string;
+  setAccent?: (accent: string) => void;
+  locale?: Locale;
 }) {
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
@@ -1387,13 +1630,19 @@ function ThemeButton({
   const menuRef = useRef<HTMLDivElement>(null);
   const selectedPalette = getPaletteDefinition(palette);
   const resolvedMode = getResolvedThemeMode(theme);
+  const currentAccent = getThemeColors(resolvedMode, palette, accent).accent;
   const featuredPalettes = THEME_PALETTES.filter((item) => item.featured);
   const classicPalettes = THEME_PALETTES.filter((item) => !item.featured);
   const modeOptions: Array<{ key: ThemeMode; label: string; icon: React.ReactNode }> = [
-    { key: "system", label: "跟随系统", icon: <Settings size={17} /> },
-    { key: "light", label: "浅色", icon: <Sun size={17} /> },
-    { key: "dark", label: "深色", icon: <Moon size={17} /> },
+    { key: "system", label: locale === "zh" ? "跟随系统" : "System", icon: <Monitor size={14} strokeWidth={1.75} /> },
+    { key: "light", label: locale === "zh" ? "浅色" : "Light", icon: <Sun size={14} strokeWidth={1.75} /> },
+    { key: "dark", label: locale === "zh" ? "深色" : "Dark", icon: <Moon size={14} strokeWidth={1.75} /> },
   ];
+  const normalizedAccent = accent.trim().toLowerCase();
+  const isCustomMagpieAccent =
+    palette === "magpie" &&
+    Boolean(parseHexColor(normalizedAccent)) &&
+    !MAGPIE_ACCENT_PRESETS.some((preset) => preset.value === normalizedAccent);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -1402,8 +1651,8 @@ function ThemeButton({
       const rect = controlRef.current?.getBoundingClientRect();
       if (!rect) return;
 
-      const width = Math.min(380, window.innerWidth - 32);
-      const maxHeight = Math.min(window.innerHeight * 0.7, 560);
+      const width = Math.min(368, window.innerWidth - 32);
+      const maxHeight = Math.min(window.innerHeight * 0.72, 560);
       const left = Math.min(Math.max(16, rect.right - width), Math.max(16, window.innerWidth - width - 16));
       const preferredTop = rect.bottom + 8;
       const top =
@@ -1429,7 +1678,7 @@ function ThemeButton({
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
-  }, [open, theme, palette]);
+  }, [open, theme, palette, accent]);
 
   useEffect(() => {
     if (!open) return;
@@ -1449,25 +1698,82 @@ function ThemeButton({
     };
   }, [open]);
 
+  const selectMagpieAccent = (nextAccent: string) => {
+    setPalette("magpie");
+    setAccent?.(nextAccent.toLowerCase());
+  };
+
   const menu = open
     ? createPortal(
         <div className="appearance-menu" role="menu" ref={menuRef} style={menuStyle}>
           <div className="appearance-menu-group">
-            <strong>模式</strong>
-            {modeOptions.map((item) => (
-              <button className="appearance-menu-item" key={item.key} onClick={() => setTheme(item.key)} role="menuitem">
-                {item.icon}
-                <span>{item.label}</span>
-                {theme === item.key && <Check className="appearance-check" size={16} />}
-              </button>
-            ))}
+            <strong>{locale === "zh" ? "外观模式" : "Appearance"}</strong>
+            <div className="appearance-mode-segs">
+              {modeOptions.map((item) => (
+                <button
+                  className={clsx("appearance-mode-option", theme === item.key && "active")}
+                  key={item.key}
+                  type="button"
+                  onClick={() => setTheme(item.key)}
+                  role="menuitemradio"
+                  aria-checked={theme === item.key}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
+          {setAccent && (
+            <>
+              <div className="appearance-menu-divider" />
+              <div className="appearance-menu-group">
+                <strong>{locale === "zh" ? "强调色 · Magpie" : "Accent · Magpie"}</strong>
+                <div className="accent-pick" role="radiogroup" aria-label={locale === "zh" ? "强调色" : "Accent color"}>
+                  {MAGPIE_ACCENT_PRESETS.map((preset) => {
+                    const active = palette === "magpie" && normalizedAccent === preset.value;
+                    const label = locale === "zh" ? preset.labelZh : preset.labelEn;
+                    return (
+                      <button
+                        key={preset.value || "default"}
+                        type="button"
+                        className={clsx("swatch", active && "on")}
+                        role="radio"
+                        aria-checked={active}
+                        aria-label={label}
+                        title={label}
+                        style={{ "--sw": preset.swatch } as CSSProperties}
+                        onClick={() => selectMagpieAccent(preset.value)}
+                      />
+                    );
+                  })}
+                  <label
+                    className={clsx("swatch own", isCustomMagpieAccent && "on")}
+                    title={locale === "zh" ? "自定义强调色" : "Custom accent"}
+                    aria-label={locale === "zh" ? "自定义强调色" : "Custom accent"}
+                    style={isCustomMagpieAccent ? ({ "--sw": normalizedAccent } as CSSProperties) : undefined}
+                  >
+                    <input
+                      type="color"
+                      value={isCustomMagpieAccent ? normalizedAccent : "#4f46e5"}
+                      onChange={(event) => selectMagpieAccent(event.target.value)}
+                    />
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
           <div className="appearance-menu-divider" />
           <div className="appearance-menu-group">
-            <strong>精选主题</strong>
+            <strong>{locale === "zh" ? "精选主题" : "Featured"}</strong>
             <div className="appearance-featured-list">
               {featuredPalettes.map((item) => (
-                <button className="appearance-theme-card" key={item.key} onClick={() => setPalette(item.key)} role="menuitem">
+                <button
+                  className={clsx("appearance-theme-card", palette === item.key && "active")}
+                  key={item.key}
+                  onClick={() => setPalette(item.key)}
+                  role="menuitem"
+                >
                   <span className="appearance-theme-preview" style={{ background: `linear-gradient(135deg, ${item.preview?.[0]}, ${item.preview?.[1]})` }}>
                     <i style={{ background: item.preview?.[2] }} />
                   </span>
@@ -1475,20 +1781,25 @@ function ThemeButton({
                     <b>{item.label}</b>
                     <small>{item.tagline}</small>
                   </span>
-                  {palette === item.key && <Check className="appearance-check" size={16} />}
+                  {palette === item.key && <Check className="appearance-check" size={14} strokeWidth={2.2} />}
                 </button>
               ))}
             </div>
           </div>
           <div className="appearance-menu-divider" />
           <div className="appearance-menu-group">
-            <strong>经典配色</strong>
+            <strong>{locale === "zh" ? "经典配色" : "Classic Palettes"}</strong>
             <div className="appearance-palette-list">
               {classicPalettes.map((item) => (
-                <button className="appearance-menu-item" key={item.key} onClick={() => setPalette(item.key)} role="menuitem">
+                <button
+                  className={clsx("appearance-menu-item", palette === item.key && "active")}
+                  key={item.key}
+                  onClick={() => setPalette(item.key)}
+                  role="menuitem"
+                >
                   <span className="appearance-swatch" style={{ background: getThemeColors(resolvedMode, item.key).accent }} />
                   <span>{item.label}</span>
-                  {palette === item.key && <Check className="appearance-check" size={16} />}
+                  {palette === item.key && <Check className="appearance-check" size={14} strokeWidth={2.2} />}
                 </button>
               ))}
             </div>
@@ -1501,9 +1812,9 @@ function ThemeButton({
   return (
     <div className="appearance-control" ref={controlRef}>
       <button className="appearance-trigger" onClick={() => setOpen((value) => !value)} aria-label="theme" aria-haspopup="menu" aria-expanded={open}>
-        <Settings size={18} />
-        <span className="appearance-trigger-swatch" style={{ background: getThemeColors(resolvedMode, palette).accent }} />
+        <span className="appearance-trigger-swatch" style={{ background: currentAccent }} />
         <span className="appearance-trigger-text">{selectedPalette.label}</span>
+        <ChevronDown size={13} strokeWidth={1.75} className="appearance-trigger-chev" />
       </button>
       {menu}
     </div>
@@ -1697,7 +2008,7 @@ function LinkForm({
       <AdminField label="导航 ID" hint="留空会自动生成；导入旧数据时可保留原 ID。">
         <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="nerocats-blog" />
       </AdminField>
-      <AdminField label="站点名称">
+      <AdminField label="站点名称" span="span-4">
         <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="偏爱一丛花" />
       </AdminField>
       <div className="admin-field span-3">
@@ -2082,10 +2393,10 @@ function EngineForm({
 }) {
   return (
     <div className="admin-form">
-      <AdminField label="搜索引擎 ID">
+      <AdminField label="搜索引擎 ID" span="span-4">
         <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} placeholder="google" />
       </AdminField>
-      <AdminField label="显示名称">
+      <AdminField label="显示名称" span="span-4">
         <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Google" />
       </AdminField>
       <AdminField label="快捷码" span="span-2">
@@ -2129,10 +2440,10 @@ function SettingsForm({
 }) {
   return (
     <div className="admin-form settings-form">
-      <AdminField label="中文站点名称">
+      <AdminField label="中文站点名称" span="span-4">
         <input value={form.titleZh} onChange={(event) => setForm({ ...form, titleZh: event.target.value })} placeholder="橙子导航" />
       </AdminField>
-      <AdminField label="英文站点名称">
+      <AdminField label="英文站点名称" span="span-4">
         <input value={form.titleEn} onChange={(event) => setForm({ ...form, titleEn: event.target.value })} placeholder="Orange Nav" />
       </AdminField>
       <AdminField label="默认语言" span="span-2">
@@ -2168,12 +2479,12 @@ function SettingsForm({
         <AdminOptionSelect<BackgroundStyle>
           ariaLabel="背景风格"
           value={form.backgroundStyle}
-          options={BACKGROUND_STYLES.map((style, index) => {
-            const BackgroundIcon = backgroundStyleIcons[index] ?? Sparkles;
+          options={BACKGROUND_STYLES.map((style) => {
+            const BackgroundIcon = backgroundStyleIcons[style.id] ?? Sparkles;
             return {
               value: style.id,
               label: `${style.nameZh} / ${style.nameEn}`,
-              icon: <BackgroundIcon size={17} />,
+              icon: <BackgroundIcon size={16} strokeWidth={1.75} />,
             };
           })}
           onChange={(backgroundStyle) => setForm({ ...form, backgroundStyle })}
@@ -2501,14 +2812,29 @@ function useStoredState<T extends string>(key: string, fallback: T, isValid?: (v
 
 function useStoredThemePalette(): [ThemePalette, (value: ThemePalette) => void] {
   const [value, setValue] = useState<ThemePalette>(() => {
-    const stored = readLocalStorage("cyber-nav-palette");
+    const stored = readLocalStorage("cyber-nav-palette-v2");
     return stored && isThemePalette(stored) ? stored : DEFAULT_THEME_PALETTE;
   });
   return [
     value,
     (next) => {
-      writeLocalStorage("cyber-nav-palette", next);
+      writeLocalStorage("cyber-nav-palette-v2", next);
       setValue(next);
+    },
+  ];
+}
+
+function useStoredAccent(): [string, (value: string) => void] {
+  const [value, setValue] = useState<string>(() => {
+    const stored = readLocalStorage("cyber-nav-accent") ?? "";
+    return parseHexColor(stored) ? stored.toLowerCase() : "";
+  });
+  return [
+    value,
+    (next) => {
+      const normalized = parseHexColor(next) ? next.toLowerCase() : "";
+      writeLocalStorage("cyber-nav-accent", normalized);
+      setValue(normalized);
     },
   ];
 }
@@ -2534,38 +2860,69 @@ function getResolvedThemeMode(theme: ThemeMode): ResolvedThemeMode {
 function applyTheme(
   theme: ThemeMode,
   palette: ThemePalette,
+  magpieAccent = "",
   backgroundStyle: BackgroundStyle = DEFAULT_BACKGROUND_STYLE,
   customBackgroundImage = "",
+  suppressTransition = false,
 ) {
+  const root = document.documentElement;
+  if (suppressTransition) {
+    root.classList.add("theme-switching");
+  }
   const resolved = getResolvedThemeMode(theme);
-  const colors = getThemeColors(resolved, palette);
-  document.documentElement.dataset.theme = resolved;
-  document.documentElement.dataset.palette = palette;
-  document.documentElement.dataset.background = backgroundStyle;
+  const colors = getThemeColors(resolved, palette, magpieAccent);
+  root.dataset.theme = resolved;
+  root.dataset.palette = palette;
+  root.dataset.background = backgroundStyle;
   applyThemeVariables(colors, resolved);
   applyBackgroundVariables(backgroundStyle, resolved, customBackgroundImage);
+  if (suppressTransition) {
+    void root.offsetHeight;
+    requestAnimationFrame(() => root.classList.remove("theme-switching"));
+  }
 }
 
 function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode): void {
   const root = document.documentElement;
-  const alphaPanel = resolved === "dark" ? "0.84" : "0.78";
-  const alphaStrong = resolved === "dark" ? "0.94" : "0.94";
   const entries: Array<[string, string]> = [
     ["--bg", colors.pageBg],
     ["--bg-soft", colors.elevatedBg],
-    ["--panel", hexToRgba(colors.panelBg, alphaPanel)],
-    ["--panel-strong", hexToRgba(colors.sidebarBg, alphaStrong)],
+    ["--card", colors.panelBg],
+    ["--card-2", colors.elevatedBg],
+    ["--pill", colors.pillBg],
+    ["--pill-hover", colors.pillHover],
+    ["--seg-track", colors.segTrack],
+    ["--seg-thumb", colors.segThumb],
+    ["--line", colors.border],
+    ["--line-2", colors.borderSoft],
+    ["--fg", colors.text],
+    ["--fg-2", colors.textSecondary],
+    ["--ctl-fg", colors.ctlFg],
     ["--text", colors.text],
     ["--muted", colors.muted],
-    ["--line", hexToRgba(colors.border, resolved === "dark" ? "0.72" : "0.58")],
+    ["--faint", colors.faint],
+    ["--accent", colors.accent],
+    ["--accent-hover", colors.accentHover],
+    ["--accent-soft", colors.accentSoft],
+    ["--accent-fg", colors.accentFg],
+    ["--sel", colors.sel],
+    ["--mark", colors.mark],
+    ["--mark-fill", colors.markFill],
+    ["--pop-bg", colors.popBg],
+    ["--panel", hexToRgba(colors.panelBg, resolved === "dark" ? "0.92" : "0.94")],
+    ["--panel-strong", hexToRgba(colors.sidebarBg, resolved === "dark" ? "0.96" : "0.96")],
     ["--cyan", colors.accent],
     ["--yellow", colors.accentHover],
     ["--magenta", colors.accentHover],
-    ["--green", colors.accentHover],
-    ["--tile", hexToRgba(colors.panelBg, resolved === "dark" ? "0.72" : "0.68")],
-    ["--tile-hover", hexToRgba(colors.elevatedBg, resolved === "dark" ? "0.94" : "0.96")],
-    ["--field-bg", hexToRgba(colors.elevatedBg, resolved === "dark" ? "0.52" : "0.7")],
-    ["--shadow", resolved === "dark" ? "0 24px 60px rgba(0, 0, 0, 0.36)" : "0 18px 44px rgba(31, 56, 64, 0.12)"],
+    ["--tile", colors.panelBg],
+    ["--tile-hover", colors.elevatedBg],
+    ["--field-bg", colors.elevatedBg],
+    [
+      "--shadow",
+      resolved === "dark"
+        ? "0 16px 44px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(255, 255, 255, 0.1)"
+        : "0 16px 44px rgba(20, 22, 30, 0.16), 0 2px 8px rgba(20, 22, 30, 0.06), 0 0 0 0.5px rgba(20, 22, 30, 0.1)",
+    ],
   ];
   entries.forEach(([key, value]) => root.style.setProperty(key, value));
 }
@@ -2573,13 +2930,19 @@ function applyThemeVariables(colors: ThemeColorSet, resolved: ResolvedThemeMode)
 function applyBackgroundVariables(backgroundStyle: BackgroundStyle, resolved: ResolvedThemeMode, customBackgroundImage: string): void {
   const root = document.documentElement;
   if (backgroundStyle === "custom-image" && customBackgroundImage.trim()) {
+    root.dataset.hasBg = "true";
     root.style.setProperty("--grid-bg", `url(${JSON.stringify(customBackgroundImage.trim())})`);
     return;
   }
   const background = getBackgroundDefinition(backgroundStyle);
   const source = resolved === "dark" ? background.dark : background.light;
-  const fallback = getBackgroundDefinition(DEFAULT_BACKGROUND_STYLE);
-  root.style.setProperty("--grid-bg", `url("${source || (resolved === "dark" ? fallback.dark : fallback.light)}")`);
+  if (!source) {
+    root.dataset.hasBg = "false";
+    root.style.setProperty("--grid-bg", "none");
+    return;
+  }
+  root.dataset.hasBg = "true";
+  root.style.setProperty("--grid-bg", `url("${source}")`);
 }
 
 function hexToRgba(value: string, alpha: string): string {

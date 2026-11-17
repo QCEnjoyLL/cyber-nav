@@ -1,6 +1,7 @@
 import type { BackgroundStyle } from "../types";
 
 export const BACKGROUND_STYLE_IDS = [
+  "clean-surface",
   "classic-grid",
   "night-lanes",
   "circuit-terrace",
@@ -34,9 +35,18 @@ export type BackgroundDefinition = {
   light: string;
 };
 
-export const DEFAULT_BACKGROUND_STYLE: BackgroundStyleId = "classic-grid";
+export const DEFAULT_BACKGROUND_STYLE: BackgroundStyleId = "clean-surface";
 
 export const BACKGROUND_STYLES: BackgroundDefinition[] = [
+  {
+    id: "clean-surface",
+    nameZh: "素净纯面",
+    nameEn: "Quiet Surface",
+    descriptionZh: "Magpie 默认纯色画布，无背景纹样干扰，专注内容与层级。",
+    descriptionEn: "Magpie-style quiet solid surface without background visual noise.",
+    dark: "",
+    light: "",
+  },
   {
     id: "classic-grid",
     nameZh: "极光云幕",

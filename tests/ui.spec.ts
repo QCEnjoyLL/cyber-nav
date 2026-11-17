@@ -14,6 +14,17 @@ test("public navigation renders and theme toggle works", async ({ page }) => {
   await expect(searchInput).toHaveValue("");
   await page.getByLabel("theme").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", /light|dark/);
+  await expect(page.locator("html")).toHaveAttribute("data-palette", "magpie");
+  await page.getByRole("radio", { name: "青碧" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-palette", "magpie");
+  await page.keyboard.press("Escape");
+
+  await page.locator('.top-actions [aria-label="命令"]').click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByPlaceholder("输入入口名称或网址").fill("open");
+  await expect(page.locator(".command-results button").first()).toContainText("OpenAI");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
 test("mobile drawer opens", async ({ page }) => {

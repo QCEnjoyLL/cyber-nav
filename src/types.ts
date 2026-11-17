@@ -2,6 +2,7 @@ export type Locale = "zh" | "en";
 export type ThemeMode = "system" | "light" | "dark";
 export type ResolvedThemeMode = "light" | "dark";
 export type BackgroundStyle =
+  | "clean-surface"
   | "classic-grid"
   | "night-lanes"
   | "circuit-terrace"
@@ -22,6 +23,7 @@ export type BackgroundStyle =
   | "star-doodle"
   | "custom-image";
 export type ThemePalette =
+  | "magpie"
   | "aurora"
   | "cobalt"
   | "moss"

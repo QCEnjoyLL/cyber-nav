@@ -1,52 +1,59 @@
-# 🍊 橙子导航 Cyber Nav
+<div align="center">
 
-> 一个带点霓虹、带点赛博、又足够实用的个人导航站。  
-> 前台负责快速抵达，后台负责随时整理，Cloudflare 负责安静运行。
+<img src="public/logo-mark.svg" width="76" alt="橙子导航" />
 
-![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=111)
-![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?style=flat-square&logo=typescript&logoColor=fff)
-![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite&logoColor=fff)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?style=flat-square&logo=cloudflare&logoColor=fff)
-![D1](https://img.shields.io/badge/Database-D1-f6c915?style=flat-square)
+# 橙子导航
 
-## ✨ 项目亮点
+### 素净、克制、打开即用的个人导航工作台。
 
-- 🎛️ **首页即导航工作台**：打开就是实际可用的导航界面，不做花架子落地页。
-- 🌗 **浅色 / 深色 / 跟随系统**：文字对比度经过多轮调整，日夜都能看清。
-- 🎨 **多套配色和背景**：内置十套深浅色背景，并支持填写图片 URL 使用自定义背景。
-- 🧭 **分类 + 标签分组**：左侧分类用于定位，中间按分类和标签分块展示。
-- 🏷️ **标签顺序管理**：后台可直接调整某个分类下的标签先后顺序。
-- 🔎 **聚合搜索栏**：预置百度、Bing、Google、GitHub、Perplexity 等搜索引擎。
-- ⭐ **收藏、置顶、随机打开**：常用站点更快触达，也保留一点随机探索感。
-- ⌘ **命令面板**：本地快速检索导航入口。
-- 📱 **移动端适配**：前台和后台都支持手机端使用，后台手机端可自然滚动和回到顶部。
-- 🔐 **单密码后台管理**：密码哈希存入 Cloudflare Worker Secret，不提交明文密码。
-- ☁️ **无服务器部署**：Cloudflare Workers + D1 + Worker Assets，一套搞定前后端。
-- 🚀 **GitHub Actions 自动部署**：push 到 `main` 后自动检查、构建、迁移并部署。
+前台快速抵达，后台随时整理，基于 Cloudflare Workers 与 D1 安静运行。
 
-## 🧱 技术栈
+![React](https://img.shields.io/badge/React-19-111111?style=flat&logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-6-111111?style=flat&logo=typescript&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-8-111111?style=flat&logo=vite&logoColor=white) ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-111111?style=flat&logo=cloudflare&logoColor=white) ![D1](https://img.shields.io/badge/Database-D1-111111?style=flat)
 
-| 模块 | 技术 |
+<br />
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/preview-dark.png" />
+  <img src="docs/preview-light.png" width="880" alt="橙子导航主界面预览" />
+</picture>
+
+</div>
+
+<br />
+
+## 特性
+
+- **打开即工作台**：不设装饰性落地页，进入首页即可搜索、筛选与直达常用站点。
+- **桌面级浅色与深色模式**：支持浅色、深色与跟随系统，内置 Magpie 默认平面风格与 7 种强调色微调（含自定义色），亦保留多套经典配色主题。
+- **素净画布与自定义背景**：默认使用无干扰的纯色表面；后台也可切换内置插画背景或填写 HTTPS / 站内图片地址，背景层会自动叠加柔光遮罩以保证文字可读性。
+- **分类与标签分组**：左侧导航用于快速定位章节与子分类，主工作区按分类与标签分块展示。
+- **标签顺序与编号管理**：后台支持直接微调分类下的标签展示顺序，并可一键重排卡片序号。
+- **聚合搜索与命令面板**：顶部聚合搜索同步筛选站内入口与外站检索，支持 `Ctrl + K` / `⌘ + K` 呼出命令面板，键盘上下选择直达。
+- **收藏、置顶与随机**：常用入口可置顶或本地星标收藏，也支持随机打开一个可见站点。
+- **桌面与移动端自适应**：从 1080p 以上五栏桌面视图到手机单栏抽屉均有独立排版，后台同样支持手机端自然滚动。
+- **单密码后台与无服务器部署**：密码经 PBKDF2 哈希存入 Cloudflare Worker Secret，前后端托管在同一套 Workers + D1 服务上，push 到 `main` 后自动迁移并部署。
+
+## 技术栈
+
+| 模块 | 技术选型 |
 | --- | --- |
-| 前端 | React + TypeScript + Vite |
+| 前端 | React 19 + TypeScript 6 + Vite 8 |
 | 图标 | lucide-react |
-| 后端 | Cloudflare Worker + Hono |
+| 样式 | 原生 CSS（Magpie 风格设计令牌与响应式布局） |
+| 后端 | Cloudflare Workers + Hono |
 | 数据库 | Cloudflare D1 |
-| 样式 | 原生 CSS，赛博朋克视觉体系 |
 | 测试 | Vitest + Playwright |
 | 部署 | Wrangler + GitHub Actions |
 
-## 🖼️ 功能概览
+## 功能概览
 
-### 🏠 前台导航
+### 前台导航
 
-- 左侧分类栏：点击后定位到对应内容，不做筛选隐藏。
-- 中间卡片区：只滚动内容区，顶部搜索和操作按钮保持可用。
-- 标签分组：同一分类下可按 `博客 / 图床 / 网盘 / 笔记 / 其他` 这类标签分块。
-- 搜索栏：输入内容可同步筛选导航，也可用当前搜索引擎跳转搜索。
-- 右下角工具按钮：回到顶部、聚焦搜索、打开命令面板、切换主题。
+- **左侧分类栏**：展示全部分类与子分类计数，点击平滑定位到对应区块，保持全量内容可读。
+- **顶栏工作区**：左侧显示当前位置面包屑，居中为检索框与搜索引擎菜单，右侧提供收藏筛选、随机探索、命令面板、中英切换与外观面板。
+- **右下角悬浮胶囊**：一键回到顶部、聚焦搜索框、打开命令面板、快速切换浅/深色模式。
 
-### 🛠️ 后台管理
+### 后台管理
 
 访问路径：
 
@@ -54,17 +61,15 @@
 /admin
 ```
 
-后台支持：
+后台提供以下管理能力：
 
-- 🗂️ 分类管理：名称、图标、颜色、排序、启用状态。
-- 🔗 导航管理：标题、URL、描述、图标地址、分类、标签、排序、置顶、收藏、启用。
-- 🏷️ 标签顺序：按分类调整标签分组顺序。
-- 🔍 搜索引擎：名称、快捷码、搜索 URL 模板、默认项、启用状态。
-- ⚙️ 站点设置：站点名称、副标题、默认语言、默认主题、背景风格。
-- 📦 JSON 导入导出：备份和迁移配置。
-- 📱 手机端后台：单列布局、自然滚动、右下角回到顶部按钮。
+- **导航管理**：维护标题、网址、中英文描述、图标地址、所属分类、标签分组、排序、置顶、收藏与启用状态，支持按分类调整标签顺序与一键重排序号。
+- **分类管理**：维护中英文名称、Lucide 图标选择器、强调色、排序与启用状态。
+- **搜索引擎**：维护名称、快捷码、搜索 URL 模板（需包含 `{query}`）、默认项与启用状态。
+- **站点设置**：配置站点标题、副标题、默认语言、默认主题、背景风格及自定义背景图地址（带实时预览）。
+- **导入导出**：导出完整 JSON 配置备份，或粘贴 JSON 一键恢复与迁移。
 
-## 🚀 快速开始
+## 快速开始
 
 ### 1. 安装依赖
 
@@ -84,42 +89,41 @@ npm run cf:types
 npm run db:migrate:local
 ```
 
-### 4. 启动前端开发服务
+### 4. 启动开发服务
 
 ```powershell
 npm run dev
 ```
 
-默认地址：
+默认访问地址：
 
 ```text
 http://127.0.0.1:5173
 ```
 
-如需本地联调 Worker API，另开一个终端：
+如需本地联调 Worker API，可另开一个终端启动：
 
 ```powershell
 npm run dev:worker
 ```
 
-Worker 本地地址通常是：
+Worker 本地默认监听地址：
 
 ```text
 http://127.0.0.1:8787
 ```
 
-## 🔐 后台密码与 Worker Secrets
+## 后台密码与 Worker Secrets
 
-后台登录时输入的是你设置的**明文管理密码**。  
-Cloudflare Worker 里保存的不是明文密码，而是这个密码生成出来的哈希。
+后台登录时输入的是你设定的**明文管理密码**；Cloudflare Worker 中仅保存由其派生的 PBKDF2 哈希值。
 
-### 1. 生成密码哈希和会话密钥
+### 1. 生成密码哈希与会话密钥
 
 ```powershell
 npm run secret:hash -- "你的后台管理密码"
 ```
 
-输出类似：
+输出示例：
 
 ```text
 ADMIN_PASSWORD_HASH=pbkdf2_sha256$100000$...
@@ -133,171 +137,131 @@ npx wrangler secret put ADMIN_PASSWORD_HASH
 npx wrangler secret put SESSION_SECRET
 ```
 
-Wrangler 提示 `Enter a secret value` 时：
+当 Wrangler 提示 `Enter a secret value` 时，请仅粘贴等号后面的值本身。
 
-- `ADMIN_PASSWORD_HASH`：只粘贴 `ADMIN_PASSWORD_HASH=` 后面的值。
-- `SESSION_SECRET`：只粘贴 `SESSION_SECRET=` 后面的值。
+### 3. 本地开发配置 `.dev.vars`
 
-### 3. 本地开发用 `.dev.vars`
-
-本地 Worker 调试时，可以复制：
+本地联调 Worker 时复制示例文件：
 
 ```powershell
 Copy-Item .dev.vars.example .dev.vars
 ```
 
-然后填入：
+随后填入生成的两项密钥：
 
 ```text
 ADMIN_PASSWORD_HASH=pbkdf2_sha256$100000$...
 SESSION_SECRET=...
 ```
 
-注意：
+注意事项：
 
-- ✅ 登录 `/admin` 时输入明文管理密码。
-- ❌ 不要把明文密码提交到 Git。
-- ❌ 不要把 `.dev.vars` 提交到 Git。
-- ❌ 不要把 `ADMIN_PASSWORD_HASH=` 这个键名一起粘进 `wrangler secret put` 的输入框。
-- ⚠️ 不建议用 `wrangler secret bulk .dev.vars` 上传这两个值，PBKDF2 哈希里的 `$` 容易被环境变量格式误解析。
+- 登录 `/admin` 时请输入明文管理密码。
+- 请勿将明文密码或 `.dev.vars` 提交到 Git 仓库。
+- 使用 `wrangler secret put` 时不要连同键名 `ADMIN_PASSWORD_HASH=` 一起粘贴。
+- 不建议使用 `wrangler secret bulk .dev.vars` 批量上传，PBKDF2 哈希中的 `$` 容易被环境变量格式误解析。
 
-## ☁️ Cloudflare 部署
+## Cloudflare 部署
 
-当前项目使用：
+项目默认资源绑定（详见 [wrangler.jsonc](wrangler.jsonc)）：
 
-- Worker 名称：`cyber-nav`
-- D1 数据库：`cyber-nav-db`
-- D1 绑定名：`DB`
-- 前端静态资源：Worker Assets
+- **Worker 名称**：`cyber-nav`
+- **D1 数据库**：`cyber-nav-db`（绑定名 `DB`）
+- **静态资源目录**：`./dist`（绑定名 `ASSETS`）
 
-`wrangler.jsonc` 中已经配置：
-
-```jsonc
-{
-  "name": "cyber-nav",
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "cyber-nav-db"
-    }
-  ]
-}
-```
-
-首次部署前，确认远程 D1 已执行迁移：
+首次部署前需在远程 D1 执行一次迁移：
 
 ```powershell
 npm run db:migrate:remote
 ```
 
-手动部署：
+构建并手动部署：
 
 ```powershell
 npm run build
 npx wrangler deploy
 ```
 
-部署前干跑检查：
+仅执行干跑校验：
 
 ```powershell
 npm run deploy:dry-run
 ```
 
-## 🤖 GitHub Actions 自动部署
+## GitHub Actions 自动部署
 
-仓库需要配置两个 GitHub Actions Secrets：
+在仓库中配置以下两个 GitHub Actions Secrets：
 
 | Secret | 用途 |
 | --- | --- |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 账号 ID |
-| `CLOUDFLARE_API_TOKEN` | Wrangler 部署和 D1 迁移 |
+| `CLOUDFLARE_API_TOKEN` | 执行 Wrangler 部署与 D1 迁移 |
 
-Cloudflare API Token 推荐权限：
+Cloudflare API Token 建议授予 `Workers Scripts: Edit` 与 `D1: Edit` 权限。推送代码至 `main` 分支后，工作流会自动依次执行：
 
-- `Workers Scripts: Edit`
-- `D1: Edit`
+1. `npm ci` 安装依赖
+2. `npm run cf:types`、`npm run typecheck` 与 `npm test`
+3. `npm run build` 构建前端资源
+4. `wrangler d1 migrations apply cyber-nav-db --remote` 应用数据库迁移
+5. `wrangler deploy` 部署 Worker 与静态资源
 
-push 到 `main` 后，workflow 会自动执行：
-
-1. 📦 `npm ci`
-2. 🧪 类型检查和测试
-3. 🏗️ 构建前端资源
-4. 🗃️ 远程 D1 迁移
-5. 🚀 部署 Cloudflare Worker
-
-## 🧪 常用命令
+## 常用命令
 
 ```powershell
 # 类型检查
 npm run typecheck
 
+# 代码规范检查
+npm run lint
+
 # 单元测试
 npm test
 
-# 构建
+# 构建生产包
 npm run build
 
-# 代码检查
-npm run lint
-
-# Playwright UI 测试
+# Playwright UI 端到端测试
 npm run test:ui
 
-# 本地 D1 迁移
+# 本地 / 远程 D1 迁移
 npm run db:migrate:local
-
-# 远程 D1 迁移
 npm run db:migrate:remote
 
-# Wrangler 干跑部署
+# Wrangler 部署干跑检查
 npm run deploy:dry-run
 ```
 
-## 🧭 使用小技巧
-
-- 🏷️ **想调整标签顺序**：进入后台「导航」，在某个分类下的「标签顺序」区域点上移/下移。
-- 🔢 **想整理卡片序号**：后台「导航」里点「重排序号」。
-- 🎨 **想换背景**：后台「站点设置」里选择内置背景，或选择「自定义图片」后填写 HTTPS 图片地址或站内绝对路径。
-- 🌗 **想换主题**：右上角主题按钮可切换浅色、深色和跟随系统。
-- 📱 **手机端后台太长**：右下角有回到顶部按钮。
-- 📦 **迁移数据**：用后台「导入导出」复制 JSON 备份。
-
-## 📁 项目结构
+## 项目结构
 
 ```text
 cyber-nav/
-├─ .github/workflows/      # GitHub Actions 自动部署
-├─ migrations/             # D1 数据库迁移
-├─ public/                 # Logo、背景图等静态资源
-├─ scripts/                # 密码哈希等工具脚本
+├─ .github/workflows/      # GitHub Actions 自动部署配置
+├─ docs/                   # README 预览截图
+├─ migrations/             # Cloudflare D1 数据库迁移脚本
+├─ public/                 # Logo 与内置背景图静态资源
+├─ scripts/                # 密码哈希与背景生成工具脚本
 ├─ src/
-│  ├─ worker/              # Cloudflare Worker API
-│  ├─ theme/               # 背景和配色定义
-│  ├─ utils/               # 导航搜索等工具函数
-│  ├─ App.tsx              # 前台 + 后台主界面
-│  └─ index.css            # 视觉和响应式样式
-├─ tests/                  # Vitest / Playwright 测试
+│  ├─ data/                # 默认站点配置与初始导航数据
+│  ├─ theme/               # Magpie 配色引擎、主题与背景定义
+│  ├─ utils/               # 搜索过滤与分类分组工具函数
+│  ├─ worker/              # Hono API、认证与 D1 访问层
+│  ├─ App.tsx              # 前台与后台单页主界面
+│  └─ index.css            # 样式令牌与响应式布局
+├─ tests/                  # Vitest 与 Playwright 测试用例
 ├─ wrangler.jsonc          # Cloudflare Worker 配置
 └─ package.json
 ```
 
-## 🧩 数据与安全说明
+## 数据与安全
 
-- 所有导航数据存储在 Cloudflare D1。
-- 后台只支持单管理员密码，不做多用户和 OAuth。
-- 登录会话使用 `HttpOnly + Secure + SameSite=Lax` Cookie。
-- 会话签名使用 `SESSION_SECRET`。
-- 登录失败会记录到 D1，用于基础限流。
-- `database_id` 不是密码，可以提交。
-- `.dev.vars`、Cloudflare Token、GitHub Secrets 不应提交。
+- 所有导航、分类、搜索引擎与站点配置持久化在 Cloudflare D1。
+- 后台采用单管理员密码机制，不引入多用户与第三方 OAuth。
+- 登录态使用 `HttpOnly + Secure + SameSite=Lax` Cookie，并通过 `SESSION_SECRET` 进行 HMAC 签名。
+- 登录失败尝试会记录在 D1 中用于基础限流。
+- `wrangler.jsonc` 中的 `database_id` 属于资源标识而非密钥，可安全纳入版本管理；`.dev.vars`、Cloudflare API Token 与 GitHub Secrets 切勿提交。
 
-## 🧡 关于
+<br />
 
-这个项目更偏个人工作台，而不是通用门户模板。  
-目标是：打开快、管理顺、视觉有记忆点，部署后基本不用操心服务器。
-
-> © 2021 - 2026 偏爱一丛花
+<div align="center">
+  <sub>© 2021 - 2026 <a href="https://www.nerocats.com/">偏爱一丛花</a></sub>
+</div>
